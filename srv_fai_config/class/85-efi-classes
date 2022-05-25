@@ -1,0 +1,14 @@
+#! /bin/bash
+
+# define classes for disk_config in an EFI enironment
+
+if [ ! -d /sys/firmware/efi ]; then
+    exit 0
+fi
+
+for c in SEAPATH_LVM SEAPATH_NOLVM LVM FAISERVER FAIBASE; do
+    if ifclass $c; then
+	echo ${c}_EFI
+	break
+    fi
+done

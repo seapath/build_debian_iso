@@ -1,0 +1,18 @@
+#!/bin/bash
+error=0; trap 'error=$(($?>$error?$?:$error))' ERR # save maximum error code
+$ROOTCMD rm -f /etc/network/interfaces
+$ROOTCMD systemctl enable --now systemd-networkd
+$ROOTCMD systemctl disable systemd-networkd-wait-online.service
+$ROOTCMD mkdir -p /root/.ssh
+$ROOTCMD mkdir -p /home/$username/.ssh
+$ROOTCMD chmod 700 /root/.ssh
+$ROOTCMD chmod 700 /home/$username/.ssh
+$ROOTCMD touch /root/.ssh/authorized_keys
+$ROOTCMD touch /home/$username/.ssh/authorized_keys
+ainsl /root/.ssh/authorized_keys "^ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAukkqkApL2haZYMVVdpDR/B9fRU/g5sQUggtfS3ObbAN90oAgAHlGYA9a/Q254qC03vh51GAdc6GQ0RYnTZehx8hib4QoaesVlXi5Ch8vhuTL0oe600Jvqp0e4TJnkfl/N9h1myr6prycAH0wP2UrkUGnUl9yToqBQalpSyvuPVqdDaUtnJAEDIT5XcPwTYKOZVP/akbtMd4X3Ok9On4TlR5vhNQGmIOUHgr9kW8ePVF7vpz4EyC072PdM42d3le1xCisiwRrRJIhEFHQSjCTQEp9pxzerq9UVK76Ruylj43xhFx+OVneDlVgX+bE9+axpErMsJ+hAeVbvWoLwgoKvw==$"
+ainsl /home/$username/.ssh/authorized_keys "^ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAukkqkApL2haZYMVVdpDR/B9fRU/g5sQUggtfS3ObbAN90oAgAHlGYA9a/Q254qC03vh51GAdc6GQ0RYnTZehx8hib4QoaesVlXi5Ch8vhuTL0oe600Jvqp0e4TJnkfl/N9h1myr6prycAH0wP2UrkUGnUl9yToqBQalpSyvuPVqdDaUtnJAEDIT5XcPwTYKOZVP/akbtMd4X3Ok9On4TlR5vhNQGmIOUHgr9kW8ePVF7vpz4EyC072PdM42d3le1xCisiwRrRJIhEFHQSjCTQEp9pxzerq9UVK76Ruylj43xhFx+OVneDlVgX+bE9+axpErMsJ+hAeVbvWoLwgoKvw==$"
+ainsl /root/.ssh/authorized_keys "^ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDCA5svFoScUawL9HnMyJ57m9KMPV9NJM7OPFFsJwq9cV8VFQrBIkGpAqbTgpLgcRIulYgYYBQrrE1cqrW/4hklOzNdE98vx9TJ9aLhklMs4XwplWgZkscaag9Yoa/5X735ZGcOO3wMKHQ5au3CjgVFpunTZ7LathgFvWqa5Zoh5nhHT3At06+dx08YFemDnrLJf4nUEvbGd4D9vRwPIm2ybB9GsstXI1eiNbaQKCZEG4Un3LWUfTbzNKZ1OXiyVSGfJbPc3OTUpKNwqxJ/jKGjEGnqeYwTpB2MM5Yk5NqeDPtNqoLgsyPrEc6NsA9aLDzNdCc1aHcRlaEc4zdi2TEZOTY7QVaTcWIds4VilFsTSd8/yp6SM/y+NzKoaQN8zPsVgT3J56L9FnVZk7xGCwXXyaQJKlB5/e5Z48Ouz1GkOFzp6VjQctHxKMUE4f16PTqeIkLUrpuos/8cl/5loPUiwTSbnypgthPMGWhE2JLrNf4kYBywATw8OcqizDazN3k= ansible$"
+ainsl /home/$username/.ssh/authorized_keys "^ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDCA5svFoScUawL9HnMyJ57m9KMPV9NJM7OPFFsJwq9cV8VFQrBIkGpAqbTgpLgcRIulYgYYBQrrE1cqrW/4hklOzNdE98vx9TJ9aLhklMs4XwplWgZkscaag9Yoa/5X735ZGcOO3wMKHQ5au3CjgVFpunTZ7LathgFvWqa5Zoh5nhHT3At06+dx08YFemDnrLJf4nUEvbGd4D9vRwPIm2ybB9GsstXI1eiNbaQKCZEG4Un3LWUfTbzNKZ1OXiyVSGfJbPc3OTUpKNwqxJ/jKGjEGnqeYwTpB2MM5Yk5NqeDPtNqoLgsyPrEc6NsA9aLDzNdCc1aHcRlaEc4zdi2TEZOTY7QVaTcWIds4VilFsTSd8/yp6SM/y+NzKoaQN8zPsVgT3J56L9FnVZk7xGCwXXyaQJKlB5/e5Z48Ouz1GkOFzp6VjQctHxKMUE4f16PTqeIkLUrpuos/8cl/5loPUiwTSbnypgthPMGWhE2JLrNf4kYBywATw8OcqizDazN3k= ansible$"
+$ROOTCMD chown -R root:root /root/.ssh
+$ROOTCMD chown -R $username:$username /home/$username/.ssh
+$ROOTCMD chmod 600 /home/$username/.ssh/authorized_keys /root/.ssh/authorized_keys

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+error=0; trap 'error=$(($?>$error?$?:$error))' ERR # save maximum error code
+
+$ROOTCMD touch /etc/apt/sources.list.d/docker.list
+$ROOTCMD touch /etc/apt/sources.list.d/elastic-8.x.list
+ainsl /etc/apt/sources.list.d/docker.list "^deb https://download.docker.com/linux/debian bullseye stable$"
+ainsl /etc/apt/sources.list.d/elastic-8.x.list "^deb https://artifacts.elastic.co/packages/8.x/apt stable main$"
+
+
