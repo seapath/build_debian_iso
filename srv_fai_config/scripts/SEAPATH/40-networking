@@ -1,0 +1,17 @@
+#!/bin/bash
+error=0; trap 'error=$(($?>$error?$?:$error))' ERR # save maximum error code
+$ROOTCMD rm -f /etc/network/interfaces
+$ROOTCMD systemctl enable --now systemd-networkd
+$ROOTCMD systemctl disable systemd-networkd-wait-online.service
+$ROOTCMD mkdir -p /root/.ssh
+$ROOTCMD mkdir -p /home/$username/.ssh
+$ROOTCMD chmod 700 /root/.ssh
+$ROOTCMD chmod 700 /home/$username/.ssh
+$ROOTCMD touch /root/.ssh/authorized_keys
+$ROOTCMD touch /home/$username/.ssh/authorized_keys
+ainsl /root/.ssh/authorized_keys "myrootkey"
+ainsl /home/$username/.ssh/authorized_keys "myuserkey"
+
+$ROOTCMD chown -R root:root /root/.ssh
+$ROOTCMD chown -R $username:$username /home/$username/.ssh
+$ROOTCMD chmod 600 /home/$username/.ssh/authorized_keys /root/.ssh/authorized_keys

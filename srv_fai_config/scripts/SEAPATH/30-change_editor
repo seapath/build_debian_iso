@@ -1,0 +1,3 @@
+#!/bin/bash
+error=0; trap 'error=$(($?>$error?$?:$error))' ERR # save maximum error code
+$ROOTCMD /usr/bin/update-alternatives --set editor /usr/bin/vim.basic
