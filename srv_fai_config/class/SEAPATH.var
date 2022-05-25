@@ -1,0 +1,26 @@
+# default values for installation. You can override them in your *.var files
+
+# allow installation of packages from unsigned repositories
+FAI_ALLOW_UNSIGNED=1
+
+# Set UTC=yes if your system clock is set to UTC (GMT), and UTC=no if not.
+UTC=yes
+TIMEZONE=Europe/Paris
+
+# the hash of the root password for the new installed linux system
+# pw is "toto"
+ROOTPW='$y$j9T$s.szNr.QzTLk8h5qMYDpo0$YMaC8.04FilI/1AguyofvbV4FH1me6Nc7SHP4hyefZ2'
+
+# errors in tasks greater than this value will cause the installation to stop
+STOP_ON_ERROR=700
+
+# set parameter for install_packages(8)
+MAXPACKAGES=800
+
+# a user account will be created
+username=virtu
+USERPW='$y$j9T$s.szNr.QzTLk8h5qMYDpo0$YMaC8.04FilI/1AguyofvbV4FH1me6Nc7SHP4hyefZ2'
+
+APTPROXY=http://10.132.105.100:3128
+SERVER=192.168.122.3
+LOGUSER=fai

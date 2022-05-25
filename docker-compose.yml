@@ -1,0 +1,24 @@
+version: "3.7"
+services:
+  fai-setup:
+    image: fai
+    build:
+      context: .
+    volumes:
+      - ext:/ext
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - seccomp:unconfined
+      - apparmor:unconfined
+    container_name: fai-setup
+  fai-cd:
+    image: fai
+    build:
+      context: .
+    volumes:
+      - ext:/ext
+    privileged: true
+    container_name: fai-cd
+volumes:
+  ext:
