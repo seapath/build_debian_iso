@@ -8,7 +8,7 @@ UTC=yes
 TIMEZONE=Europe/Paris
 
 # the hash of the root password for the new installed linux system
-# pw is "fai"
+# pw is "toto"
 ROOTPW='$y$j9T$s.szNr.QzTLk8h5qMYDpo0$YMaC8.04FilI/1AguyofvbV4FH1me6Nc7SHP4hyefZ2'
 
 # errors in tasks greater than this value will cause the installation to stop

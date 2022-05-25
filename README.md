@@ -17,7 +17,7 @@ Some customization you will want to make before building:
 
 ### Optionnal
 **change the unprivileged user name and passwd, as well as the root passwd for the deployed server**  
-* update the file `srv_fai_config/class/SEAPATH.var` (right now all passwords are "fai")  
+* update the file `srv_fai_config/class/SEAPATH.var` (right now all passwords are "toto")  
 more information about password hash : https://linuxconfig.org/how-to-hash-passwords-on-linux
 
 **change the "FAI" password (used to connect to the server when it's being deployed with the "fai" username and "toto" as a password)**
