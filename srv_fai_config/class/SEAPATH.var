@@ -6,6 +6,7 @@ FAI_ALLOW_UNSIGNED=1
 # Set UTC=yes if your system clock is set to UTC (GMT), and UTC=no if not.
 UTC=yes
 TIMEZONE=Europe/Paris
+KEYMAP=fr-latin1
 
 # the hash of the root password for the new installed linux system
 # pw is "toto"
@@ -22,5 +23,6 @@ username=virtu
 USERPW='$y$j9T$s.szNr.QzTLk8h5qMYDpo0$YMaC8.04FilI/1AguyofvbV4FH1me6Nc7SHP4hyefZ2'
 
 APTPROXY=http://10.132.105.100:3128
+apt_cdn=http://ftp.fr.debian.org
 SERVER=192.168.122.3
 LOGUSER=fai

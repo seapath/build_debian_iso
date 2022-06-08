@@ -6,7 +6,7 @@ if [ ! -d /sys/firmware/efi ]; then
     exit 0
 fi
 
-for c in SEAPATH_LVM SEAPATH_NOLVM LVM FAISERVER FAIBASE; do
+for c in SEAPATH_LVM SEAPATH_NOLVM ; do
     if ifclass $c; then
 	echo ${c}_EFI
 	break

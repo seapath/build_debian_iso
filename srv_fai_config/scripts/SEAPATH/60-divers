@@ -6,3 +6,7 @@ $ROOTCMD systemctl disable corosync.service
 $ROOTCMD systemctl disable pacemaker.service
 
 $ROOTCMD apt -y autoremove
+
+cat <<EOF > $target/etc/apt/sources.list.d/debian-backports.list
+deb $apt_cdn/debian $release-backports main contrib non-free
+EOF
