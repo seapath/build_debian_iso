@@ -15,10 +15,7 @@ Some customization you will want to make before building:
 **change the authorized_keys files (user and root) with your own**   
 * update the file `srv_fai_config/scripts/SEAPATH/40-networking` and replace "myrootkey" and "myuserkey" by yours
 
-### Optionnal
+### Optional
 **change the unprivileged user name and passwd, as well as the root passwd for the deployed server**  
 * update the file `srv_fai_config/class/SEAPATH.var` (right now all passwords are "toto")  
-more information about password hash : https://linuxconfig.org/how-to-hash-passwords-on-linux
-
-**change the "FAI" password (used to connect to the server when it's being deployed with the "fai" username and "toto" as a password)**
-* update the file `etc_fai/nfsroot.conf`      
+more information about password hash : https://linuxconfig.org/how-to-hash-passwords-on-linux    
