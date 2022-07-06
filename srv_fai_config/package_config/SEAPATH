@@ -56,3 +56,10 @@ sysfsutils
 dstat
 sysstat
 linuxptp
+bind9-dnsutils
+krb5-user
+ldap-utils
+libsasl2-modules-gssapi-mit
+
+PACKAGES remove
+nullmailer
