@@ -1,1 +1,0 @@
-GRUB_CMDLINE_LINUX_DEFAULT="efi=runtime console=ttyS0 console=tty1 ipv6.disable=1"
