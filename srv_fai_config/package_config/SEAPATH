@@ -60,6 +60,7 @@ bind9-dnsutils
 krb5-user
 ldap-utils
 libsasl2-modules-gssapi-mit
+tuna
 
 PACKAGES remove
 nullmailer
