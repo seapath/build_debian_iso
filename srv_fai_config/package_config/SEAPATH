@@ -38,6 +38,7 @@ libcephfs2
 python3-ceph-argparse
 python3-cephfs
 docker-ce
+docker-compose
 docker-ce-cli
 containerd.io
 metricbeat
@@ -61,6 +62,8 @@ krb5-user
 ldap-utils
 libsasl2-modules-gssapi-mit
 tuna
+at
+iptables-persistent
 
 PACKAGES remove
 nullmailer
