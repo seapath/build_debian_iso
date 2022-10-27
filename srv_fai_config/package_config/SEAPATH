@@ -37,10 +37,8 @@ ceph-osd
 libcephfs2
 python3-ceph-argparse
 python3-cephfs
-docker-ce
+docker-io
 docker-compose
-docker-ce-cli
-containerd.io
 metricbeat
 filebeat
 systemd-timesyncd
