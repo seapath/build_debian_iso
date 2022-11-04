@@ -37,7 +37,7 @@ ceph-osd
 libcephfs2
 python3-ceph-argparse
 python3-cephfs
-docker-io
+docker.io
 docker-compose
 metricbeat
 filebeat
