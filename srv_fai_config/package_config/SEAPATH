@@ -49,7 +49,6 @@ bridge-utils
 cpuset
 linux-image-rt-amd64/bullseye-backports
 irqbalance
-dracut
 lbzip2
 sysfsutils
 dstat
