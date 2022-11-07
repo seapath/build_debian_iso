@@ -21,6 +21,9 @@ MAXPACKAGES=800
 # a user account will be created
 username=virtu
 USERPW='$y$j9T$s.szNr.QzTLk8h5qMYDpo0$YMaC8.04FilI/1AguyofvbV4FH1me6Nc7SHP4hyefZ2'
+# a ansible user account will be created
+usernameansible=ansible
+USERPW='$y$j9T$s.szNr.QzTLk8h5qMYDpo0$YMaC8.04FilI/1AguyofvbV4FH1me6Nc7SHP4hyefZ2'
 
 #APTPROXY=http://proxy:3128
 apt_cdn=http://ftp.fr.debian.org
