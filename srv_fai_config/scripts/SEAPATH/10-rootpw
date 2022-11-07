@@ -15,5 +15,14 @@ if [ -n "$username" ]; then
 	echo "WARNING. Package sudo is not installed"
     fi
 fi
+if [ -n "$usernameansible" ]; then
+    $ROOTCMD groupadd -g 10001 $usernameansible
+    $ROOTCMD useradd -u 10001 -g 10001 -m $usernameansible
+    # enable sudo for user
+    ainsl /etc/sudoers "$usernameansible   ALL=NOPASSWD: ALL"
+    if [ ! -f $target/usr/bin/sudo ]; then
+	echo "WARNING. Package sudo is not installed"
+    fi
+fi
 
 exit $error

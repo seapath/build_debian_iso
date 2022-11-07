@@ -13,7 +13,7 @@ Some customization you will want to make before building:
 
 ### Mandatory
 **change the authorized_keys files (user and root) with your own**   
-* update the file `srv_fai_config/scripts/SEAPATH/40-networking` and replace "myrootkey" and "myuserkey" by yours
+* update the file `srv_fai_config/scripts/SEAPATH/40-networking` and replace "myrootkey", "myuserkey"  and "ansiblekey" by yours
 
 ### Optional
 **changes in the the unprivileged user name and passwd, as well as the root passwd for the deployed server**  
