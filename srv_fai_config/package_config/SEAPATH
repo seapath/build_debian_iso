@@ -61,6 +61,8 @@ libsasl2-modules-gssapi-mit
 tuna
 at
 iptables-persistent
+hddtemp
+lm-sensors
 
 PACKAGES remove
 nullmailer
