@@ -63,6 +63,7 @@ at
 iptables-persistent
 hddtemp
 lm-sensors
+jq
 
 PACKAGES remove
 nullmailer
