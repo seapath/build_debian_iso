@@ -23,6 +23,7 @@ more information about password hash : https://linuxconfig.org/how-to-hash-passw
 **other changes in `srv_fai_config/class/SEAPATH.var`**
 * TIMEZONE, KEYMAP, apt_cdn: feel free to set you regionalized settings, it's all too french by default :)
 * APTPROXY: in case your deployed host will need some proxy to access the debian mirror
+* REMOTENIC, REMOTEADDR, REMOTEGW: if you want networking to be available right after deployement set ip/gateway to a specified niv (ie: ens0, enp0s1...)
 * SERVER, LOGUSER: if you want the installation logs to be uploaded, using SCP, to a server, for which the login username will be LOGUSER and the password "fai"
 
 more info: https://fai-project.org/fai-guide
