@@ -29,3 +29,7 @@ USERPW='$y$j9T$s.szNr.QzTLk8h5qMYDpo0$YMaC8.04FilI/1AguyofvbV4FH1me6Nc7SHP4hyefZ
 apt_cdn=http://ftp.fr.debian.org
 SERVER=192.168.122.3
 LOGUSER=fai
+
+#REMOTENIC=
+#REMOTEADDR=
+#REMOTEGW=
