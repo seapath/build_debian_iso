@@ -12,9 +12,9 @@ $ROOTCMD chmod 700 /home/$usernameansible/.ssh
 $ROOTCMD touch /root/.ssh/authorized_keys
 $ROOTCMD touch /home/$username/.ssh/authorized_keys
 $ROOTCMD touch /home/$usernameansible/.ssh/authorized_keys
-ainsl /root/.ssh/authorized_keys "ssh-rsa myrootkey"
-ainsl /home/$username/.ssh/authorized_keys "ssh-rsa myuserkey"
-ainsl /home/$usernameansible/.ssh/authorized_keys "ssh-rsa ansiblekey"
+ainsl /root/.ssh/authorized_keys "$myrootkey"
+ainsl /home/$username/.ssh/authorized_keys "$myuserkey"
+ainsl /home/$usernameansible/.ssh/authorized_keys "$ansiblekey"
 
 $ROOTCMD chown -R root:root /root/.ssh
 $ROOTCMD chown -R $username:$username /home/$username/.ssh
