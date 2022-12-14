@@ -41,7 +41,7 @@ docker.io
 docker-compose
 metricbeat
 filebeat
-systemd-timesyncd
+chrony
 qemu-utils
 snmpd
 ovmf
