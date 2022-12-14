@@ -9,11 +9,13 @@ On a linux machine with docker and docker-compose, building the iso file should 
 from the directory where you want the .iso file stored.
 
 ## Customization 
-Some customization you will want to make before building:
+Some customization you will want to make before building.
+First, copy the srv_fai_config/class/SEAPATH.var.defaults file to srv_fai_config/class/SEAPATH.var
+You will make your changes in this new file.
 
 ### Mandatory
 **change the authorized_keys files (user and root) with your own**   
-* update the file `srv_fai_config/scripts/SEAPATH/40-networking` and replace "myrootkey", "myuserkey"  and "ansiblekey" by yours
+* update the file `srv_fai_config/class/SEAPATH.var` and replace "myrootkey", "myuserkey"  and "ansiblekey" by yours
 
 ### Optional
 **changes in the the unprivileged user name and passwd, as well as the root passwd for the deployed server**  
