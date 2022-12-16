@@ -16,8 +16,8 @@ if [ -n "$username" ]; then
     fi
 fi
 if [ -n "$usernameansible" ]; then
-    $ROOTCMD groupadd -g 10001 $usernameansible
-    $ROOTCMD useradd -u 10001 -g 10001 -m $usernameansible
+    $ROOTCMD groupadd -g 1005 $usernameansible
+    $ROOTCMD useradd -u 1005 -g 1005 -m $usernameansible
     # enable sudo for user
     ainsl /etc/sudoers "$usernameansible   ALL=NOPASSWD: ALL"
     if [ ! -f $target/usr/bin/sudo ]; then
