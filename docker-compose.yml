@@ -6,6 +6,7 @@ services:
       context: .
     volumes:
       - ext:/ext
+      - ./etc_fai:/etc/fai:ro
     cap_add:
       - SYS_ADMIN
     security_opt:
@@ -18,6 +19,7 @@ services:
       context: .
     volumes:
       - ext:/ext
+      - ./etc_fai:/etc/fai:ro
     privileged: true
     container_name: fai-cd
 volumes:
