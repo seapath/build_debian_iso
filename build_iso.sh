@@ -1,6 +1,6 @@
 #!/bin/bash
 
-wd=`dirname $0`
+wd=$(dirname $0)
 #docker-compose -f $wd/docker-compose.yml run --rm fai-setup bash -c "rm -rf /ext/*"
 
 # removing the volume in case it exists from a precedent build operation
@@ -38,5 +38,4 @@ docker cp fai-setup:/ext/seapath.iso .
 docker-compose -f $wd/docker-compose.yml down
 
 # Removing the volume
-docker volume rm build_debian_iso_ext 
-
+docker volume rm build_debian_iso_ext
