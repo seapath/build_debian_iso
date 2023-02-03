@@ -1,0 +1,17 @@
+name: "ShellCheck"
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [main]
+
+jobs:
+  shellcheck:
+    name: Shellcheck
+    runs-on: ubuntu-latest
+    steps:
+        - uses: actions/checkout@v3
+        - name: ShellCheck
+          uses: ludeeus/action-shellcheck@2.0.0
+          env: 
+            SHELLCHECK_OPTS: -e SC2086 -e SC2154
