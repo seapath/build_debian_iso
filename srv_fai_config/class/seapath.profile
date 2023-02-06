@@ -17,3 +17,9 @@ Description: Seapath Host installation without LVM
 Short: Seapath NO LVM
 Long: Seapath Host installation without LVM
 Classes: DEBIAN SEAPATH_NOLVM FAIBASE SEAPATH
+
+Name: Seapath_Kerberos
+Description: Seapath Host installation with Kerberos
+Short: Seapath Kerberos
+Long: Seapath Host installation with Kerberos
+Classes: DEBIAN SEAPATH_LVM DEMO FAIBASE SEAPATH KERBEROS

@@ -45,3 +45,19 @@ You also need to add the required packages to the fai-mirror in `build_iso.sh`:
 ```
     fai-mirror -c DEBIAN,SEAPATH_LVM,FAIBASE,DEMO,SEAPATH,SEAPATH_NOLVM,GRUB_EFI,SEAPATH_DBG /ext/mirror"
 ```
+
+**installing a kerberos image**
+An alternative flavor contains kerberos in order to deploy users within more
+complex authentication servers.
+
+A debug image with more debug packages installed is available through editing
+the default profile in `srv_fai_config/class/seapath.profile`:
+
+```
+Default: Seapath_Kerberos
+```
+
+You also need to add the required packages to the fai-mirror in `build_iso.sh`:
+```
+    fai-mirror -c DEBIAN,SEAPATH_LVM,FAIBASE,SEAPATH,SEAPATH_NOLVM,GRUB_EFI,KERBEROS /ext/mirror"
+```
