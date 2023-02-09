@@ -1,5 +1,5 @@
 #!/bin/bash
-
+(
 wd=$(dirname $0)
 #docker-compose -f $wd/docker-compose.yml run --rm fai-setup bash -c "rm -rf /ext/*"
 
