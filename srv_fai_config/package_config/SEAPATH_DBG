@@ -1,0 +1,10 @@
+PACKAGES install-norec
+filebeat
+iperf
+iperf3
+metricbeat
+rt-tests
+screen
+stress-ng
+tcpdump
+vim

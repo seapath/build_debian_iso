@@ -18,11 +18,8 @@ curl
 docker-compose
 docker.io
 dstat
-filebeat
 gnupg
 hddtemp
-iperf
-iperf3
 iptables-persistent
 irqbalance
 jq
@@ -39,7 +36,6 @@ linux-image-rt-amd64/bullseye-backports
 linuxptp
 lm-sensors
 lsb-release
-metricbeat
 net-tools
 openssh-server
 openvswitch-switch
@@ -50,18 +46,12 @@ python3-cephfs
 python3-setuptools
 qemu-block-extra
 qemu-utils
-rt-tests
-screen
 snmpd
-stress-ng
 sudo
 sysfsutils
 syslog-ng
 sysstat
-tcpdump
 tuna
-vim
-vim
 virtinst
 wget
 
