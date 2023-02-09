@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# Required to uninstall isc-dhcp-client
+echo 'APT::Get::allow-remove-essential "true";' > $target/etc/apt/apt.conf.d/80seapath
