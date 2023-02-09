@@ -3,4 +3,4 @@
 # do not use this if a menu will be presented
 [ "$flag_menu" ] && exit 0
 
-echo "SEAPATH_LVM SEAPATH"
+echo "SEAPATH_LVM SEAPATH SEAPATH_DBG"
