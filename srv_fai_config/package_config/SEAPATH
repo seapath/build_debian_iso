@@ -1,6 +1,5 @@
 PACKAGES install-norec
 at
-bind9-dnsutils
 bridge-utils
 ca-certificates
 ceph
@@ -23,11 +22,8 @@ hddtemp
 iptables-persistent
 irqbalance
 jq
-krb5-user
 lbzip2
-ldap-utils
 libcephfs2
-libsasl2-modules-gssapi-mit
 libvirt-clients
 libvirt-daemon
 libvirt-daemon-driver-storage-rbd
@@ -55,5 +51,19 @@ tuna
 virtinst
 wget
 
+# These PACKAGES were installed by debootstrap
 PACKAGES remove
-nullmailer
+isc-dhcp-client
+isc-dhcp-common
+rsyslog
+
+# These PACKAGES were installed by previous classes.
+# They must be removed with pkg- instead of remove.
+PACKAGES install-norec
+bind9-host-
+eject-
+htop-
+iotop-
+linuxlogo-
+nmon-
+nullmailer-

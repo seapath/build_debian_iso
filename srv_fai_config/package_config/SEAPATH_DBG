@@ -1,8 +1,10 @@
 PACKAGES install-norec
-filebeat
+htop
+iotop
 iperf
-iperf3
+iperf3filebeat
 metricbeat
+nmon
 rt-tests
 screen
 stress-ng
