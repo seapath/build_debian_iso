@@ -6,5 +6,3 @@ $ROOTCMD systemctl disable corosync.service
 $ROOTCMD systemctl disable pacemaker.service
 
 $ROOTCMD apt -y autoremove
-
-fcopy -M /opt/php_apache.tgz
