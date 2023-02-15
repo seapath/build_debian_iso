@@ -18,13 +18,6 @@ docker-compose -f $wd/docker-compose.yml up --no-start fai-setup
 
 # Adding the SEAPATH workspace
 docker cp $wd/srv_fai_config/. fai-setup:/ext/srv/fai/config/
-# Adding the php:apache docker image
-docker pull php:apache
-mkdir -p /tmp/php_image/opt/php_apache.tgz
-docker save php:apache | gzip > /tmp/php_image/opt/php_apache.tgz/SEAPATH
-echo docker cp /tmp/php_image/. fai-setup:/ext/src/fai/files/
-docker cp /tmp/php_image/. fai-setup:/ext/srv/fai/config/files/
-rm -rf /tmp/php_image/
 
 # Stopping the container after having added stuff in it
 docker-compose -f $wd/docker-compose.yml down
