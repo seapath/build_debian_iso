@@ -1,3 +1,0 @@
-Package: linux-image-rt-amd64
-Pin: release a=bullseye-backports
-Pin-Priority: 900
