@@ -12,6 +12,3 @@ deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https:
 
 #Elastic
 deb https://artifacts.elastic.co/packages/8.x/apt stable main
-
-#RTE
-#deb [trusted=yes] file:/localrepo/ /
