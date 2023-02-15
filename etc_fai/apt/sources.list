@@ -5,10 +5,10 @@ deb http://ftp.fr.debian.org/debian-security bullseye-security main contrib non-
 deb http://ftp.fr.debian.org/debian bullseye-backports main contrib non-free
 
 # repository that may contain newer fai packages for bullseye
-deb http://fai-project.org/download bullseye koeln
+deb [arch=amd64] http://fai-project.org/download bullseye koeln
 
 #Docker
-deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian   bullseye stable
+deb [arch=amd64] https://download.docker.com/linux/debian bullseye stable
 
 #Elastic
-deb https://artifacts.elastic.co/packages/8.x/apt stable main
+deb [arch=amd64] https://artifacts.elastic.co/packages/8.x/apt stable main

@@ -1,7 +1,7 @@
 # default values for installation. You can override them in your *.var files
 
 # allow installation of packages from unsigned repositories
-FAI_ALLOW_UNSIGNED=1
+FAI_ALLOW_UNSIGNED=0
 
 # Set UTC=yes if your system clock is set to UTC (GMT), and UTC=no if not.
 UTC=yes
@@ -13,7 +13,11 @@ KEYMAP=fr-latin1
 ROOTPW='$y$j9T$s.szNr.QzTLk8h5qMYDpo0$YMaC8.04FilI/1AguyofvbV4FH1me6Nc7SHP4hyefZ2'
 
 # errors in tasks greater than this value will cause the installation to stop
-STOP_ON_ERROR=700
+# normal or info messages:       1xx, 2xx
+# warnings:                      3xx, 4xx
+# minor errors:                  5xx, 6xx
+# errors:                        7xx, 8xx
+STOP_ON_ERROR=500
 
 # set parameter for install_packages(8)
 MAXPACKAGES=800

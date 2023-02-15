@@ -11,7 +11,9 @@ set -ex
 
 # Creating the NFSROOT
 # Removing *.profile makes our seapath.profile the default
-docker-compose -f $wd/docker-compose.yml run --rm fai-setup bash -c "fai-setup -v -e -f && rm -f /ext/srv/fai/config/class/*.profile"
+docker-compose -f $wd/docker-compose.yml run --rm fai-setup bash -c "\
+    fai-setup -v -e -f && \
+    rm -f /ext/srv/fai/config/class/*.profile"
 
 # Starting the container to add stuff in it
 docker-compose -f $wd/docker-compose.yml up --no-start fai-setup
@@ -23,7 +25,9 @@ docker cp $wd/srv_fai_config/. fai-setup:/ext/srv/fai/config/
 docker-compose -f $wd/docker-compose.yml down
 
 # Creating the mirror
-docker-compose -f $wd/docker-compose.yml run --rm fai-setup fai-mirror -c DEBIAN,SEAPATH_LVM,FAIBASE,DEMO,SEAPATH,SEAPATH_NOLVM,GRUB_EFI /ext/mirror
+docker-compose -f $wd/docker-compose.yml run --rm fai-setup bash -c "\
+    cp /etc/fai/apt/keys/* /etc/apt/trusted.gpg.d/ &&\
+    fai-mirror -c DEBIAN,SEAPATH_LVM,FAIBASE,DEMO,SEAPATH,SEAPATH_NOLVM,GRUB_EFI /ext/mirror"
 
 # Creating the ISO
 docker-compose -f $wd/docker-compose.yml run --rm fai-cd fai-cd -f -m /ext/mirror /ext/seapath.iso
