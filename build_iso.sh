@@ -27,7 +27,7 @@ docker-compose -f $wd/docker-compose.yml down
 # Creating the mirror
 docker-compose -f $wd/docker-compose.yml run --rm fai-setup bash -c "\
     cp /etc/fai/apt/keys/* /etc/apt/trusted.gpg.d/ &&\
-    fai-mirror -c DEBIAN,SEAPATH_LVM,FAIBASE,DEMO,SEAPATH,SEAPATH_NOLVM,GRUB_EFI /ext/mirror"
+    fai-mirror -c DEBIAN,SEAPATH_LVM,FAIBASE,SEAPATH,SEAPATH_NOLVM,GRUB_EFI /ext/mirror"
 
 # Creating the ISO
 docker-compose -f $wd/docker-compose.yml run --rm fai-cd fai-cd -f -m /ext/mirror /ext/seapath.iso

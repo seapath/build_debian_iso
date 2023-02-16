@@ -44,7 +44,6 @@ qemu-block-extra
 qemu-utils
 snmpd
 sudo
-sysfsutils
 syslog-ng
 sysstat
 tuna
@@ -67,3 +66,4 @@ iotop-
 linuxlogo-
 nmon-
 nullmailer-
+unattended-upgrades-
