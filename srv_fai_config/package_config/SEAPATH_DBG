@@ -1,12 +1,14 @@
 PACKAGES install-norec
+filebeat
 htop
 iotop
 iperf
-iperf3filebeat
+iperf3
 metricbeat
 nmon
 rt-tests
 screen
 stress-ng
+sysfsutils
 tcpdump
 vim
