@@ -30,3 +30,15 @@ more information about password hash : https://linuxconfig.org/how-to-hash-passw
 
 more info: https://fai-project.org/fai-guide
 
+**installing a debug image**
+A debug image with more debug packages installed is available through editing
+the default profile in `srv_fai_config/class/seapath.profile`:
+
+```
+Default: Seapath_LVM_debug
+```
+
+You also need to add the required packages to the fai-mirror in `build_iso.sh`:
+```
+    fai-mirror -c DEBIAN,SEAPATH_LVM,FAIBASE,DEMO,SEAPATH,SEAPATH_NOLVM,GRUB_EFI,SEAPATH_DBG /ext/mirror"
+```
