@@ -1,5 +1,7 @@
 PACKAGES install-norec
 at
+audispd-plugins
+auditd
 bridge-utils
 ca-certificates
 ceph
