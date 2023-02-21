@@ -39,13 +39,16 @@ openssh-server
 openvswitch-switch
 ovmf
 pacemaker
+python3-apt
 python3-ceph-argparse
 python3-cephfs
+python3-cffi-backend
 python3-setuptools
 qemu-block-extra
 qemu-utils
 snmpd
 sudo
+sysfsutils
 syslog-ng
 sysstat
 tuna
@@ -56,6 +59,9 @@ wget
 PACKAGES remove
 isc-dhcp-client
 isc-dhcp-common
+libestr0
+libfastjson4
+libisc-export1105
 rsyslog
 
 # These PACKAGES were installed by previous classes.
