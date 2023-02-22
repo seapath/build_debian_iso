@@ -1,4 +1,7 @@
 # build_debian_iso
+
+![ShellCheck](https://github.com/seapath/build_debian_iso/actions/workflows/shellcheck.yml/badge.svg)
+
 Code to build a debian seapath ISO file using FAI Project
 
 On a linux machine with docker and docker-compose, building the iso file should be possible by simply running 
