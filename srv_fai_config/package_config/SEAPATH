@@ -1,4 +1,5 @@
 PACKAGES install-norec
+amd64-microcode
 at
 audispd-plugins
 auditd
@@ -21,6 +22,7 @@ docker.io
 dstat
 gnupg
 hddtemp
+intel-microcode
 iptables-persistent
 irqbalance
 jq
