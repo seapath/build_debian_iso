@@ -1,0 +1,6 @@
+#!/bin/bash
+
+vgs -o vg_name --noheadings | while read i
+do
+  vgremove -f $i
+done
