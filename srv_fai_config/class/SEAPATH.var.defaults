@@ -34,7 +34,6 @@ myuserkey='ssh-rsa XXX'
 ansiblekey='ssh-rsa XXX'
 
 #APTPROXY=http://proxy:3128
-#APTPREPO=http://repo.com
 apt_cdn=http://ftp.fr.debian.org
 #SERVER=192.168.122.3
 #LOGUSER=fai
