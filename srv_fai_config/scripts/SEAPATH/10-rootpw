@@ -18,8 +18,10 @@ fi
 if [ -n "$usernameansible" ]; then
     $ROOTCMD groupadd -g 1005 $usernameansible
     $ROOTCMD useradd -u 1005 -g 1005 -m $usernameansible
-    # enable sudo for user
-    ainsl /etc/sudoers "$usernameansible   ALL=NOPASSWD: ALL"
+    # enable sudo for ansible user with only needed rights
+    ainsl /etc/sudoers "Defaults:$usernameansible !requiretty"
+    ainsl /etc/sudoers "$usernameansible    ALL=NOPASSWD:EXEC:SETENV: /bin/sh"
+    ainsl /etc/sudoers "$usernameansible    ALL=NOPASSWD: /usr/bin/rsync"
     if [ ! -f $target/usr/bin/sudo ]; then
 	echo "WARNING. Package sudo is not installed"
     fi
