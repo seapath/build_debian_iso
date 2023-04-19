@@ -3,7 +3,7 @@
 wd=$(dirname $0)
 output_dir=.
 
-rm $output_dir/seapath.iso
+rm -f $output_dir/seapath.iso
 # removing the volume in case it exists from a precedent build operation
 docker rm -f fai-setup 2>/dev/null
 docker volume rm build_debian_iso_ext 2>/dev/null
