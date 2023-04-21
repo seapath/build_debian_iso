@@ -11,6 +11,8 @@ On a linux machine with docker and docker-compose, building the iso file should 
 
 from the directory where you want the .iso file stored.
 
+However please checkout the Customization section first. There are some things that must be done before building.
+
 ## Customization 
 Some customization you will want to make before building.
 First, copy the srv_fai_config/class/SEAPATH.var.defaults file to srv_fai_config/class/SEAPATH.var
