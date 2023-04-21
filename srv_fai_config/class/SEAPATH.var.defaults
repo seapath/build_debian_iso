@@ -27,7 +27,6 @@ username=virtu
 USERPW='$y$j9T$s.szNr.QzTLk8h5qMYDpo0$YMaC8.04FilI/1AguyofvbV4FH1me6Nc7SHP4hyefZ2'
 # a ansible user account will be created
 usernameansible=ansible
-USERPW='$y$j9T$s.szNr.QzTLk8h5qMYDpo0$YMaC8.04FilI/1AguyofvbV4FH1me6Nc7SHP4hyefZ2'
 
 myrootkey='ssh-rsa XXX'
 myuserkey='ssh-rsa XXX'
