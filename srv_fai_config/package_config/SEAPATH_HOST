@@ -1,0 +1,24 @@
+# This packages are specific to the Host and should not be installed on the VM
+PACKAGES install-norec
+ceph
+ceph-base
+ceph-common
+ceph-mgr
+ceph-mgr-diskprediction-local
+ceph-mon
+ceph-osd
+corosync
+crmsh
+libcephfs2
+libvirt-clients
+libvirt-daemon
+libvirt-daemon-driver-storage-rbd
+libvirt-daemon-system
+openvswitch-switch
+pacemaker
+python3-ceph-argparse
+python3-cephfs
+qemu-block-extra
+qemu-utils
+tuna
+virtinst
