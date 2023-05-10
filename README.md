@@ -45,7 +45,7 @@ Default: Seapath_LVM_debug
 
 You also need to add the required packages to the fai-mirror in `build_iso.sh`:
 ```
-    CLASSES="DEBIAN,SEAPATH_LVM,FAIBASE,DEMO,SEAPATH_COMMON,SEAPATH_NOLVM,GRUB_EFI,SEAPATH_DBG"
+    CLASSES="DEBIAN,SEAPATH_LVM,FAIBASE,DEMO,SEAPATH_COMMON,SEAPATH_HOST,SEAPATH_NOLVM,GRUB_EFI,SEAPATH_DBG"
 ```
 
 **installing a kerberos image**
@@ -61,6 +61,6 @@ Default: Seapath_Kerberos
 
 You also need to add the required packages to the fai-mirror in `build_iso.sh`:
 ```
-    CLASSES="DEBIAN,SEAPATH_LVM,FAIBASE,SEAPATH_COMMON,SEAPATH_NOLVM,GRUB_EFI,KERBEROS"
+    CLASSES="DEBIAN,SEAPATH_LVM,FAIBASE,SEAPATH_COMMON,SEAPATH_HOST,SEAPATH_NOLVM,GRUB_EFI,KERBEROS"
 ```
 
