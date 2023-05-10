@@ -2,6 +2,5 @@
 
 error=0; trap 'error=$(($?>$error?$?:$error))' ERR # save maximum error code
 
-$ROOTCMD systemctl disable timemaster.service
-
-$ROOTCMD apt -y autoremove
+$ROOTCMD systemctl disable corosync.service
+$ROOTCMD systemctl disable pacemaker.service
