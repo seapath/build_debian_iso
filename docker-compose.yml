@@ -20,6 +20,7 @@ services:
     volumes:
       - ext:/ext
       - ./etc_fai:/etc/fai:ro
+      - /dev:/dev
     privileged: true
     container_name: fai-cd
 volumes:
