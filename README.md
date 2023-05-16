@@ -64,3 +64,8 @@ You also need to add the required packages to the fai-mirror in `build_iso.sh`:
     CLASSES="DEBIAN,SEAPATH_LVM,FAIBASE,SEAPATH_COMMON,SEAPATH_HOST,SEAPATH_NOLVM,GRUB_EFI,KERBEROS"
 ```
 
+## Build a Virtual Machine image
+
+To build a basic VM for the SEAPATH project, simply launch the script `build_qcow2.sh` from the directory where you want the .qcow2 file to be stored.
+
+Please refer to the configuration section above. To customize the Virtual Machine properly, the file SEAPATH_COMMON.var must be filled.
