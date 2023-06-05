@@ -8,4 +8,5 @@ error=0; trap 'error=$(($?>$error?$?:$error))' ERR # save maximum error code
 #   https://www.freedesktop.org/wiki/Software/systemd/PredictableNetworkInterfaceNames/
 
 fcopy -M /etc/default/grub.d/20_efi_ipv6.cfg
+fcopy -M /etc/default/grub.d/30_console.cfg
 $ROOTCMD update-grub
