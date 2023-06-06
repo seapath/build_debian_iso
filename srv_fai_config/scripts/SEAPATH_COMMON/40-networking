@@ -21,15 +21,32 @@ $ROOTCMD chown -R $username:$username /home/$username/.ssh
 $ROOTCMD chown -R $usernameansible:$usernameansible /home/$usernameansible/.ssh
 $ROOTCMD chmod 600 /home/$username/.ssh/authorized_keys /root/.ssh/authorized_keys /home/$usernameansible/.ssh/authorized_keys
 
+set +x
+
 if [ -n "${REMOTENIC+x}" ] && [ -n "${REMOTEADDR+x}" ] && [ -n "${REMOTEGW+x}" ]
 then
-  cat <<EOF > $target/etc/systemd/network/00-init.network
+  cat <<EOF > $target/etc/systemd/network/01-init.network
 [Match]
 Name=$REMOTENIC
 [Network]
 Address=$REMOTEADDR
 Gateway=$REMOTEGW
 EOF
+  $ROOTCMD chmod 644 /etc/systemd/network/01-init.network
 fi
 
-$ROOTCMD chmod 644 /etc/systemd/network/00-init.network
+if [ -n "${REMOTEDHCP}" ] && [ "${REMOTEDHCP,,}" != "no" ] ;then
+    if [ "${REMOTEDHCP,,}" == "all" ] ; then
+        match_interface="e*"
+    else
+        match_interface="${REMOTEDHCP}"
+    fi
+  cat <<EOF > $target/etc/systemd/network/00-init-dhcp.network
+[Match]
+Name=${match_interface}
+[Network]
+DHCP=yes
+LinkLocalAddressing=no
+EOF
+  $ROOTCMD chmod 644 /etc/systemd/network/00-init-dhcp.network
+fi
