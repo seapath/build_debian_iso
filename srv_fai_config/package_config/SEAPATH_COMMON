@@ -12,13 +12,13 @@ docker-compose
 docker.io
 dstat
 gnupg
-hddtemp
 intel-microcode
 iptables-persistent
 irqbalance
 jq
 lbzip2
-linux-image-rt-amd64/bullseye-backports
+linux-image-rt-amd64
+#linux-image-rt-amd64/bullseye-backports
 linuxptp
 lm-sensors
 lsb-release
@@ -37,12 +37,6 @@ wget
 
 # These PACKAGES were installed by debootstrap
 PACKAGES remove
-isc-dhcp-client
-isc-dhcp-common
-libestr0
-libfastjson4
-libisc-export1105
-rsyslog
 
 # These PACKAGES were installed by previous classes.
 # They must be removed with pkg- instead of remove.

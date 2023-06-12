@@ -1,4 +1,4 @@
-FROM debian
+FROM debian:bookworm
 RUN apt-get update && \
     apt-get -y upgrade && \
     apt-get -y install fai-server fai-doc fai-setup-storage && \

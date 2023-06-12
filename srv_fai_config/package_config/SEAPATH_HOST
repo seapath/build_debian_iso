@@ -4,7 +4,6 @@ ceph
 ceph-base
 ceph-common
 ceph-mgr
-ceph-mgr-diskprediction-local
 ceph-mon
 ceph-osd
 corosync

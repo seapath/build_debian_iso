@@ -26,7 +26,7 @@ docker cp $wd/srv_fai_config/. fai-setup:/ext/srv/fai/config/
 docker-compose -f $wd/docker-compose.yml down
 
 # Creating the mirror
-CLASSES="DEBIAN,SEAPATH_LVM,FAIBASE,SEAPATH_COMMON,SEAPATH_HOST,SEAPATH_NOLVM,GRUB_EFI"
+CLASSES="DEBIAN,DEMO,SEAPATH_LVM,FAIBASE,SEAPATH_COMMON,SEAPATH_HOST,SEAPATH_NOLVM,GRUB_EFI,SEAPATH_DBG,KERBEROS,AMD64"
 docker-compose -f $wd/docker-compose.yml run --rm fai-setup bash -c "\
     cp /etc/fai/apt/keys/* /etc/apt/trusted.gpg.d/ &&\
     fai-mirror -c $CLASSES /ext/mirror"
