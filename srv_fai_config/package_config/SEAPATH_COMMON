@@ -33,6 +33,7 @@ sudo
 sysfsutils
 syslog-ng
 sysstat
+vim
 wget
 
 # These PACKAGES were installed by debootstrap
