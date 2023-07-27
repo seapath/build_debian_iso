@@ -10,28 +10,26 @@ docker volume rm build_debian_iso_ext 2>/dev/null
 
 set -ex
 
-# Create a NFSROOT
-# This command also create a basefile which will be used by fai-diskimage
+# Create the default config space
 docker-compose -f $wd/docker-compose.yml run --rm fai-setup \
-    fai-setup -v -e -f
+    fai-mk-configspace
 
-# Starting the container to add stuff in it
+# Starting the container to add seapath stuff in the config space
 docker-compose -f $wd/docker-compose.yml up --no-start fai-setup
 
-# Adding the SEAPATH workspace
+# Adding the SEAPATH config
 docker cp $wd/srv_fai_config/. fai-setup:ext/srv/fai/config/
 
 # Stopping the container after having added stuff in it
 docker-compose -f $wd/docker-compose.yml down
 
-# Copy the basefile in fai configuration space
-docker-compose -f $wd/docker-compose.yml run --rm fai-setup \
-  cp /ext/nfsroot/var/tmp/base.tar.xz /ext/srv/fai/config/basefiles/SEAPATH_VM.tar.xz
-
 # Creating the VM
-cl="DEBIAN,FAIBASE,SEAPATH_COMMON,SEAPATH_VM,GRUB_EFI,LAST"
-docker-compose -f $wd/docker-compose.yml run --rm fai-cd \
-  fai-diskimage -vu seapath-vm -S10G -c$cl -s /ext/srv/fai/config /ext/seapath-vm.qcow2
+# patches /sbin/install_packages in build_qcow2.sh to make bookwork fai-diskimage able to create a bullseye iso
+CLASSES="DEBIAN,FAIBASE,FRENCH,BULLSEYE64,SEAPATH_COMMON,SEAPATH_VM,GRUB_EFI,LAST"
+docker-compose -f $wd/docker-compose.yml run --rm -e FAI_BASEFILEURL=https://fai-project.org/download/basefiles/ fai-cd bash -c "\
+  sed -i -e \"s/-f \\\"\\\$FAI_ROOT\\/var\\/cache\\/apt\\/pkgcache\\.bin/-d \\\"\\\$FAI_ROOT\\/var\\/lib\\/apt\\/lists/\" /sbin/install_packages && \
+  sed -i -e \"s/ --allow-change-held-packages//\" /sbin/install_packages && \
+  fai-diskimage -vu seapath-vm -S10G -c$CLASSES -s /ext/srv/fai/config /ext/seapath-vm.qcow2"
 
 # Retrieving the ISO from the volume
 docker-compose -f $wd/docker-compose.yml up --no-start fai-setup

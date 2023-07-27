@@ -12,7 +12,9 @@ curl
 docker-compose
 docker.io
 dstat
+efibootmgr
 gnupg
+grub-efi-amd64-signed
 hddtemp
 intel-microcode
 iptables-persistent
@@ -23,12 +25,14 @@ linux-image-rt-amd64/bullseye-backports
 linuxptp
 lm-sensors
 lsb-release
+lvm2
 net-tools
 openssh-server
 ovmf
 python3-apt
 python3-cffi-backend
 python3-setuptools
+shim-signed
 snmpd
 sudo
 sysfsutils
@@ -49,11 +53,8 @@ rsyslog
 # These PACKAGES were installed by previous classes.
 # They must be removed with pkg- instead of remove.
 PACKAGES install-norec
-bind9-host-
 eject-
-htop-
-iotop-
-linuxlogo-
-nmon-
 nullmailer-
+linuxlogo-
 unattended-upgrades-
+memtest86+-

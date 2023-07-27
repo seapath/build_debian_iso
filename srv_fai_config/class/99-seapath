@@ -1,0 +1,13 @@
+#! /bin/bash
+
+# do not use this if a menu will be presented
+[ "$flag_menu" ] && exit 0
+
+echo DEBIAN FAIBASE FRENCH BULLSEYE64 SEAPATH_COMMON SEAPATH_HOST
+
+[ "$flag_raid" ] && echo "SEAPATH_RAID"
+[ "$flag_raiddemo" ] && echo "SEAPATH_RAID SEAPATH_RAID_DEMO"
+[ "$flag_dbg" ] && echo "SEAPATH_DBG"
+[ "$flag_kerberos" ] && echo "SEAPATH_KERBEROS"
+
+exit 0

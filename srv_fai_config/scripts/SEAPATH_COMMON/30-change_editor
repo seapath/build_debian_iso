@@ -1,3 +1,5 @@
 #!/bin/bash
 error=0; trap 'error=$(($?>$error?$?:$error))' ERR # save maximum error code
 $ROOTCMD /usr/bin/update-alternatives --set editor /usr/bin/vim.tiny
+ainsl /etc/environment "EDITOR=vim"
+ainsl /etc/environment "SYSTEMD_EDITOR=vim"
