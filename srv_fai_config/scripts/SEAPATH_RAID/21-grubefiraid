@@ -1,0 +1,6 @@
+#! /bin/bash
+# grub-install
+disk2=$(echo $disklist | awk '{ print $2 }')
+$ROOTCMD grub-install --efi-directory=/boot/efi2
+$ROOTCMD grub-install --efi-directory=/boot/efi
+efibootmgr -c -d /dev/$disk2 -L debian2 -l '\EFI\debian\shimx64.efi'

@@ -11,10 +11,18 @@ docker volume rm build_debian_iso_ext 2>/dev/null
 set -ex
 
 # Creating the NFSROOT
-# Removing *.profile makes our seapath.profile the default
+# Removing *.profile since we don't use them
+# Removing 50-host-classes to prevent DEMO and FAIBASE to be added to the list of classes
+# Adding the Bullseye basefiles to that we deploy a Debian v11 distro
 docker-compose -f $wd/docker-compose.yml run --rm fai-setup bash -c "\
+    echo \"fai-setup -v -e -f \" && \
     fai-setup -v -e -f && \
-    rm -f /ext/srv/fai/config/class/*.profile"
+    echo \"rm -f /ext/srv/fai/config/class/50-host-classes\" && \
+    rm -f /ext/srv/fai/config/class/50-host-classes && \
+    echo \"rm -f /ext/srv/fai/config/class/*.profile\" && \
+    rm -f /ext/srv/fai/config/class/*.profile && \
+    echo \"wget -O /ext/srv/fai/config/basefiles/BULLSEYE64.tar.xz https://fai-project.org/download/basefiles/BULLSEYE64.tar.xz\" && \
+    wget -O /ext/srv/fai/config/basefiles/BULLSEYE64.tar.xz https://fai-project.org/download/basefiles/BULLSEYE64.tar.xz"
 
 # Starting the container to add stuff in it
 docker-compose -f $wd/docker-compose.yml up --no-start fai-setup
@@ -26,7 +34,7 @@ docker cp $wd/srv_fai_config/. fai-setup:/ext/srv/fai/config/
 docker-compose -f $wd/docker-compose.yml down
 
 # Creating the mirror
-CLASSES="DEBIAN,SEAPATH_LVM,FAIBASE,SEAPATH_COMMON,SEAPATH_HOST,SEAPATH_NOLVM,GRUB_EFI"
+CLASSES="FAIBASE,DEBIAN,GRUB_EFI,SEAPATH_COMMON,SEAPATH_HOST,SEAPATH_DBG,SEAPATH_KERBEROS"
 docker-compose -f $wd/docker-compose.yml run --rm fai-setup bash -c "\
     cp /etc/fai/apt/keys/* /etc/apt/trusted.gpg.d/ &&\
     fai-mirror -c $CLASSES /ext/mirror"

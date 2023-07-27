@@ -1,5 +1,6 @@
 # This packages are specific to the Host and should not be installed on the VM
 PACKAGES install-norec
+busybox
 ceph
 ceph-base
 ceph-common

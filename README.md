@@ -27,6 +27,11 @@ You will make your changes in this new file.
 * update the file `srv_fai_config/class/SEAPATH_COMMON.var` (right now all passwords are "toto")
 more information about password hash : https://linuxconfig.org/how-to-hash-passwords-on-linux
 
+**keyboard Layout:**
+* HOST: update the list of classes in srv_fai_config/class/99-seapath to remove the FRENCH class if you prefer an english keyboard layout ;)
+* VM: update the list of classes (CLASSES variable) in build_qcow2.sh script to remove the FRENCH class if you prefer an english keyboard layout ;)
+* you can create your own class for debconf customization if you want
+
 **other changes in `srv_fai_config/class/SEAPATH_COMMON.var`**
 * TIMEZONE, KEYMAP, apt_cdn: feel free to set you regionalized settings, it's all too french by default :)
 * APTPROXY: in case your deployed host will need some proxy to access the debian mirror
@@ -35,37 +40,32 @@ more information about password hash : https://linuxconfig.org/how-to-hash-passw
 
 more info: https://fai-project.org/fai-guide
 
-**installing a debug image**
-A debug image with more debug packages installed is available through editing
-the default profile in `srv_fai_config/class/seapath.profile`:
+**installing a debug image:**
 
-```
-Default: Seapath_LVM_debug
-```
+A debug image with more debug packages installed is available through the grub menu.\
+All it does is add "dbg" to the list of FAI_FLAGS.
+ 
 
-You also need to add the required packages to the fai-mirror in `build_iso.sh`:
-```
-    CLASSES="DEBIAN,SEAPATH_LVM,FAIBASE,DEMO,SEAPATH_COMMON,SEAPATH_HOST,SEAPATH_NOLVM,GRUB_EFI,SEAPATH_DBG"
-```
+**installing a kerberos image:**
 
-**installing a kerberos image**
-An alternative flavor contains kerberos in order to deploy users within more
-complex authentication servers.
+An alternative flavor contains kerberos in order to deploy users within more complex authentication servers.\
+It is available through the grub menu. All it does is add "kerberos" to the list of FAI_FLAGS.
+ 
 
-A debug image with more debug packages installed is available through editing
-the default profile in `srv_fai_config/class/seapath.profile`:
+**installing a image with soft raid (lvmraid) partitioning:**
 
-```
-Default: Seapath_Kerberos
-```
+A alternative flavor exists that will create a disk partitioning with RAID1 (lvmraid): it requires 2 disks of at least 350GB.\
+It is available through the grub menu. All it does is add "raid" to the list of FAI_FLAGS
+ 
 
-You also need to add the required packages to the fai-mirror in `build_iso.sh`:
-```
-    CLASSES="DEBIAN,SEAPATH_LVM,FAIBASE,SEAPATH_COMMON,SEAPATH_HOST,SEAPATH_NOLVM,GRUB_EFI,KERBEROS"
-```
+**using multiple extra features:**
+
+You can choose to deploy the image with several of those extra features. \
+For example if you want all of them, just add "raid,dbg,kerberos" to the list of FAI_FLAGS in the grub config.
+ 
 
 ## Build a Virtual Machine image
 
-To build a basic VM for the SEAPATH project, simply launch the script `build_qcow2.sh` from the directory where you want the .qcow2 file to be stored.
+To build a basic VM for the SEAPATH project, simply launch the script `build_qcow2.sh` from the directory where you want the .qcow2 file to be stored (the build host must use UEFI).
 
 Please refer to the configuration section above. To customize the Virtual Machine properly, the file SEAPATH_COMMON.var must be filled.
