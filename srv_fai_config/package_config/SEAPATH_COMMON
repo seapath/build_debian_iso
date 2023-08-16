@@ -15,13 +15,12 @@ dstat
 efibootmgr
 gnupg
 grub-efi-amd64-signed
-hddtemp
 intel-microcode
 iptables-persistent
 irqbalance
 jq
 lbzip2
-linux-image-rt-amd64/bullseye-backports
+linux-image-rt-amd64/bookworm-backports
 linuxptp
 lm-sensors
 lsb-release
@@ -38,6 +37,7 @@ sudo
 sysfsutils
 syslog-ng
 sysstat
+systemd-resolved
 vim
 wget
 
@@ -45,10 +45,6 @@ wget
 PACKAGES remove
 isc-dhcp-client
 isc-dhcp-common
-libestr0
-libfastjson4
-libisc-export1105
-rsyslog
 
 # These PACKAGES were installed by previous classes.
 # They must be removed with pkg- instead of remove.
