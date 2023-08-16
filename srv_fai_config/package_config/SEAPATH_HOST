@@ -5,7 +5,6 @@ ceph
 ceph-base
 ceph-common
 ceph-mgr
-ceph-mgr-diskprediction-local
 ceph-mon
 ceph-osd
 corosync
@@ -21,6 +20,7 @@ pacemaker
 python3-ceph-argparse
 python3-cephfs
 qemu-block-extra
+qemu-system-x86
 qemu-utils
 snmpd
 tuna
