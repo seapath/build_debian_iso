@@ -1,5 +1,7 @@
 # default values for installation. You can override them in your *.var files
 
+release=bullseye
+secsuite=$release-security
 # allow installation of packages from unsigned repositories
 FAI_ALLOW_UNSIGNED=0
 
