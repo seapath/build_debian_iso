@@ -21,5 +21,6 @@ python3-ceph-argparse
 python3-cephfs
 qemu-block-extra
 qemu-utils
+snmpd
 tuna
 virtinst

@@ -33,7 +33,6 @@ python3-apt
 python3-cffi-backend
 python3-setuptools
 shim-signed
-snmpd
 sudo
 sysfsutils
 syslog-ng
