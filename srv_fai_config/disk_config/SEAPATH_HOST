@@ -5,11 +5,11 @@
 disk_config disk1 disklabel:gpt fstabkey:uuid align-at:1M
 
 primary /boot/efi  512M  vfat    rw
-primary -           10G	 -       -
+primary -          100G	 -       -
 
 disk_config lvm
 
 vg vg1  disk1.2
-vg1-root    /         7G      ext4    noatime,rw
-vg1-varlog  /var/log  1G      ext4    noatime,rw
-vg1-swap    swap      500     swap    sw
+vg1-root    /          15G      ext4    noatime,rw
+vg1-varlog  /var/log    5G      ext4    noatime,rw
+vg1-swap    swap      500M      swap    sw

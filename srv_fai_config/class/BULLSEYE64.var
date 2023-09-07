@@ -1,0 +1,2 @@
+release=bullseye
+secsuite=$release-security
