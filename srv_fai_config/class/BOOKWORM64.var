@@ -1,0 +1,2 @@
+release=bookworm
+secsuite=$release-security
