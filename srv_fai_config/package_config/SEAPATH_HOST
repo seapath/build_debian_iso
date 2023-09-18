@@ -10,6 +10,7 @@ ceph-mon
 ceph-osd
 corosync
 crmsh
+ipmitool
 libcephfs2
 libvirt-clients
 libvirt-daemon
