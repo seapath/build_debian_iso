@@ -29,6 +29,7 @@ lvm2
 net-tools
 openssh-server
 ovmf
+parted
 python3-apt
 python3-cffi-backend
 python3-setuptools
