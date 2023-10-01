@@ -25,14 +25,41 @@ set +x
 
 if [ -n "${REMOTENIC+x}" ] && [ -n "${REMOTEADDR+x}" ] && [ -n "${REMOTEGW+x}" ]
 then
-  cat <<EOF > $target/etc/systemd/network/01-init.network
+  if [ -n "${REMOTEVLANID+x}" ] && [[ ${REMOTEVLANID} =~ ^[0-9]+$ ]]
+  then
+    cat <<EOF > $target/etc/systemd/network/01-vlan.netdev
+[NetDev]
+Name=vlan${REMOTEVLANID}
+Kind=vlan
+[VLAN]
+Id=${REMOTEVLANID}
+EOF
+    $ROOTCMD chmod 644 /etc/systemd/network/01-vlan.netdev
+    cat <<EOF > $target/etc/systemd/network/01-vlan.network
+[Match]
+Name=vlan${REMOTEVLANID}
+[Network]
+Address=$REMOTEADDR
+Gateway=$REMOTEGW
+EOF
+    $ROOTCMD chmod 644 /etc/systemd/network/01-vlan.network
+    cat <<EOF > $target/etc/systemd/network/01-init.network
+[Match]
+Name=$REMOTENIC
+[Network]
+VLAN=vlan${REMOTEVLANID}
+EOF
+    $ROOTCMD chmod 644 /etc/systemd/network/01-init.network
+  else
+    cat <<EOF > $target/etc/systemd/network/01-init.network
 [Match]
 Name=$REMOTENIC
 [Network]
 Address=$REMOTEADDR
 Gateway=$REMOTEGW
 EOF
-  $ROOTCMD chmod 644 /etc/systemd/network/01-init.network
+    $ROOTCMD chmod 644 /etc/systemd/network/01-init.network
+  fi
 fi
 
 if [ -n "${REMOTEDHCP}" ] && [ "${REMOTEDHCP,,}" != "no" ] ;then

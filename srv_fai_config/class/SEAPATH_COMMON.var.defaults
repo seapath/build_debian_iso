@@ -41,6 +41,8 @@ apt_cdn=http://ftp.fr.debian.org
 REMOTENIC=enp1s0
 REMOTEADDR=10.0.0.2/24
 REMOTEGW=10.0.0.1
+# you can set the ip on a vlan interface
+#REMOTEVLANID=159
 
 # network configuration dhcp
 # No: DHCP will be disable
