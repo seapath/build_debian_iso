@@ -49,6 +49,3 @@ REMOTEGW=10.0.0.1
 # all: DHCP will be enable for all interface
 # [interface]: DHCP will be enable for the interface. e.g enp1s0
 REMOTEDHCP=no
-
-# You should customize the disk list depending on your hardware.
-#disklist="disk/by-path/pci-0000:c3:00.0-scsi-0:0:0:0 disk/by-path/pci-0000:c3:00.0-scsi-0:0:1:0 "
