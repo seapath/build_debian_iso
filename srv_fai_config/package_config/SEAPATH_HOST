@@ -16,6 +16,7 @@ libvirt-clients
 libvirt-daemon
 libvirt-daemon-driver-storage-rbd
 libvirt-daemon-system
+ntfs-3g
 openvswitch-switch
 pacemaker
 python3-ceph-argparse
