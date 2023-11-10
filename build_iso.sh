@@ -2,6 +2,7 @@
 
 wd=$(dirname $0)
 output_dir=.
+docker=$1
 
 rm -f $output_dir/seapath.iso
 # removing the volume in case it exists from a precedent build operation
@@ -33,6 +34,15 @@ docker-compose -f $wd/docker-compose.yml up --no-start fai-setup
 
 # Adding the SEAPATH workspace
 docker cp $wd/srv_fai_config/. fai-setup:/ext/srv/fai/config/
+# Adding the php:apache docker image
+if [ -n "$docker" ]; then
+  docker pull $docker
+  mkdir -p /tmp/php_image/opt/php_apache.tgz
+  docker save $docker | gzip > /tmp/php_image/opt/php_apache.tgz/SEAPATH_HOST
+  echo docker cp /tmp/php_image/. fai-setup:/ext/src/fai/files/
+  docker cp /tmp/php_image/. fai-setup:/ext/srv/fai/config/files/
+  rm -rf /tmp/php_image/
+fi
 
 # Stopping the container after having added stuff in it
 docker-compose -f $wd/docker-compose.yml down
