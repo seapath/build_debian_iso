@@ -10,6 +10,7 @@ On a linux machine with docker and docker-compose, building the iso file should 
 ```
 
 from the directory where you want the .iso file stored.
+Note that this iso is only to be used on UEFI systems. Legacy BIOS is not supported on SEAPATH.
 
 However please checkout the Customization section first. There are some things that must be done before building.
 
