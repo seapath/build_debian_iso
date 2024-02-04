@@ -6,7 +6,6 @@ rsync
 lshw procinfo
 dump reiserfsprogs xfsprogs xfsdump btrfs-progs
 hwinfo hdparm smartmontools nvme-cli
-rdate
 zile
 numactl
 udns-utils
@@ -15,8 +14,10 @@ pxelinux syslinux-common
 ca-certificates # for get-config-dir-https and apt-transport-https
 usbutils pciutils
 ssh
+screen tmux
 netselect
 mdadm
+cryptsetup
 #git # git consumes a lot of disk space on the FAI CD
 
 PACKAGES install-norec
@@ -24,24 +25,24 @@ PACKAGES install-norec
 dracut live-boot- initramfs-tools-
 dracut-config-generic
 dracut-network
-sysvinit-core systemd-sysv-
 curl lftp
 less
-ntpdate
+ntpsec-ntpdate rdate
 dosfstools
 lvm2
 psmisc
+uuid-runtime
 dialog
 console-common kbd
 xz-utils pigz zstd
+gpg
 
 
 # some network cards needs firmware
 PACKAGES install-norec NONFREE
 firmware-bnx2 firmware-bnx2x firmware-realtek
-firmware-cavium
+firmware-cavium firmware-myricom firmware-netronome
 firmware-misc-nonfree
-
 
 # you should not edit the lines below
 # architecture dependend list of packages that are installed
@@ -67,13 +68,3 @@ PACKAGES install-norec ARMHF
 grub-efi-arm
 efibootmgr
 linux-image-armmp
-
-PACKAGES install-norec DEBIAN_9
-apt-transport-https
-
-PACKAGES install-norec DEBIAN_10
-fdisk gpg
-
-PACKAGES install-norec DEBIAN_11 DEBIAN_
-fdisk gpg
-
