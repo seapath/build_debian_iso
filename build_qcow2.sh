@@ -29,6 +29,7 @@ CLASSES="DEBIAN,FAIBASE,FRENCH,BOOKWORM64,SEAPATH_COMMON,SEAPATH_VM,GRUB_EFI,LAS
 docker-compose -f $wd/docker-compose.yml run fai-cd bash -c "\
   sed -i -e \"s|-f \\\"\\\$FAI_ROOT/var/cache/apt/pkgcache\.bin|-d \\\"\\\$FAI_ROOT/var/lib/apt/lists|\" /sbin/install_packages && \
   sed -i -e \"s/ --allow-change-held-packages//\" /sbin/install_packages && \
+  sed -i -e \"s/-c -o compression_type=zstd qcow2/qcow2/\" /usr/sbin/fai-diskimage && \
   fai-diskimage -vu seapath-vm -S10G -c$CLASSES -s /ext/srv/fai/config /ext/seapath-vm.qcow2"
 
 # Retrieving the ISO from the volume
