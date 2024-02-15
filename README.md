@@ -45,28 +45,33 @@ more info: https://fai-project.org/fai-guide
 
 A debug image with more debug packages installed is available through the grub menu.\
 All it does is add "dbg" to the list of FAI_FLAGS.
- 
+
 
 **installing a kerberos image:**
 
 An alternative flavor contains kerberos in order to deploy users within more complex authentication servers.\
 It is available through the grub menu. All it does is add "kerberos" to the list of FAI_FLAGS.
- 
+
 
 **installing a image with soft raid (lvmraid) partitioning:**
 
 A alternative flavor exists that will create a disk partitioning with RAID1 (lvmraid): it requires 2 disks of at least 350GB.\
 It is available through the grub menu. All it does is add "raid" to the list of FAI_FLAGS
- 
+
 
 **using multiple extra features:**
 
 You can choose to deploy the image with several of those extra features. \
 For example if you want all of them, just add "raid,dbg,kerberos" to the list of FAI_FLAGS in the grub config.
- 
+
 
 ## Build a Virtual Machine image
 
 To build a basic VM for the SEAPATH project, simply launch the script `build_qcow2.sh` from the directory where you want the .qcow2 file to be stored (the build host must use UEFI).
 
 Please refer to the configuration section above. To customize the Virtual Machine properly, the file SEAPATH_COMMON.var must be filled.
+
+## Add cockpit web UI to host machine
+
+To add the Cockpit web UI inside host image, you can add the `SEAPATH_COCKPIT` class to the list of classes added:
+    - In `99-seapath` file: `echo DEBIAN FAIBASE FRENCH BOOKWORM64 SEAPATH_COMMON SEAPATH_HOST SEAPATH_COCKPIT`
