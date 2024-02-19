@@ -1,6 +1,7 @@
 name: "ShellCheck"
 
 on:
+  workflow_call:
   pull_request:
     types: [opened, reopened, synchronize]
     branches: [main]
@@ -10,8 +11,8 @@ jobs:
     name: Shellcheck
     runs-on: ubuntu-latest
     steps:
-        - uses: actions/checkout@v3
-        - name: ShellCheck
-          uses: ludeeus/action-shellcheck@2.0.0
-          env: 
-            SHELLCHECK_OPTS: -e SC2086 -e SC2154
+      - uses: actions/checkout@v3
+      - name: ShellCheck
+        uses: ludeeus/action-shellcheck@2.0.0
+        env:
+          SHELLCHECK_OPTS: -e SC2086 -e SC2154
