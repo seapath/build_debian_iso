@@ -1,0 +1,11 @@
+#!/bin/bash
+for i in quay.io/ceph/ceph:v19
+do
+    registry=$(echo $i | cut -d'/' -f2)
+    image=$(echo $i | cut -d'/' -f3 | sed s/://g)
+    podman load -i /opt/$registry"_"$image.tgz
+    rm -f /opt/$registry"_"$image.tgz
+done
+systemctl disable firstboot.service
+rm -f /etc/systemd/system/firstboot.service
+rm -f /firstboot.sh
