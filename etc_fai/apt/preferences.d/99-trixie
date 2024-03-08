@@ -1,0 +1,7 @@
+Package: cephadm
+Pin: release n=trixie
+Pin-Priority: 1001
+
+Package: *
+Pin: release n=trixie
+Pin-Priority: 100
