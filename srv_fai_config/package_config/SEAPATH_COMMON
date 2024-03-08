@@ -8,9 +8,6 @@ ca-certificates
 chrony
 cpuset
 curl
-docker-compose
-docker.io
-dstat
 efibootmgr
 gnupg
 iptables-persistent
