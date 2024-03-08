@@ -8,4 +8,7 @@ deb http://ftp.fr.debian.org/debian bookworm-backports main contrib non-free
 deb http://fai-project.org/download bookworm koeln
 
 #Elastic
-deb https://artifacts.elastic.co/packages/8.x/apt stable main
+deb [arch=amd64] https://artifacts.elastic.co/packages/8.x/apt stable main
+
+# trixie for cephadm
+deb http://ftp.fr.debian.org/debian trixie main
