@@ -1,11 +1,10 @@
 # This packages are specific to Cluster Mode
 PACKAGES install-norec
+catatonit
 ceph
+cephadm
 ceph-base
 ceph-common
-ceph-mgr
-ceph-mon
-ceph-osd
 conntrackd
 corosync
 crmsh

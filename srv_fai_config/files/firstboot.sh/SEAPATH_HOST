@@ -1,0 +1,11 @@
+#!/bin/bash
+for i in quay.io/ceph/ceph:v16 quay.io/ceph/ceph-grafana:8.3.5 quay.io/prometheus/prometheus:v2.33.4 quay.io/prometheus/node-exporter:v1.3.1 quay.io/prometheus/alertmanager:v0.23.0
+do
+    registry=$(echo $i | cut -d'/' -f2)
+    image=$(echo $i | cut -d'/' -f3 | sed s/://g)
+    docker load -i /opt/$registry"_"$image.tgz
+    rm -f /opt/$registry"_"$image.tgz
+done
+systemctl disable firstboot.service
+rm -f /etc/systemd/system/firstboot.service
+rm -f /firstboot.sh
