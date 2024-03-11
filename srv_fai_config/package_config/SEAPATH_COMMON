@@ -49,7 +49,6 @@ isc-dhcp-common
 # These PACKAGES were installed by previous classes.
 # They must be removed with pkg- instead of remove.
 PACKAGES install-norec
-eject-
 nullmailer-
 linuxlogo-
 unattended-upgrades-

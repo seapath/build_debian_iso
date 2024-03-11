@@ -33,7 +33,7 @@ $COMPOSECMD -f $wd/docker-compose.yml run --rm fai-setup bash -c "\
     echo \"rm -f /ext/srv/fai/config/class/*.profile\" && \
     rm -f /ext/srv/fai/config/class/*.profile && \
     echo \"SED\" && \
-    sed -i -e \"s|-f \\\"\\\$FAI_ROOT/var/cache/apt/pkgcache\.bin|-d \\\"\\\$FAI_ROOT/var/lib/apt/lists|\" /ext/nfsroot/sbin/install_packages && \
+    sed -i -e \"s|-f \\\"\\\$FAI_ROOT/usr/sbin/apt-cache|-f \\\"\\\$FAI_ROOT/usr/bin/apt-cache|\" /ext/nfsroot/sbin/install_packages && \
     sed -i -e \"s/ --allow-change-held-packages//\" /ext/nfsroot/sbin/install_packages && \
     echo \"wget -O /ext/srv/fai/config/basefiles/BOOKWORM64.tar.xz https://fai-project.org/download/basefiles/BOOKWORM64.tar.xz\" && \
     wget -O /ext/srv/fai/config/basefiles/BOOKWORM64.tar.xz https://fai-project.org/download/basefiles/BOOKWORM64.tar.xz"
