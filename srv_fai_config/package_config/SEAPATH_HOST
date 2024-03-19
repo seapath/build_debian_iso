@@ -23,6 +23,7 @@ pacemaker
 python3-ceph-argparse
 python3-cephfs
 python3-flaskext.wtf
+python3-xmltodict
 qemu-block-extra
 qemu-system-x86
 qemu-utils
