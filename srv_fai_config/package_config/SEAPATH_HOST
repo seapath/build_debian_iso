@@ -28,5 +28,5 @@ qemu-block-extra
 qemu-system-x86
 qemu-utils
 snmpd
-tuna
+tuned
 virtinst
