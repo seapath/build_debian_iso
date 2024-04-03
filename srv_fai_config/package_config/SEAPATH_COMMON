@@ -38,6 +38,7 @@ sysfsutils
 syslog-ng
 sysstat
 systemd-resolved
+tuned
 vim
 wget
 
