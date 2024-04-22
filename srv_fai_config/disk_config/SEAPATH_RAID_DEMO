@@ -14,7 +14,7 @@ disk_config lvm
 vg vg1      disk1.2,disk2.2
 vg1-root        /          3800M   ext4    noatime,rw  lvcreateopts="-m 1 --type raid1 --nosync" createopts="-I 256"
 vg1-swap        swap        100M   swap    sw          lvcreateopts="-m 1 --type raid1 --nosync"
-vg1-log         /var/log    100M   ext4    defaults    lvcreateopts="-m 1 --type raid1 --nosync" createopts="-I 256"
+vg1-varlog         /var/log    100M   ext4    defaults    lvcreateopts="-m 1 --type raid1 --nosync" createopts="-I 256"
 
 vg vg_ceph  disk1.3,disk2.3
 vg_ceph-lv_ceph -           500M   -       -           lvcreateopts="-m 1 --type raid1 --nosync"
