@@ -9,6 +9,7 @@ ceph-mon
 ceph-osd
 corosync
 crmsh
+firmware-misc-nonfree
 gunicorn
 ipmitool
 libcephfs2
