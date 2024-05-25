@@ -9,7 +9,10 @@ ceph-mon
 ceph-osd
 corosync
 crmsh
+firmware-amd-graphics
 firmware-misc-nonfree
+firmware-linux-nonfree
+firmware-linux-free
 gunicorn
 ipmitool
 libcephfs2
