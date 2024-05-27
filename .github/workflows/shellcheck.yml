@@ -6,6 +6,9 @@ on:
     types: [opened, reopened, synchronize]
     branches: [main]
 
+permissions:
+  checks: write
+
 jobs:
   shellcheck:
     name: Shellcheck

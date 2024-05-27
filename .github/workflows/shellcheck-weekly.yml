@@ -12,6 +12,9 @@ on:
   workflow_dispatch:
   workflow_call:
 
+permissions:
+  checks: write
+
 jobs:
   call-workflow:
     uses: ./.github/workflows/shellcheck.yml
