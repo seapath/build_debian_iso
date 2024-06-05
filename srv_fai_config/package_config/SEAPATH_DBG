@@ -1,13 +1,18 @@
 PACKAGES install-norec
+console-data
+ethtool
 filebeat
 htop
 iotop
 iperf
 iperf3
+linux-cpupower
 metricbeat
 nmon
 rt-tests
+schedtool
 screen
 stress-ng
 sysfsutils
 tcpdump
+tmux
