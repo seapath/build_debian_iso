@@ -29,7 +29,7 @@ You will make your changes in this new file.
 more information about password hash : https://linuxconfig.org/how-to-hash-passwords-on-linux
 
 **keyboard Layout:**
-* HOST: update the list of classes in srv_fai_config/class/99-seapath to remove the FRENCH class if you prefer an english keyboard layout ;)
+* HOST: create a grub item without the FRENCH flag (see "Classes Customization")
 * VM: update the list of classes (CLASSES variable) in build_qcow2.sh script to remove the FRENCH class if you prefer an english keyboard layout ;)
 * you can create your own class for debconf customization if you want
 
@@ -41,37 +41,36 @@ more information about password hash : https://linuxconfig.org/how-to-hash-passw
 
 more info: https://fai-project.org/fai-guide
 
-**installing a debug image:**
+**Classes and Flags Customization:**
 
-A debug image with more debug packages installed is available through the grub menu.\
-All it does is add "dbg" to the list of FAI_FLAGS.
+Running ./build_debian_iso/build_iso.sh with the "--custom" option will allow a user:
+* to customize the packages downloaded and stored in the local mirror of the .iso file
+* to customize the grub menu items, allowing to a unique iso file for multiple installation type.
 
+**Classes Customization:**
 
-**installing a kerberos image:**
+Packages are organized in several classes:
+* SEAPATH_COMMON: packages for all SEAPATH installations (host or guest)
+* SEAPATH_HOST: packages for all HOST installations (Cluster mode or standalone)
+* SEAPATH_CLUSTER: packages for HOST in Cluster Mode
+* SEAPATH_DBG: packages for debug purposes
+* SEAPATH_KERBEROS: packages if you need you host to be able to join a kerberos realm / activedirectory domain
+* SEAPATH_COCKPIT: packages for cockpit administration
 
-An alternative flavor contains kerberos in order to deploy users within more complex authentication servers.\
-It is available through the grub menu. All it does is add "kerberos" to the list of FAI_FLAGS.
+The SEAPATH_COMMON is mandatory, and the SEAPATH_HOST is mandatory for build_iso.sh. The other 4 classes can be enabled/disabled.
 
+The possibles flags to create a grub menu item are:
+* french: enables the FRENCH class to set the french keyboard layout. Without this flag, the keyboard is by default (qwerty)
+* dbg: enables the SEAPATH_DBG class (installs the debug packages)
+* raid: enables the SEAPATH_RAID that will create a disk partitioning with RAID1 (lvmraid): it requires 2 disks.
+* cockpit: enables the SEAPATH_COCKPIT class
+* kerberos: enables the SEAPATH_KERBEROS class
+* cluster: enables the SEAPATH_CLUSTER class. Uncheck this for a standalone installation.
 
-**installing a image with soft raid (lvmraid) partitioning:**
-
-A alternative flavor exists that will create a disk partitioning with RAID1 (lvmraid): it requires 2 disks of at least 350GB.\
-It is available through the grub menu. All it does is add "raid" to the list of FAI_FLAGS
-
-
-**using multiple extra features:**
-
-You can choose to deploy the image with several of those extra features. \
-For example if you want all of them, just add "raid,dbg,kerberos" to the list of FAI_FLAGS in the grub config.
-
+If you want an "english, no debug, no raid, no cockpit, no kerberos, standalone" installation, then you need to uncheck everything, which will result in a fake "noflag" grub menu item being added. This is normal.
 
 ## Build a Virtual Machine image
 
 To build a basic VM for the SEAPATH project, simply launch the script `build_qcow2.sh` from the directory where you want the .qcow2 file to be stored (the build host must use UEFI).
 
 Please refer to the configuration section above. To customize the Virtual Machine properly, the file SEAPATH_COMMON.var must be filled.
-
-## Add cockpit web UI to host machine
-
-To add the Cockpit web UI inside host image, you can add the `SEAPATH_COCKPIT` class to the list of classes added:
-    - In `99-seapath` file: `echo DEBIAN FAIBASE FRENCH BOOKWORM64 SEAPATH_COMMON SEAPATH_HOST SEAPATH_COCKPIT`
