@@ -3,11 +3,14 @@
 # do not use this if a menu will be presented
 [ "$flag_menu" ] && exit 0
 
-echo DEBIAN FAIBASE FRENCH BOOKWORM64 SEAPATH_COMMON SEAPATH_HOST
+echo DEBIAN FAIBASE BOOKWORM64 SEAPATH_COMMON SEAPATH_HOST
 
+[ "$flag_french" ] && echo "FRENCH"
+[ "$flag_cluster" ] && echo "SEAPATH_CLUSTER"
 [ "$flag_raid" ] && echo "SEAPATH_RAID"
 [ "$flag_raiddemo" ] && echo "SEAPATH_RAID SEAPATH_RAID_DEMO"
 [ "$flag_dbg" ] && echo "SEAPATH_DBG"
 [ "$flag_kerberos" ] && echo "SEAPATH_KERBEROS"
+[ "$flag_cockpit" ] && echo "SEAPATH_COCKPIT"
 
 exit 0
