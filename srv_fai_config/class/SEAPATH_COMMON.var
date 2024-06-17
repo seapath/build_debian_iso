@@ -1,4 +1,4 @@
-# default values for installation. You can override them in your *.var files
+# default values for installation. You can override them in your usercustomization/class/USERCUSTOMIZATION.var file
 
 HOSTNAME=debian
 
@@ -31,8 +31,8 @@ USERPW='$y$j9T$s.szNr.QzTLk8h5qMYDpo0$YMaC8.04FilI/1AguyofvbV4FH1me6Nc7SHP4hyefZ
 usernameansible=ansible
 
 myrootkey='ssh-rsa XXX'
-myuserkey='ssh-rsa XXX'
-ansiblekey='ssh-rsa XXX'
+myuserkey='ssh-rsa YYY'
+ansiblekey='ssh-rsa ZZZ'
 
 #APTPROXY=http://proxy:3128
 apt_cdn=http://ftp.fr.debian.org
