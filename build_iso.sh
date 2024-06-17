@@ -162,8 +162,11 @@ docker cp "$wd"/build_tmp/. fai-setup:/ext/srv/fai/config/
 # Stopping the container after having added stuff in it
 $COMPOSECMD -f "$wd"/docker-compose.yml down
 
+# List user defined Classes
+userClasses=$(grep -Ev "^#|^$" "$wd"/user_classes.conf | tr '\n' ',' | sed -e "s/,$//")
+
 # Creating the mirror
-CLASSES="FAIBASE,DEBIAN,GRUB_EFI,SEAPATH_COMMON,${finalClasses}USERCUSTOMIZATION,LAST"
+CLASSES="FAIBASE,DEBIAN,GRUB_EFI,SEAPATH_COMMON,${finalClasses}USERCUSTOMIZATION,${userClasses},LAST"
 $COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-setup bash -c "\
     cp /etc/fai/apt/keys/* /etc/apt/trusted.gpg.d/ &&\
     fai-mirror -c $CLASSES /ext/mirror"

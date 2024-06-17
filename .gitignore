@@ -10,3 +10,4 @@ usercustomization/scripts/*
 build_tmp/*
 !build_tmp/.gitkeep
 grub.cfg
+user_classes.conf

@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 # do not use this if a menu will be presented
 [ "$flag_menu" ] && exit 0
