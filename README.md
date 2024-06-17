@@ -78,6 +78,13 @@ The possibles flags to create a grub menu item are:
 
 If you want an "english, no debug, no raid, no cockpit, no kerberos, standalone" installation, then you need to uncheck everything, which will result in a fake "noflag" grub menu item being added. This is normal.
 
+** User-defined classes **
+The user can manage his own classes by:
+- adding the class in the user_classes.conf file
+- dealing with a numbered script in usercustomization/class/ folder (for example usercustomization/class/99-custom, chmod 755) to use the class (see srv_fai_config/class/99-seapath script for reference)
+- adding all the files related to the classes in the usercustomization hierarchy (for example usercustomization/package_config/USERCLASS1)
+
+
 ## Build a Virtual Machine image
 
 To build a basic VM for the SEAPATH project, simply launch the script `build_qcow2.sh` from the directory where you want the .qcow2 file to be stored (the build host must use UEFI).
