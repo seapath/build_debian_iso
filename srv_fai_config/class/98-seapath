@@ -14,4 +14,6 @@ echo DEBIAN FAIBASE BOOKWORM64 SEAPATH_COMMON SEAPATH_HOST
 [ "$flag_kerberos" ] && echo "SEAPATH_KERBEROS"
 [ "$flag_cockpit" ] && echo "SEAPATH_COCKPIT"
 
+echo "USERCUSTOMIZATION"
+
 exit 0
