@@ -20,6 +20,10 @@ docker volume rm build_debian_iso_ext 2>/dev/null
 
 set -ex
 
+rm -rf "$wd"/build_tmp/*
+cp -r "$wd/srv_fai_config/"* "$wd/build_tmp"
+cp -r "$wd/usercustomization/"* "$wd/build_tmp"
+
 # Create the default config space
 $COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-setup \
     fai-mk-configspace
@@ -28,14 +32,14 @@ $COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-setup \
 $COMPOSECMD -f "$wd"/docker-compose.yml up --no-start fai-setup
 
 # Adding the SEAPATH config
-docker cp "$wd"/srv_fai_config/. fai-setup:ext/srv/fai/config/
+docker cp "$wd"/build_tmp/. fai-setup:ext/srv/fai/config/
 
 # Stopping the container after having added stuff in it
 $COMPOSECMD -f "$wd"/docker-compose.yml down
 
 # Creating the VM
 # patches /sbin/install_packages (bug in the process of being corrected upstream)
-CLASSES="DEBIAN,FAIBASE,FRENCH,BOOKWORM64,SEAPATH_COMMON,SEAPATH_VM,GRUB_EFI,LAST"
+CLASSES="DEBIAN,FAIBASE,FRENCH,BOOKWORM64,SEAPATH_COMMON,SEAPATH_VM,GRUB_EFI,USERCUSTOMIZATION,LAST"
 $COMPOSECMD -f "$wd"/docker-compose.yml run fai-cd bash -c "\
   sed -i -e \"s|-f \\\"\\\$FAI_ROOT/usr/sbin/apt-cache|-f \\\"\\\$FAI_ROOT/usr/bin/apt-cache|\" /sbin/install_packages && \
   sed -i -e \"s/ --allow-change-held-packages//\" /sbin/install_packages && \
@@ -49,3 +53,4 @@ $COMPOSECMD -f "$wd"/docker-compose.yml down --remove-orphans
 
 # Removing the volume
 docker volume rm build_debian_iso_ext
+rm -rf "$wd"/build_tmp/*

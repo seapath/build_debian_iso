@@ -1,3 +1,12 @@
 *.iso
-SEAPATH_COMMON.var
+usercustomization/class/*
+usercustomization/debconf/*
+usercustomization/disk_config/*
+usercustomization/files/*
+usercustomization/hooks/*
+usercustomization/package_config/*
+usercustomization/scripts/*
+!usercustomization/*/.gitkeep
+build_tmp/*
+!build_tmp/.gitkeep
 grub.cfg

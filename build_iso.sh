@@ -24,6 +24,10 @@ if [ ! -f "$wd"/etc_fai/grub.cfg ]; then
   cp "$wd"/etc_fai/grub_base.cfg "$wd"/etc_fai/grub.cfg
 fi
 
+find "$wd"/build_tmp/ ! -name .gitkeep -type f -exec rm -f {} +
+cp -r "$wd/srv_fai_config/"* "$wd/build_tmp"
+cp -r "$wd/usercustomization/"* "$wd/build_tmp"
+
 finalClasses="SEAPATH_CLUSTER,SEAPATH_DBG,SEAPATH_KERBEROS,SEAPATH_COCKPIT,"
 
 if [ "$1" == "--custom" ]; then
@@ -153,13 +157,13 @@ $COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-setup bash -c "\
 $COMPOSECMD -f "$wd"/docker-compose.yml up --no-start fai-setup
 
 # Adding the SEAPATH workspace
-docker cp "$wd"/srv_fai_config/. fai-setup:/ext/srv/fai/config/
+docker cp "$wd"/build_tmp/. fai-setup:/ext/srv/fai/config/
 
 # Stopping the container after having added stuff in it
 $COMPOSECMD -f "$wd"/docker-compose.yml down
 
 # Creating the mirror
-CLASSES="FAIBASE,DEBIAN,GRUB_EFI,SEAPATH_COMMON,${finalClasses}LAST"
+CLASSES="FAIBASE,DEBIAN,GRUB_EFI,SEAPATH_COMMON,${finalClasses}USERCUSTOMIZATION,LAST"
 $COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-setup bash -c "\
     cp /etc/fai/apt/keys/* /etc/apt/trusted.gpg.d/ &&\
     fai-mirror -c $CLASSES /ext/mirror"
@@ -174,3 +178,4 @@ $COMPOSECMD -f "$wd"/docker-compose.yml down --remove-orphans
 
 # Removing the volume
 docker volume rm build_debian_iso_ext
+rm -rf "$wd"/build_tmp/*

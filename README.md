@@ -16,8 +16,17 @@ However please checkout the Customization section first. There are some things t
 
 ## Customization
 Some customization you will want to make before building.
-First, copy the srv_fai_config/class/SEAPATH_COMMON.var.defaults file to srv_fai_config/class/SEAPATH_COMMON.var
-You will make your changes in this new file.
+For that you can add all the files you need in the build_debian_iso/usercustomization hierarchy, using the USERCUSTOMIZATION class name:
+- add your variables in the build_debian_iso/usercustomization/class/USERCUSTOMIZATION.var file
+- add your debconf parameters to build_debian_iso/usercustomization/debconf/USERCUSTOMIZATION file
+- add your disk config to build_debian_iso/usercustomization/disk_config/USERCUSTOMIZATION file
+- add your files to build_debian_iso/usercustomization/files/ hierarchy using USERCUSTOMIZATION as the class name (for example build_debian_iso/usercustomization/files/etc/motd/USERCUSTOMIZATION)
+- add your hooks to build_debian_iso/usercustomization/hooks/ using USERCUSTOMIZATION as the class name (for example build_debian_iso/usercustomization/hooks/install.USERCUSTOMIZATION)
+- add your package_config to build_debian_iso/usercustomization/package_config/USERCUSTOMIZATION file
+- add your scripts to build_debian_iso/usercustomization/scripts using USERCUSTOMIZATION as the class name (for example build_debian_iso/usercustomization/scripts/USERCUSTOMIZATION/88-myscript)
+
+Both folders "build_debian_iso/usercustomization and build_debian_iso/srv_fai_config will be merged into build_debian_iso/build_tmp when building).
+
 
 ### Mandatory
 **change the authorized_keys files (user and root) with your own**
