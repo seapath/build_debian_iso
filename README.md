@@ -30,19 +30,18 @@ Both folders "build_debian_iso/usercustomization and build_debian_iso/srv_fai_co
 
 ### Mandatory
 **change the authorized_keys files (user and root) with your own**
-* update the file `srv_fai_config/class/SEAPATH_COMMON.var` and replace "myrootkey", "myuserkey"  and "ansiblekey" by yours
+* update the file `build_debian_iso/usercustomization/class/USERCUSTOMIZATION.var` and replace "myrootkey", "myuserkey"  and "ansiblekey" by yours
 
 ### Optional
 **changes in the the unprivileged user name and passwd, as well as the root passwd for the deployed server**
-* update the file `srv_fai_config/class/SEAPATH_COMMON.var` (right now all passwords are "toto")
+* update the file `build_debian_iso/usercustomization/class/USERCUSTOMIZATION.var` (right now all passwords are "toto")
 more information about password hash : https://linuxconfig.org/how-to-hash-passwords-on-linux
 
 **keyboard Layout:**
-* HOST: create a grub item without the FRENCH flag (see "Classes Customization")
-* VM: update the list of classes (CLASSES variable) in build_qcow2.sh script to remove the FRENCH class if you prefer an english keyboard layout ;)
-* you can create your own class for debconf customization if you want
+* HOST: by default the keyboard will be US. You can use the FRENCH of GERMAN classes to change this. For any other layout, you can create your own debconf in build_debian_iso/usercustomization/debconf/USERCUSTOMIZATION (or create your own class, see "User-defined classes" below)
+* VM: by default the build_qcow2 script will import the FRENCH class, you can override the keyboard layout by creating your own debco nf in build_debian_iso/usercustomization/debconf/USERCUSTOMIZATION.
 
-**other changes in `srv_fai_config/class/SEAPATH_COMMON.var`**
+**other changes in `build_debian_iso/usercustomization/class/USERCUSTOMIZATION.var`**
 * TIMEZONE, KEYMAP, apt_cdn: feel free to set you regionalized settings, it's all too french by default :)
 * APTPROXY: in case your deployed host will need some proxy to access the debian mirror
 * REMOTENIC, REMOTEADDR, REMOTEGW: if you want networking to be available right after deployement set ip/gateway to a specified niv (ie: ens0, enp0s1...)
@@ -79,6 +78,15 @@ The possibles flags to create a grub menu item are:
 * cluster: enables the SEAPATH_CLUSTER class. Uncheck this for a standalone installation.
 
 If you want an "english, no debug, no raid, no cockpit, no kerberos, standalone" installation, then you need to uncheck everything, which will result in a fake "noflag" grub menu item being added. This is normal.
+
+**User-defined classes:**
+
+The user can manage his own classes by:
+- copying the template file user_classes.conf.example to user_classes.conf
+- adding the class in the user_classes.conf file (this is for the mirror creation)
+- dealing with a numbered script in usercustomization/class/ folder (for example usercustomization/class/99-custom, chmod 755) to use the class (see srv_fai_config/class/99-seapath script for reference)
+- adding all the files related to the classes in the usercustomization hierarchy (for example usercustomization/package_config/USERCLASS1)
+
 
 ## Build a Virtual Machine image
 
