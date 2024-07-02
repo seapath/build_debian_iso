@@ -1,6 +1,8 @@
 #!/bin/bash
 error=0; trap 'error=$(($?>$error?$?:$error))' ERR # save maximum error code
 $ROOTCMD rm -f /etc/network/interfaces
+$ROOTCMD rm -rf /etc/netplan
+$ROOTCMD mkdir /etc/netplan
 $ROOTCMD systemctl enable --now systemd-networkd
 $ROOTCMD systemctl disable systemd-networkd-wait-online.service
 $ROOTCMD mkdir -p /root/.ssh
