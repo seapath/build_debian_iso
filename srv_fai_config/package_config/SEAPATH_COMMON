@@ -20,7 +20,7 @@ iptables-persistent
 irqbalance
 jq
 lbzip2
-linux-image-rt-amd64/bookworm-backports
+linux-image-rt-amd64
 linuxptp
 lm-sensors
 lsb-release
