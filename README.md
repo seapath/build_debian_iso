@@ -92,4 +92,6 @@ The user can manage his own classes by:
 
 To build a basic VM for the SEAPATH project, simply launch the script `build_qcow2.sh` from the directory where you want the .qcow2 file to be stored (the build host must use UEFI).
 
+Note that the lvm2 package must be installed on your build host.
+
 Please refer to the configuration section above. To customize the Virtual Machine properly, the file SEAPATH_COMMON.var must be filled.
