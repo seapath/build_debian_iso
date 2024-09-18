@@ -12,6 +12,7 @@ libvirt-clients
 libvirt-daemon
 libvirt-daemon-driver-storage-rbd
 libvirt-daemon-system
+libxml2-utils
 linux-perf
 msr-tools
 nginx
