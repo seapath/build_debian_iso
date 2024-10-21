@@ -8,6 +8,7 @@ firmware-linux-free
 gunicorn
 intel-cmt-cat
 ipmitool
+libsnmp-extension-passpersist-perl
 libvirt-clients
 libvirt-daemon
 libvirt-daemon-driver-storage-rbd
