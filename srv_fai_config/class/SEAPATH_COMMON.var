@@ -25,7 +25,7 @@ STOP_ON_ERROR=500
 MAXPACKAGES=800
 
 # a user account will be created
-username=virtu
+username=admin
 USERPW='$y$j9T$s.szNr.QzTLk8h5qMYDpo0$YMaC8.04FilI/1AguyofvbV4FH1me6Nc7SHP4hyefZ2'
 # a ansible user account will be created
 usernameansible=ansible
