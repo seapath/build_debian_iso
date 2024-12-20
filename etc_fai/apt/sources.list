@@ -5,7 +5,7 @@ deb http://ftp.fr.debian.org/debian-security bookworm-security main contrib non-
 deb http://ftp.fr.debian.org/debian bookworm-backports main contrib non-free
 
 # repository that may contain newer fai packages for bookworm
-deb [arch=amd64] http://fai-project.org/download bookworm koeln
+deb http://fai-project.org/download bookworm koeln
 
 #Elastic
-deb [arch=amd64] https://artifacts.elastic.co/packages/8.x/apt stable main
+deb https://artifacts.elastic.co/packages/8.x/apt stable main

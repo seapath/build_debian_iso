@@ -14,6 +14,14 @@ echo DEBIAN FAIBASE BOOKWORM64 SEAPATH_COMMON SEAPATH_HOST
 [ "$flag_kerberos" ] && echo "SEAPATH_KERBEROS"
 [ "$flag_cockpit" ] && echo "SEAPATH_COCKPIT"
 
+arch=$(uname -m)
+
+if [ "$arch" == "aarch64" ]; then
+    echo "SEAPATH_ARM64"
+else
+    echo "SEAPATH_AMD64"
+fi
+
 echo "USERCUSTOMIZATION"
 
 exit 0

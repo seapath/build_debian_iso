@@ -135,6 +135,14 @@ if [ "$1" == "--custom" ]; then
 
 fi
 
+# ARM64 or AMD64
+arch=$(uname -m)
+if [ "$arch" == "aarch64" ]; then
+    bfile="BOOKWORM_ARM64.tar.xz"
+else
+    bfile="BOOKWORM_AMD64.tar.xz"
+fi
+
 # Creating the NFSROOT
 # Removing *.profile since we don't use them
 # Removing 50-host-classes to prevent DEMO and FAIBASE to be added to the list of classes
@@ -147,11 +155,15 @@ $COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-setup bash -c "\
     rm -f /ext/srv/fai/config/class/50-host-classes && \
     echo \"rm -f /ext/srv/fai/config/class/*.profile\" && \
     rm -f /ext/srv/fai/config/class/*.profile && \
+    echo \"patch /usr/sbin/fai-cd /etc/fai/fai-cd.patch -o /ext/fai-cd\" && \
+    patch /usr/sbin/fai-cd /etc/fai/fai-cd.patch -o /ext/fai-cd && chmod 755 /ext/fai-cd && \
+    echo \"patch /ext/srv/fai/config/scripts/GRUB_EFI/10-setup /etc/fai/10-setup.patch \" && \
+    patch /ext/srv/fai/config/scripts/GRUB_EFI/10-setup /etc/fai/10-setup.patch && \
     echo \"SED\" && \
     sed -i -e \"s|-f \\\"\\\$FAI_ROOT/usr/sbin/apt-cache|-f \\\"\\\$FAI_ROOT/usr/bin/apt-cache|\" /ext/nfsroot/sbin/install_packages && \
     sed -i -e \"s/ --allow-change-held-packages//\" /ext/nfsroot/sbin/install_packages && \
-    echo \"wget -O /ext/srv/fai/config/basefiles/BOOKWORM64.tar.xz https://fai-project.org/download/basefiles/BOOKWORM64.tar.xz\" && \
-    wget -O /ext/srv/fai/config/basefiles/BOOKWORM64.tar.xz https://fai-project.org/download/basefiles/BOOKWORM64.tar.xz"
+    echo \"wget -O /ext/srv/fai/config/basefiles/${bfile} https://fai-project.org/download/basefiles/${bfile}\" && \
+    wget -O /ext/srv/fai/config/basefiles/${bfile} https://fai-project.org/download/basefiles/${bfile}"
 
 # Starting the container to add stuff in it
 $COMPOSECMD -f "$wd"/docker-compose.yml up --no-start fai-setup
@@ -165,14 +177,21 @@ $COMPOSECMD -f "$wd"/docker-compose.yml down
 # List user defined Classes
 userClasses=$(grep -Ev "^#|^$" "$wd"/user_classes.conf | tr '\n' ',' | sed -e "s/,$//")
 
+# ARM64 or AMD64
+arch=$(uname -m)
+if [ "$arch" == "aarch64" ]; then
+    seapatharch="SEAPATH_ARM64"
+else
+    seapatharch="SEAPATH_AMD64"
+fi
 # Creating the mirror
-CLASSES="FAIBASE,DEBIAN,GRUB_EFI,SEAPATH_COMMON,SEAPATH_HOST,${finalClasses}USERCUSTOMIZATION,${userClasses},LAST"
+CLASSES="FAIBASE,DEBIAN,GRUB_EFI,SEAPATH_COMMON,SEAPATH_HOST,${finalClasses}USERCUSTOMIZATION,${userClasses},${seapatharch},LAST"
 $COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-setup bash -c "\
     cp /etc/fai/apt/keys/* /etc/apt/trusted.gpg.d/ &&\
     fai-mirror -c $CLASSES /ext/mirror"
 
 # Creating the ISO
-$COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-cd fai-cd -f -m /ext/mirror /ext/seapath.iso
+$COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-cd /ext/fai-cd -f -m /ext/mirror /ext/seapath.iso
 
 # Retrieving the ISO from the volume
 $COMPOSECMD -f "$wd"/docker-compose.yml up --no-start fai-setup
