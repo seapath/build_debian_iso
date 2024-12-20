@@ -1,0 +1,3 @@
+PACKAGES install-norec
+linux-image-rt-arm64
+grub-efi-arm64-signed

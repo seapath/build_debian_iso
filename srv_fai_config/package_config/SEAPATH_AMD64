@@ -1,0 +1,7 @@
+PACKAGES install-norec
+msr-tools
+intel-cmt-cat
+linux-image-rt-amd64
+intel-microcode
+grub-efi-amd64-signed
+amd64-microcode
