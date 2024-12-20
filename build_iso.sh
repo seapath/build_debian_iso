@@ -165,8 +165,15 @@ $COMPOSECMD -f "$wd"/docker-compose.yml down
 # List user defined Classes
 userClasses=$(grep -Ev "^#|^$" "$wd"/user_classes.conf | tr '\n' ',' | sed -e "s/,$//")
 
+# ARM64 or AMD64
+arch=$(uname -m)
+if [ "$arch" == "aarch64" ]; then
+    seapatharch="SEAPATH_ARM64"
+else
+    seapatharch="SEAPATH_AMD64"
+fi
 # Creating the mirror
-CLASSES="FAIBASE,DEBIAN,GRUB_EFI,SEAPATH_COMMON,SEAPATH_HOST,${finalClasses}USERCUSTOMIZATION,${userClasses},LAST"
+CLASSES="FAIBASE,DEBIAN,GRUB_EFI,SEAPATH_COMMON,SEAPATH_HOST,${finalClasses}USERCUSTOMIZATION,${userClasses},${seapatharch},LAST"
 $COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-setup bash -c "\
     cp /etc/fai/apt/keys/* /etc/apt/trusted.gpg.d/ &&\
     fai-mirror -c $CLASSES /ext/mirror"
