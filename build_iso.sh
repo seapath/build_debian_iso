@@ -179,7 +179,7 @@ $COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-setup bash -c "\
     fai-mirror -c $CLASSES /ext/mirror"
 
 # Creating the ISO
-$COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-cd fai-cd -f -m /ext/mirror /ext/seapath.iso
+$COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-cd /etc/fai/fai-cd -f -m /ext/mirror /ext/seapath.iso
 
 # Retrieving the ISO from the volume
 $COMPOSECMD -f "$wd"/docker-compose.yml up --no-start fai-setup
