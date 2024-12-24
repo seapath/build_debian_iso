@@ -6,7 +6,6 @@ firmware-misc-nonfree
 firmware-linux-nonfree
 firmware-linux-free
 gunicorn
-intel-cmt-cat
 ipmitool
 libsnmp-extension-passpersist-perl
 libvirt-clients
@@ -15,7 +14,6 @@ libvirt-daemon-driver-storage-rbd
 libvirt-daemon-system
 libxml2-utils
 linux-perf
-msr-tools
 nginx
 ntfs-3g
 openvswitch-switch

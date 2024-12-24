@@ -1,5 +1,4 @@
 PACKAGES install-norec
-amd64-microcode
 apparmor-utils
 at
 audispd-plugins
@@ -14,13 +13,10 @@ docker.io
 dstat
 efibootmgr
 gnupg
-grub-efi-amd64-signed
-intel-microcode
 iptables-persistent
 irqbalance
 jq
 lbzip2
-linux-image-rt-amd64
 linuxptp
 lm-sensors
 lsb-release
