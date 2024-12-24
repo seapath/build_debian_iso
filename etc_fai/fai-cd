@@ -221,11 +221,11 @@ create_grub2_image_arm64() {
 	    --output=/tmp/grubaa64.efi \
 	    --locales="" \
 	    "boot/grub/grub.cfg=/tmp/grub.cfg"
-	mv $NFSROOT/tmp/grubaa64.efi $scratch
+	mv $NFSROOT/tmp/grubaa64.efi $scratch/BOOTAA64.EFI
 
 	mkfs.vfat -C $scratch/efiboot.img 6000 >/dev/null
-	mmd -i $scratch/efiboot.img efi efi/boot
-	mcopy -i $scratch/efiboot.img $scratch/grubaa64.efi ::efi/boot/
+	mmd -i $scratch/efiboot.img EFI EFI/BOOT
+	mcopy -i $scratch/efiboot.img $scratch/BOOTAA64.EFI ::EFI/BOOT/
     else
         die 11 "No grub-efi-arm64-bin installation found in NFSROOT. Aborting."
     fi
@@ -400,18 +400,20 @@ mkiso_arm64() {
 	ls -l $tmp
     echo $scratch
     ls $scratch
-    ls -l $scratch/grubaa64.efi
-    chmod +r $scratch/grubaa64.efi
+    ls -l $scratch/BOOTAA64.EFI
+    chmod +r $scratch/BOOTAA64.EFI
 
     echo "Writing FAI CD-ROM image to $isoname. This may need some time."
+    mkdir -p $tmp/EFI/boot/
     cp $scratch/efiboot.img $tmp/boot/grub/efi.img
     xorriso -as mkisofs -r \
         -volid "$vname" -appid "$aname" \
-        -J -joliet-long \
-        -cache-inodes -e boot/grub/efi.img -no-emul-boot \
+	-full-iso9660-filenames \
+        -e boot/grub/efi.img -no-emul-boot \
         -append_partition 2 0xef $scratch/efiboot.img \
-        -partition_cyl_align all "$tmp" \
+        -partition_cyl_align all \
         -o $isoname \
+        "$tmp" \
         || die 12 "xorriso failed."
 
     echo -n "ISO image size and filename: "; du -h $isoname
