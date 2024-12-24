@@ -404,18 +404,15 @@ mkiso_arm64() {
     chmod +r $scratch/grubaa64.efi
 
     echo "Writing FAI CD-ROM image to $isoname. This may need some time."
-    xorriso -report_about HINT -as mkisofs -iso-level 3 \
-        -iso_mbr_part_type 00 \
-        -full-iso9660-filenames \
+    cp $scratch/efiboot.img $tmp/boot/grub/efi.img
+    xorriso -as mkisofs -r \
         -volid "$vname" -appid "$aname" \
-        -eltorito-alt-boot -e EFI/BOOT/BOOTAA64.EFI -no-emul-boot \
+        -J -joliet-long \
+        -cache-inodes -e boot/grub/efi.img -no-emul-boot \
         -append_partition 2 0xef $scratch/efiboot.img \
-        -o $isoname -graft-points \
-        --sort-weight 0 / --sort-weight 1 /boot \
-        "$tmp" \
-        /EFI/BOOT/BOOTAA64.EFI=$scratch/grubaa64.efi \
-        /EFI/efiboot.img=$scratch/efiboot.img || die 12 "xorriso failed."
-
+        -partition_cyl_align all "$tmp" \
+        -o $isoname \
+        || die 12 "xorriso failed."
 
     echo -n "ISO image size and filename: "; du -h $isoname
 

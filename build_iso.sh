@@ -150,8 +150,8 @@ $COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-setup bash -c "\
     echo \"SED\" && \
     sed -i -e \"s|-f \\\"\\\$FAI_ROOT/usr/sbin/apt-cache|-f \\\"\\\$FAI_ROOT/usr/bin/apt-cache|\" /ext/nfsroot/sbin/install_packages && \
     sed -i -e \"s/ --allow-change-held-packages//\" /ext/nfsroot/sbin/install_packages && \
-    echo \"wget -O /ext/srv/fai/config/basefiles/BOOKWORM64.tar.xz https://fai-project.org/download/basefiles/BOOKWORM64.tar.xz\" && \
-    wget -O /ext/srv/fai/config/basefiles/BOOKWORM64.tar.xz https://fai-project.org/download/basefiles/BOOKWORM64.tar.xz"
+    echo \"wget -O /ext/srv/fai/config/basefiles/BOOKWORM_ARM64.tar.xz https://fai-project.org/download/basefiles/BOOKWORM_ARM64.tar.xz\" && \
+    wget -O /ext/srv/fai/config/basefiles/BOOKWORM_ARM64.tar.xz https://fai-project.org/download/basefiles/BOOKWORM_ARM64.tar.xz"
 
 # Starting the container to add stuff in it
 $COMPOSECMD -f "$wd"/docker-compose.yml up --no-start fai-setup
