@@ -81,9 +81,17 @@ docker cp "$wd"/build_tmp/. fai-setup:ext/srv/fai/config/
 # Stopping the container after having added stuff in it
 $COMPOSECMD -f "$wd"/docker-compose.yml down
 
+# ARM64 or AMD64
+arch=$(uname -m)
+if [ "$arch" == "aarch64" ]; then
+    seapatharch="SEAPATH_ARM64"
+else
+    seapatharch="SEAPATH_AMD64"
+fi
+
 # Creating the VM
 # patches /sbin/install_packages (bug in the process of being corrected upstream)
-CLASSES="DEBIAN,FAIBASE,FRENCH,BOOKWORM64,SEAPATH_COMMON,SEAPATH_VM,GRUB_EFI,USERCUSTOMIZATION,LAST"
+CLASSES="DEBIAN,FAIBASE,FRENCH,BOOKWORM64,SEAPATH_COMMON,SEAPATH_VM,GRUB_EFI,USERCUSTOMIZATION,${seapatharch},LAST"
 $COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-cd bash -c "\
   sed -i -e \"s|-f \\\"\\\$FAI_ROOT/usr/sbin/apt-cache|-f \\\"\\\$FAI_ROOT/usr/bin/apt-cache|\" /sbin/install_packages && \
   sed -i -e \"s/ --allow-change-held-packages//\" /sbin/install_packages && \
