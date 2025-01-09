@@ -21,6 +21,7 @@ services:
       - ext:/ext
       - ./etc_fai:/etc/fai:ro
       - /dev:/dev
+      - /tmp/fai:/var/log/fai
     privileged: true
     container_name: fai-cd
 volumes:
