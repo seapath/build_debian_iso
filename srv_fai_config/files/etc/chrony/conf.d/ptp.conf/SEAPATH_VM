@@ -1,0 +1,1 @@
+refclock PHC /dev/ptp0 poll 2

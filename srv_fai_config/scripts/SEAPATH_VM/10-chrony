@@ -1,0 +1,10 @@
+#!/bin/bash
+
+error=0; trap 'error=$(($?>$error?$?:$error))' ERR # save maximum error code
+
+fcopy -M /etc/modules-load.d/ptp_kvm.conf
+fcopy -M /etc/chrony/conf.d/ptp.conf
+fcopy -M /etc/systemd/resolved.conf
+
+$ROOTCMD systemctl enable chrony
+$ROOTCMD systemctl enable systemd-resolved
