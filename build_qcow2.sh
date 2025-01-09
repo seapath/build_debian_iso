@@ -91,7 +91,7 @@ fi
 
 # Creating the VM
 # patches /sbin/install_packages (bug in the process of being corrected upstream)
-CLASSES="DEBIAN,FAIBASE,FRENCH,BOOKWORM64,SEAPATH_COMMON,SEAPATH_VM,GRUB_EFI,USERCUSTOMIZATION,${seapatharch},LAST"
+CLASSES="DEBIAN,FAIBASE,FRENCH,BOOKWORM64,SEAPATH_COMMON,GRUB_EFI,${seapatharch},SEAPATH_VM,USERCUSTOMIZATION,LAST"
 $COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-cd bash -c "\
   sed -i -e \"s|-f \\\"\\\$FAI_ROOT/usr/sbin/apt-cache|-f \\\"\\\$FAI_ROOT/usr/bin/apt-cache|\" /sbin/install_packages && \
   sed -i -e \"s/ --allow-change-held-packages//\" /sbin/install_packages && \
