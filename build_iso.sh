@@ -155,10 +155,6 @@ $COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-setup bash -c "\
     rm -f /ext/srv/fai/config/class/50-host-classes && \
     echo \"rm -f /ext/srv/fai/config/class/*.profile\" && \
     rm -f /ext/srv/fai/config/class/*.profile && \
-    echo \"patch /usr/sbin/fai-cd /etc/fai/fai-cd.patch -o /ext/fai-cd\" && \
-    patch /usr/sbin/fai-cd /etc/fai/fai-cd.patch -o /ext/fai-cd && chmod 755 /ext/fai-cd && \
-    echo \"patch /ext/srv/fai/config/scripts/GRUB_EFI/10-setup /etc/fai/10-setup.patch \" && \
-    patch /ext/srv/fai/config/scripts/GRUB_EFI/10-setup /etc/fai/10-setup.patch && \
     echo \"SED\" && \
     sed -i -e \"s|-f \\\"\\\$FAI_ROOT/usr/sbin/apt-cache|-f \\\"\\\$FAI_ROOT/usr/bin/apt-cache|\" /ext/nfsroot/sbin/install_packages && \
     sed -i -e \"s/ --allow-change-held-packages//\" /ext/nfsroot/sbin/install_packages && \
@@ -191,7 +187,7 @@ $COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-setup bash -c "\
     fai-mirror -c $CLASSES /ext/mirror"
 
 # Creating the ISO
-$COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-cd /ext/fai-cd -f -m /ext/mirror /ext/seapath.iso
+$COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-cd /usr/sbin/fai-cd -f -m /ext/mirror /ext/seapath.iso
 
 # Retrieving the ISO from the volume
 $COMPOSECMD -f "$wd"/docker-compose.yml up --no-start fai-setup
