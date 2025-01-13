@@ -18,9 +18,9 @@ nginx
 ntfs-3g
 openvswitch-switch
 python3-flaskext.wtf
+python3-libvirt
 python3-xmltodict
 qemu-block-extra
 qemu-system-x86
 qemu-utils
 snmpd
-virtinst

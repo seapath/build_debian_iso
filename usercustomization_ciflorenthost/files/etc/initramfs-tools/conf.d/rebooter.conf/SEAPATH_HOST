@@ -1,0 +1,5 @@
+# Device for /var/log storage
+REBOOTER_LOG_DEVICE=/dev/mapper/vg1-varlog
+
+# Relative path from device root for /var/log
+REBOOTER_LOG_PATH=.
