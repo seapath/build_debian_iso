@@ -1,0 +1,12 @@
+#!/bin/bash
+
+error=0; trap 'error=$(($?>$error?$?:$error))' ERR # save maximum error code
+
+fcopy -M /etc/initramfs-tools/conf.d/rebooter.conf
+fcopy -M /etc/initramfs-tools/scripts/init-bottom/rebooter
+fcopy -M /etc/initramfs-tools/scripts/init-premount/lvm_snapshot_rebooter
+fcopy -M /etc/initramfs-tools/scripts/init-top/init_log
+
+$ROOTCMD chmod +x /etc/initramfs-tools/scripts/init-bottom/rebooter /etc/initramfs-tools/scripts/init-premount/lvm_snapshot_rebooter /etc/initramfs-tools/scripts/init-top/init_log
+
+$ROOTCMD update-initramfs -u

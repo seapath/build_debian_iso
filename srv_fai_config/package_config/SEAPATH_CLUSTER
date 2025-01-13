@@ -10,6 +10,7 @@ conntrackd
 corosync
 crmsh
 libcephfs2
+libvirt-daemon-driver-storage-rbd
 pacemaker
 python3-ceph-argparse
 python3-cephfs
