@@ -1,6 +1,6 @@
-FROM debian:12
+FROM debian:trixie
 COPY etc_fai/apt/keys/fai-project.gpg /etc/apt/trusted.gpg.d/
-RUN echo "deb http://fai-project.org/download bookworm koeln" > /etc/apt/sources.list.d/fai.list && \
+RUN echo "deb http://fai-project.org/download trixie koeln" > /etc/apt/sources.list.d/fai.list && \
     apt-get update && \
     apt-get -y upgrade && \
     apt-get -y install fai-server fai-doc fai-setup-storage && \
