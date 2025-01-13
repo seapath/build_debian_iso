@@ -20,10 +20,11 @@ openvswitch-switch
 patch
 python3-flaskext.wtf
 python3-pip
+python3-libvirt
+python3-lxml
 python3-xmltodict
 qemu-block-extra
 qemu-system-x86
 qemu-utils
 smartmontools
 snmpd
-virtinst

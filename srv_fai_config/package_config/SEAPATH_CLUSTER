@@ -6,6 +6,7 @@ conntrackd
 corosync
 crmsh
 libcephfs2
+libvirt-daemon-driver-storage-rbd
 pacemaker
 podman
 python3-ceph-argparse
