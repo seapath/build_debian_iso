@@ -140,7 +140,7 @@ arch=$(uname -m)
 if [ "$arch" == "aarch64" ]; then
     bfile="BOOKWORM_ARM64.tar.xz"
 else
-    bfile="BOOKWORM_AMD64.tar.xz"
+    bfile="TRIXIE64.tar.xz"
 fi
 
 # Creating the NFSROOT

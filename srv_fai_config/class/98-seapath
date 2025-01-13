@@ -3,7 +3,7 @@
 # do not use this if a menu will be presented
 [ "$flag_menu" ] && exit 0
 
-echo DEBIAN FAIBASE BOOKWORM64 SEAPATH_COMMON SEAPATH_HOST
+echo DEBIAN FAIBASE TRIXIE64 SEAPATH_COMMON SEAPATH_HOST
 
 [ "$flag_german" ] && echo "GERMAN"
 [ "$flag_french" ] && echo "FRENCH"

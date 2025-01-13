@@ -1,8 +1,7 @@
 # These lines should work for many sites
 
-deb http://ftp.fr.debian.org/debian bookworm main contrib non-free non-free-firmware
-deb http://ftp.fr.debian.org/debian-security bookworm-security main contrib non-free non-free-firmware
-deb http://ftp.fr.debian.org/debian bookworm-backports main contrib non-free
+deb http://ftp.fr.debian.org/debian trixie main contrib non-free non-free-firmware
+deb http://ftp.fr.debian.org/debian-security trixie-security main contrib non-free non-free-firmware
 
 # repository that may contain newer fai packages for bookworm
-deb http://fai-project.org/download bookworm koeln
+deb http://fai-project.org/download trixie koeln
