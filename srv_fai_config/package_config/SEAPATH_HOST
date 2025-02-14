@@ -17,6 +17,7 @@ linux-perf
 nginx
 ntfs-3g
 openvswitch-switch
+patch
 python3-flaskext.wtf
 python3-pip
 python3-xmltodict
