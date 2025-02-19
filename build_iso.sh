@@ -18,7 +18,7 @@ rm -f $output_dir/seapath.iso
 docker rm -f fai-setup 2>/dev/null
 docker volume rm build_debian_iso_ext 2>/dev/null
 
-set -ex
+set -e
 
 if [ ! -f "$wd"/etc_fai/grub.cfg ]; then
   cp "$wd"/etc_fai/grub_base.cfg "$wd"/etc_fai/grub.cfg
@@ -192,8 +192,7 @@ $COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-cd /usr/sbin/fai-cd -f -m /
 # Retrieving the ISO from the volume
 $COMPOSECMD -f "$wd"/docker-compose.yml up --no-start fai-setup
 docker cp fai-setup:/ext/seapath.iso $output_dir/
-$COMPOSECMD -f "$wd"/docker-compose.yml down --remove-orphans
+$COMPOSECMD -f "$wd"/docker-compose.yml down --remove-orphans --volumes
 
-# Removing the volume
-docker volume rm build_debian_iso_ext
+# Removing temporary files
 rm -rf "$wd"/build_tmp/*
