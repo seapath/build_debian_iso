@@ -10,8 +10,9 @@ UTC=yes
 TIMEZONE=Europe/Paris
 KEYMAP=fr-latin1
 
-# the hash of the root password for the new installed linux system
-# pw is "toto"
+# The hash of the root password for the new installed Linux system.
+# It can generated with the mkpasswd command. E.g. mkpasswd -m yescrypt
+# Default passworkd is "toto".
 ROOTPW='$y$j9T$s.szNr.QzTLk8h5qMYDpo0$YMaC8.04FilI/1AguyofvbV4FH1me6Nc7SHP4hyefZ2'
 
 # errors in tasks greater than this value will cause the installation to stop
@@ -26,6 +27,7 @@ MAXPACKAGES=800
 
 # a user account will be created
 username=admin
+# User password hash
 USERPW='$y$j9T$s.szNr.QzTLk8h5qMYDpo0$YMaC8.04FilI/1AguyofvbV4FH1me6Nc7SHP4hyefZ2'
 # a ansible user account will be created
 usernameansible=ansible
