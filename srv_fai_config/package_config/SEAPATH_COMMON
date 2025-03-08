@@ -14,6 +14,9 @@ gnupg
 iptables-persistent
 irqbalance
 jq
+lastlog2
+libpam-lastlog2
+libpam-wtmpdb
 linuxptp
 lm-sensors
 lsb-release
@@ -36,6 +39,7 @@ systemd-resolved
 tuned
 vim
 wget
+wtmpdb
 
 # These PACKAGES were installed by debootstrap
 PACKAGES remove
