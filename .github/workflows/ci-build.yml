@@ -1,0 +1,48 @@
+# Copyright (C) 2025, RTE (http://www.rte-france.com)
+# SPDX-License-Identifier: Apache-2.0
+
+name: CI Build
+
+env:
+  WORK_DIR: /tmp/seapath_cibuild_${{ github.run_id }}_${{ github.run_attempt }}_${{ github.sha }}
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [main]
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  checks: write
+
+jobs:
+  CI-build:
+    runs-on: [self-hosted, runner-RTE-cibuild]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Make build_iso.sh executable (if needed)
+        run: chmod +x build_iso.sh
+
+      - name: Run build_iso.sh
+        run: |
+          ./build_iso.sh
+        shell: bash
+
+      - name: Check exit code
+        run: echo "build_iso.sh exited successfully!"
+
+      - name: Make build_qcow2.sh executable (if needed)
+        run: chmod +x build_qcow2.sh
+
+      - name: Run build_qcow2.sh
+        run: |
+          ./build_qcow2.sh
+        shell: bash
+
+      - name: Check exit code
+        run: echo "build_qcow2.sh exited successfully!"
+
