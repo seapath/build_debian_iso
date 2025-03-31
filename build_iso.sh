@@ -65,7 +65,7 @@ if [ "$1" == "--custom" ]; then
   done
 
   addFlagCombination() {
-    listFlags=("french" "FRENCH keyboard rather than english" "OFF" "german" "GERMAN keyboard rather than english" "OFF" "dbg" "DEBUG packages" "OFF" "raid" "lvm RAID" "ON" "cockpit" "COCKPIT packages" "OFF" "kerberos" "KERBEROS packages" "OFF" "cluster" "CLUSTER rather than standalone" "ON")
+    listFlags=("french" "FRENCH keyboard rather than english" "OFF" "german" "GERMAN keyboard rather than english" "OFF" "dbg" "DEBUG packages" "OFF" "raid" "lvm RAID" "OFF" "cockpit" "COCKPIT packages" "OFF" "kerberos" "KERBEROS packages" "OFF" "cluster" "CLUSTER rather than standalone" "ON")
     arrVar=()
     if CHOICES=$(whiptail --separate-output --checklist "Choose flags combination to add to grub" 18 60 7 "${listFlags[@]}" 3>&1 1>&2 2>&3); then
       # code 0
