@@ -1,0 +1,53 @@
+# default values for installation. You can override them in your usercustomization/class/USERCUSTOMIZATION.var file
+
+HOSTNAME=seapath
+
+# allow installation of packages from unsigned repositories
+FAI_ALLOW_UNSIGNED=0
+
+# Set UTC=yes if your system clock is set to UTC (GMT), and UTC=no if not.
+UTC=yes
+TIMEZONE=UTC
+KEYMAP=us
+
+# the hash of the root password for the new installed linux system
+# password is "seapath"
+ROOTPW='$y$j9T$R5W70l7jlAYXa6ZelIeXl0$CwjcwgIH/C5DAk1y/pq3RGcZ565S1jkBsjzh497W7OC'
+
+# errors in tasks greater than this value will cause the installation to stop
+# normal or info messages:       1xx, 2xx
+# warnings:                      3xx, 4xx
+# minor errors:                  5xx, 6xx
+# errors:                        7xx, 8xx
+STOP_ON_ERROR=500
+
+# set parameter for install_packages(8)
+MAXPACKAGES=800
+
+# a user account will be created
+username=admin
+USERPW='$y$j9T$R5W70l7jlAYXa6ZelIeXl0$CwjcwgIH/C5DAk1y/pq3RGcZ565S1jkBsjzh497W7OC'
+# a ansible user account will be created
+usernameansible=ansible
+
+myrootkey='ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL4esAkMPDzYkPmOY2Dod6tBcI2V/z/OmXvxDnCvWBcs seapath'
+myuserkey='ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL4esAkMPDzYkPmOY2Dod6tBcI2V/z/OmXvxDnCvWBcs seapath'
+ansiblekey='ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL4esAkMPDzYkPmOY2Dod6tBcI2V/z/OmXvxDnCvWBcs seapath'
+
+#APTPROXY=http://proxy:3128
+apt_cdn=http://ftp.fr.debian.org
+#SERVER=192.168.122.3
+#LOGUSER=fai
+
+# network configuration static
+#REMOTENIC=enp1s0
+#REMOTEADDR=10.0.0.2/24
+#REMOTEGW=10.0.0.1
+# you can set the ip on a vlan interface
+#REMOTEVLANID=159
+
+# network configuration dhcp
+# No: DHCP will be disable
+# all: DHCP will be enable for all interface
+# [interface]: DHCP will be enable for the interface. e.g enp1s0
+REMOTEDHCP=all
