@@ -7,11 +7,7 @@ services:
     volumes:
       - ext:/ext
       - ./etc_fai:/etc/fai:ro,Z
-    cap_add:
-      - SYS_ADMIN
-    security_opt:
-      - seccomp:unconfined
-      - apparmor:unconfined
+    privileged: true
     container_name: fai-setup
   fai-cd:
     image: fai
