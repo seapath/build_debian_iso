@@ -9,5 +9,5 @@ usercustomization/scripts/*
 !usercustomization/*/.gitkeep
 build_tmp/*
 !build_tmp/.gitkeep
-grub.cfg
+etc_fai/grub.cfg
 user_classes.conf
