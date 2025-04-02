@@ -25,24 +25,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Make build_iso.sh executable (if needed)
-        run: chmod +x build_iso.sh
+        run: chmod +x .release/generate_images.sh
 
-      - name: Run build_iso.sh
+      - name: Run release script
         run: |
-          ./build_iso.sh
+          .release/generate_images.sh
         shell: bash
 
       - name: Check exit code
-        run: echo "build_iso.sh exited successfully!"
-
-      - name: Make build_qcow2.sh executable (if needed)
-        run: chmod +x build_qcow2.sh
-
-      - name: Run build_qcow2.sh
-        run: |
-          ./build_qcow2.sh
-        shell: bash
-
-      - name: Check exit code
-        run: echo "build_qcow2.sh exited successfully!"
-
+        run: echo "Script exited successfully!"
