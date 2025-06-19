@@ -6,6 +6,7 @@ $ROOTCMD systemctl disable corosync.service
 $ROOTCMD systemctl disable pacemaker.service
 $ROOTCMD systemctl disable nginx.service
 
+fcopy -m root,root,0755  /usr/local/bin/cephadm
 for i in quay.io/ceph/ceph:v19
 do
     registry=$(echo $i | cut -d'/' -f2)
