@@ -169,6 +169,13 @@ $COMPOSECMD -f "$wd"/docker-compose.yml up --no-start fai-setup
 # Adding the SEAPATH workspace
 docker cp "$wd"/build_tmp/. fai-setup:/ext/srv/fai/config/
 
+# Adding the cephadm binary
+echo mkdir -p /tmp/cephadm/usr/local/bin/cephadm
+mkdir -p /tmp/cephadm/usr/local/bin/cephadm
+echo wget -O /tmp/cephadm/usr/local/bin/cephadm/SEAPATH_CLUSTER https://download.ceph.com/rpm-19.2.2/el9/noarch/cephadm
+wget -O /tmp/cephadm/usr/local/bin/cephadm/SEAPATH_CLUSTER https://download.ceph.com/rpm-19.2.2/el9/noarch/cephadm
+echo docker cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
+docker cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
 # Adding the ceph docker images
 for i in quay.io/ceph/ceph:v19
 do
@@ -176,7 +183,7 @@ do
   image=$(echo $i | cut -d'/' -f3 | sed s/://g)
   docker pull $i
   mkdir -p /tmp/ceph_image/opt/$registry"_"$image.tgz
-  docker save $i | gzip > /tmp/ceph_image/opt/$registry"_"$image.tgz/SEAPATH_HOST
+  docker save $i | gzip > /tmp/ceph_image/opt/$registry"_"$image.tgz/SEAPATH_CLUSTER
   echo docker cp /tmp/ceph_image/. fai-setup:/ext/src/fai/files/
   docker cp /tmp/ceph_image/. fai-setup:/ext/srv/fai/config/files/
   rm -rf /tmp/ceph_image/

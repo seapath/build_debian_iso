@@ -1,7 +1,7 @@
 # This packages are specific to Cluster Mode
 PACKAGES install-norec
 catatonit
-cephadm
+ceph-common
 conntrackd
 corosync
 crmsh
