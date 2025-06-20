@@ -177,7 +177,7 @@ wget -O /tmp/cephadm/usr/local/bin/cephadm/SEAPATH_CLUSTER https://download.ceph
 echo docker cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
 docker cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
 # Adding the ceph docker images
-for i in quay.io/ceph/ceph:v19
+for i in quay.io/ceph/ceph:v19.2.2 docker.io/library/registry:2
 do
   registry=$(echo $i | cut -d'/' -f2)
   image=$(echo $i | cut -d'/' -f3 | sed s/://g)
