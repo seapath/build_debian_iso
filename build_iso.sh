@@ -123,7 +123,7 @@ if [ "$1" == "--custom" ]; then
     for menuItem in "${menuItems[@]}"; do
       entry="menuentry \"  SEAPATH installation - $menuItem\" {
         search --set=root --file /FAI-CD
-        linux   /boot/vmlinuz FAI_FLAGS=\"$menuItem,verbose,sshd,createvt,reboot\" FAI_ACTION=install FAI_CONFIG_SRC=file:///var/lib/fai/config rd.live.image root=live:CDLABEL=FAI_CD ipv6.disable=1
+        linux   /boot/vmlinuz FAI_FLAGS=\"$menuItem,verbose,sshd,createvt,reboot\" FAI_ACTION=install FAI_CONFIG_SRC=file:///var/lib/fai/config rd.live.image root=live:CDLABEL=FAI_CD ipv6.disable=1 console=ttyS0
         initrd  /boot/initrd.img
     }"
       echo "$entry" >> /tmp/seapathlistfai.txt
