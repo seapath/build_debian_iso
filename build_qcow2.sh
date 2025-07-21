@@ -47,20 +47,13 @@ if [ $# -gt 0 ]; then
     echo "Additional arguments: $*"
 fi
 
-# test if "docker compose" works
-docker compose >/dev/null 2>&1
-returncode=$?
-if [ $returncode -eq 0 ]; then
-  COMPOSECMD="docker compose"
-else
-  COMPOSECMD="docker-compose"
-fi
-echo "We are going to use $COMPOSECMD"
+COMPOSECMD=(sudo podman-compose)
+echo "We are going to use" "${COMPOSECMD[@]}"
 
 rm -f $output_dir/seapath-vm.qcow2
 # removing the volume in case it exists from a precedent build operation
-docker rm -f fai-setup 2>/dev/null
-docker volume rm build_debian_iso_ext 2>/dev/null
+sudo podman rm -f fai-setup 2>/dev/null
+sudo podman volume rm build_debian_iso_ext 2>/dev/null
 
 set -ex
 
@@ -69,17 +62,17 @@ cp -r "$wd/srv_fai_config/"* "$wd/build_tmp"
 cp -r "$wd/usercustomization/"* "$wd/build_tmp"
 
 # Create the default config space
-$COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-setup \
+"${COMPOSECMD[@]}" -f "$(realpath $wd/docker-compose.yml)" run --rm fai-setup \
     fai-mk-configspace
 
 # Starting the container to add seapath stuff in the config space
-$COMPOSECMD -f "$wd"/docker-compose.yml up --no-start fai-setup
+"${COMPOSECMD[@]}" -f "$(realpath $wd/docker-compose.yml)" up --no-start fai-setup
 
 # Adding the SEAPATH config
-docker cp "$wd"/build_tmp/. fai-setup:ext/srv/fai/config/
+sudo podman cp "$wd"/build_tmp/. fai-setup:ext/srv/fai/config/
 
 # Stopping the container after having added stuff in it
-$COMPOSECMD -f "$wd"/docker-compose.yml down
+"${COMPOSECMD[@]}" -f "$(realpath $wd/docker-compose.yml)" down
 
 # ARM64 or AMD64
 arch=$(uname -m)
@@ -92,17 +85,17 @@ fi
 # Creating the VM
 # patches /sbin/install_packages (bug in the process of being corrected upstream)
 CLASSES="DEBIAN,FAIBASE,FRENCH,BOOKWORM64,SEAPATH_COMMON,GRUB_EFI,${seapatharch},SEAPATH_VM,USERCUSTOMIZATION,LAST"
-$COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-cd bash -c "\
+"${COMPOSECMD[@]}" -f "$(realpath $wd/docker-compose.yml)" run --rm fai-cd bash -c "\
   sed -i -e \"s|-f \\\"\\\$FAI_ROOT/usr/sbin/apt-cache|-f \\\"\\\$FAI_ROOT/usr/bin/apt-cache|\" /sbin/install_packages && \
   sed -i -e \"s/ --allow-change-held-packages//\" /sbin/install_packages && \
   sed -i -e \"s/-c -o compression_type=zstd qcow2/qcow2/\" /usr/sbin/fai-diskimage && \
   fai-diskimage -vu seapath-vm -S${DISKSIZE} -c$CLASSES -s /ext/srv/fai/config /ext/seapath-vm.qcow2"
 
 # Retrieving the ISO from the volume
-$COMPOSECMD -f "$wd"/docker-compose.yml up --no-start fai-setup
-docker cp fai-setup:/ext/seapath-vm.qcow2 $output_dir/
-$COMPOSECMD -f "$wd"/docker-compose.yml down --remove-orphans
+"${COMPOSECMD[@]}" -f "$(realpath $wd/docker-compose.yml)" up --no-start fai-setup
+sudo podman cp fai-setup:/ext/seapath-vm.qcow2 $output_dir/
+"${COMPOSECMD[@]}" -f "$(realpath $wd/docker-compose.yml)" down --remove-orphans
 
 # Removing the volume
-docker volume rm build_debian_iso_ext
+sudo podman volume rm build_debian_iso_ext
 rm -rf "$wd"/build_tmp/*
