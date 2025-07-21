@@ -1,7 +1,13 @@
 [Unit]
 Description=One time boot script
+DefaultDependencies=no
+Requires=podman.service
+After=podman.service
+Before=sshd.service
+
 [Service]
-Type=simple
+Type=oneshot
 ExecStart=/firstboot.sh
+
 [Install]
 WantedBy=multi-user.target
