@@ -4,7 +4,7 @@ services:
     build:
       context: .
     volumes:
-      - ext:/ext
+      - ext:/ext:dev,suid,Z
       - ./etc_fai:/etc/fai:ro,Z
     privileged: true
     container_name: fai-setup
