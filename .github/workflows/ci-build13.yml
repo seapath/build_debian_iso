@@ -1,10 +1,10 @@
 # Copyright (C) 2025, RTE (http://www.rte-france.com)
 # SPDX-License-Identifier: Apache-2.0
 
-name: CI Build
+name: CI Build 13
 
 env:
-  WORK_DIR: /tmp/seapath_cibuild_${{ github.run_id }}_${{ github.run_attempt }}_${{ github.sha }}
+  WORK_DIR: /tmp/seapath_cibuild13_${{ github.run_id }}_${{ github.run_attempt }}_${{ github.sha }}
 
 on:
   pull_request:
@@ -18,8 +18,8 @@ permissions:
   checks: write
 
 jobs:
-  CI-build:
-    runs-on: [self-hosted, runner-RTE-cibuild]
+  CI-build13:
+    runs-on: [self-hosted, runner-RTE-cibuild13]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
