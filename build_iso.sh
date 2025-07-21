@@ -167,18 +167,18 @@ echo mkdir -p /tmp/cephadm/usr/local/bin/cephadm
 mkdir -p /tmp/cephadm/usr/local/bin/cephadm
 echo wget -O /tmp/cephadm/usr/local/bin/cephadm/SEAPATH_CLUSTER https://download.ceph.com/rpm-19.2.2/el9/noarch/cephadm
 wget -O /tmp/cephadm/usr/local/bin/cephadm/SEAPATH_CLUSTER https://download.ceph.com/rpm-19.2.2/el9/noarch/cephadm
-echo docker cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
-docker cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
-# Adding the ceph docker images
+echo sudo podman cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
+sudo podman cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
+# Adding the ceph images
 for i in quay.io/ceph/ceph:v19.2.2 docker.io/library/registry:2
 do
   registry=$(echo $i | cut -d'/' -f2)
   image=$(echo $i | cut -d'/' -f3 | sed s/://g)
-  docker pull $i
+  sudo podman pull $i
   mkdir -p /tmp/ceph_image/opt/$registry"_"$image.tgz
-  docker save $i | gzip > /tmp/ceph_image/opt/$registry"_"$image.tgz/SEAPATH_CLUSTER
-  echo docker cp /tmp/ceph_image/. fai-setup:/ext/src/fai/files/
-  docker cp /tmp/ceph_image/. fai-setup:/ext/srv/fai/config/files/
+  sudo podman save $i | gzip > /tmp/ceph_image/opt/$registry"_"$image.tgz/SEAPATH_CLUSTER
+  echo sudo podman cp /tmp/ceph_image/. fai-setup:/ext/src/fai/files/
+  sudo podman cp /tmp/ceph_image/. fai-setup:/ext/srv/fai/config/files/
   rm -rf /tmp/ceph_image/
 done
 
