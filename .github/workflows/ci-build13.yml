@@ -4,7 +4,7 @@
 name: CI Build
 
 env:
-  WORK_DIR: /tmp/seapath_cibuild_${{ github.run_id }}_${{ github.run_attempt }}_${{ github.sha }}
+  WORK_DIR: /tmp/seapath_cibuild13_${{ github.run_id }}_${{ github.run_attempt }}_${{ github.sha }}
 
 on:
   pull_request:
@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   CI-build:
-    runs-on: [self-hosted, runner-RTE-cibuild]
+    runs-on: [self-hosted, runner-RTE-cibuild13]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
