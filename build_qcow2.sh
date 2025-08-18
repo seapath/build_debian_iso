@@ -84,7 +84,7 @@ fi
 
 # Creating the VM
 # patches /sbin/install_packages (bug in the process of being corrected upstream)
-CLASSES="DEBIAN,FAIBASE,FRENCH,TRIXIE64,SEAPATH_COMMON,GRUB_EFI,SEAPATH_RAW,${seapatharch},SEAPATH_VM,USERCUSTOMIZATION,LAST"
+CLASSES="DEBIAN,FAIBASE,FRENCH,TRIXIE64,SEAPATH_COMMON,GRUB_EFI,SEAPATH_RAW,${seapatharch},SEAPATH_VM,USERCUSTOMIZATION,BUILD_QCOW2,LAST"
 "${COMPOSECMD[@]}" -f "$(realpath $wd/docker-compose.yml)" run --rm fai-cd bash -c "\
   sed -i -e \"s|-f \\\"\\\$FAI_ROOT/usr/sbin/apt-cache|-f \\\"\\\$FAI_ROOT/usr/bin/apt-cache|\" /sbin/install_packages && \
   sed -i -e \"s/ --allow-change-held-packages//\" /sbin/install_packages && \
@@ -93,6 +93,7 @@ CLASSES="DEBIAN,FAIBASE,FRENCH,TRIXIE64,SEAPATH_COMMON,GRUB_EFI,SEAPATH_RAW,${se
 
 # Retrieving the ISO from the volume
 "${COMPOSECMD[@]}" -f "$(realpath $wd/docker-compose.yml)" up --no-start fai-setup
+echo sudo podman cp fai-setup:/ext/seapath-vm.qcow2 $output_dir/
 sudo podman cp fai-setup:/ext/seapath-vm.qcow2 $output_dir/
 "${COMPOSECMD[@]}" -f "$(realpath $wd/docker-compose.yml)" down --remove-orphans
 
