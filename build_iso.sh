@@ -165,12 +165,12 @@ sudo podman cp "$wd"/build_tmp/. fai-setup:/ext/srv/fai/config/
 # Adding the cephadm binary
 echo mkdir -p /tmp/cephadm/usr/local/bin/cephadm
 mkdir -p /tmp/cephadm/usr/local/bin/cephadm
-echo wget -O /tmp/cephadm/usr/local/bin/cephadm/SEAPATH_CLUSTER https://download.ceph.com/rpm-19.2.2/el9/noarch/cephadm
-wget -O /tmp/cephadm/usr/local/bin/cephadm/SEAPATH_CLUSTER https://download.ceph.com/rpm-19.2.2/el9/noarch/cephadm
+echo wget -O /tmp/cephadm/usr/local/bin/cephadm/SEAPATH_CLUSTER https://download.ceph.com/rpm-20.2.0/el9/noarch/cephadm
+wget -O /tmp/cephadm/usr/local/bin/cephadm/SEAPATH_CLUSTER https://download.ceph.com/rpm-20.2.0/el9/noarch/cephadm
 echo sudo podman cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
 sudo podman cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
 # Adding the ceph images
-for i in quay.io/ceph/ceph:v19.2.2 docker.io/library/registry:2
+for i in quay.io/ceph/ceph:v20.2.0 docker.io/library/registry:2
 do
   registry=$(echo $i | cut -d'/' -f2)
   image=$(echo $i | cut -d'/' -f3 | sed s/://g)
