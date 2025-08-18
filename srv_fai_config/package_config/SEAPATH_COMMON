@@ -44,7 +44,6 @@ wtmpdb
 PACKAGES remove
 isc-dhcp-client
 isc-dhcp-common
-libapt-pkg6.0t64
 
 # These PACKAGES were installed by previous classes.
 # They must be removed with pkg- instead of remove.

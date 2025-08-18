@@ -28,3 +28,6 @@ qemu-system-x86
 qemu-utils
 smartmontools
 snmpd
+
+PACKAGES remove
+libapt-pkg6.0t64
