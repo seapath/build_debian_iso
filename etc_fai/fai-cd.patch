@@ -1,4 +1,4 @@
-@@ -241,17 +241,15 @@
+@@ -241,17 +241,16 @@
  
  	prepare_grub_cfg
  
@@ -17,12 +17,13 @@
  	mkfs.vfat -C $scratch/efiboot.img 6000 >/dev/null
  	mmd -i $scratch/efiboot.img efi efi/boot
 -	mcopy -i $scratch/efiboot.img $scratch/bootx64.efi ::efi/boot/
++	mcopy -i $scratch/efiboot.img $scratch/grub.cfg ::efi/boot/
 +	mcopy -i $scratch/efiboot.img $scratch/BOOTx64.EFI ::efi/boot/
 +	mcopy -i $scratch/efiboot.img $scratch/grubx64.efi ::efi/boot/
      else
          die 11 "No grub-efi-amd64-bin installation found in NFSROOT. Aborting."
      fi
-@@ -398,6 +396,7 @@
+@@ -398,6 +397,7 @@
  	--sort-weight 0 / --sort-weight 1 /boot \
  	"$tmp" \
  	/boot/grub/bios.img=$scratch/bios.img \
