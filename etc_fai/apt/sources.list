@@ -6,6 +6,3 @@ deb http://ftp.fr.debian.org/debian bookworm-backports main contrib non-free
 
 # repository that may contain newer fai packages for bookworm
 deb http://fai-project.org/download bookworm koeln
-
-#Elastic
-deb https://artifacts.elastic.co/packages/8.x/apt stable main
