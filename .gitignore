@@ -1,4 +1,7 @@
-*.iso
+/*.iso
+/*.gz
+/*.bmap
+/*.raw
 usercustomization/class/*
 usercustomization/debconf/*
 usercustomization/disk_config/*
