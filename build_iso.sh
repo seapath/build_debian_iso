@@ -183,7 +183,7 @@ else
     seapatharch="SEAPATH_AMD64"
 fi
 # Creating the mirror
-CLASSES="FAIBASE,DEBIAN,GRUB_EFI,SEAPATH_COMMON,SEAPATH_HOST,${finalClasses}USERCUSTOMIZATION,${userClasses},${seapatharch},LAST"
+CLASSES="FAIBASE,DEBIAN,GRUB_EFI,SEAPATH_COMMON,SEAPATH_HOST,SEAPATH_ISO,${finalClasses}USERCUSTOMIZATION,${userClasses},${seapatharch},LAST"
 $COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-setup bash -c "\
     cp /etc/fai/apt/keys/* /etc/apt/trusted.gpg.d/ &&\
     fai-mirror -c $CLASSES /ext/mirror"
