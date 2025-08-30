@@ -28,5 +28,5 @@ qemu-system-x86
 qemu-utils
 snmpd
 
-PACKAGES remove
+PACKAGES remove AMD64
 libapt-pkg6.0t64
