@@ -11,3 +11,4 @@ pacemaker
 podman
 python3-ceph-argparse
 python3-cephfs
+uidmap
