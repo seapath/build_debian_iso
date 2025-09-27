@@ -1,5 +1,6 @@
 # This packages are specific to Cluster Mode
 PACKAGES install-norec
+arping
 catatonit
 ceph-common
 conntrackd
@@ -9,6 +10,7 @@ libcephfs2
 libvirt-daemon-driver-storage-rbd
 pacemaker
 podman
+podman-compose
 python3-ceph-argparse
 python3-cephfs
 uidmap
