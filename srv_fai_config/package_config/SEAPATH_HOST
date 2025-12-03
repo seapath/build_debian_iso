@@ -24,5 +24,6 @@ python3-xmltodict
 qemu-block-extra
 qemu-system-x86
 qemu-utils
+smartmontools
 snmpd
 virtinst
