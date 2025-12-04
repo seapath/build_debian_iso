@@ -12,8 +12,8 @@ KEYMAP=fr-latin1
 
 # The hash of the root password for the new installed Linux system.
 # It can generated with the mkpasswd command. E.g. mkpasswd -m yescrypt
-# Default passworkd is "toto".
-ROOTPW='$y$j9T$s.szNr.QzTLk8h5qMYDpo0$YMaC8.04FilI/1AguyofvbV4FH1me6Nc7SHP4hyefZ2'
+# Default passworkd is "seapath".
+ROOTPW='$y$j9T$o1cqUmfzttsbcsnNAtDRW.$7tK9Bzv2UJRz2Z/hfWYMp7IJZKfUKuKn.1aD1aflZFA'
 
 # errors in tasks greater than this value will cause the installation to stop
 # normal or info messages:       1xx, 2xx
@@ -28,7 +28,7 @@ MAXPACKAGES=800
 # a user account will be created
 username=admin
 # User password hash
-USERPW='$y$j9T$s.szNr.QzTLk8h5qMYDpo0$YMaC8.04FilI/1AguyofvbV4FH1me6Nc7SHP4hyefZ2'
+USERPW='$y$j9T$o1cqUmfzttsbcsnNAtDRW.$7tK9Bzv2UJRz2Z/hfWYMp7IJZKfUKuKn.1aD1aflZFA'
 # a ansible user account will be created
 usernameansible=ansible
 

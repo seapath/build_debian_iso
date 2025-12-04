@@ -34,7 +34,7 @@ Both folders "build_debian_iso/usercustomization and build_debian_iso/srv_fai_co
 
 ### Optional
 **changes in the the unprivileged user name and passwd, as well as the root passwd for the deployed server**
-* update the file `build_debian_iso/usercustomization/class/USERCUSTOMIZATION.var` (right now all passwords are "toto")
+* update the file `build_debian_iso/usercustomization/class/USERCUSTOMIZATION.var` (right now all passwords are "seapath")
 more information about password hash : https://linuxconfig.org/how-to-hash-passwords-on-linux
 
 **keyboard Layout:**
