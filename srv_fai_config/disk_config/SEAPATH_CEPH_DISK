@@ -1,0 +1,20 @@
+# Copyright (C) 2025 Savoir-faire Linux, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+# Two disks configuration (one for system and one for Ceph). Ceph disk is not
+# managed here. This configuration is also suitable for "standalone" SEAPATH.
+
+# <type> <mountpoint> <size>   <fs type> <mount options> <misc options>
+
+
+disk_config disk1 disklabel:gpt fstabkey:uuid align-at:1M
+
+primary /boot/efi  512M  vfat    rw
+primary -          50G    -      -
+
+disk_config lvm
+
+vg vg2  disk1.2
+vg2-root    /          15G      ext4    noatime,rw lvcreateopts="--zero n"
+vg2-varlog  /var/log    5G      ext4    noatime,rw lvcreateopts="--zero n"
+vg2-swap    swap      500M      swap    sw lvcreateopts="--zero n"
