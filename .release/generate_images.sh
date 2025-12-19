@@ -8,3 +8,4 @@ cp -f class_USERCUSTOMIZATION.var ../usercustomization/class/USERCUSTOMIZATION.v
 cd ..
 ./build_iso.sh
 ./build_qcow2.sh
+./generate_seapath_image.sh cluster
