@@ -22,6 +22,7 @@ print_usage() {
     echo "  -o, --output-dir DIR   Specify the output directory (default is current directory)"
     echo "  -a, --arch ARCH        Specify the architecture (AMD64 or ARM64). Default is AMD64"
     echo "  -x, --verbose          Enable debug mode for the script"
+    echo "      --docker           Force using 'docker' instead of 'podman' (if both are installed)"
     echo "      --ceph-disk        Include Ceph dedicated disk configuration"
     echo "      --hostname NAME    Specify the hostname (default is seapath)"
 }
@@ -38,25 +39,13 @@ if [ "${1,,}" == "-h" ] || [ "${1,,}" == "--help" ]; then
     exit 0
 fi
 
-# test if "docker compose" works
-docker compose >/dev/null 2>&1
-returncode=$?
-if [ $returncode -eq 0 ]; then
-  COMPOSECMD="docker compose"
-else
-  if ! command -v docker-compose >/dev/null 2>&1; then
-    echo "Error: Neither 'docker compose' nor 'docker-compose' command is available. Please install Docker Compose." >&2
-    exit 1
-  fi
-  COMPOSECMD="docker-compose"
-fi
-
 wd=$(dirname "$0")
 output_dir=.
 OUTPUT=seapath.raw
 ROLE="$1"
 HOSTNAME=seapath
 COCKPIT=
+FORCE_DOCKER=
 DISKSIZE="60G"
 if [ "$ROLE" != "cluster" ]; then
     CEPH_DISK=",SEAPATH_CEPH_DISK"
@@ -75,7 +64,7 @@ if [ "$ROLE" == "cluster" ] || [ "$ROLE" == "observer" ]; then
 fi
 shift
 
-if ! OPTIONS=$(getopt -o hvs:cn:o:a:xd --long help,version,disk-size:,enable-cockpit,name:,output-dir:,ceph-disk,arch:,hostname:,debug -- "$@"); then
+if ! OPTIONS=$(getopt -o hvs:cn:o:a:xd --long help,version,disk-size:,enable-cockpit,name:,output-dir:,ceph-disk,arch:,hostname:,verbose,docker -- "$@"); then
     print_usage
     exit 1
 fi
@@ -136,7 +125,7 @@ while true; do
             ;;
         -o|--output-dir)
             if [ -n "$2" ] && [[ $2 != -* ]]; then
-                output_dir="$2"
+                output_dir="$(pwd)/$2"
                 shift 2
             else
                 echo "Error: The -o|--output-dir option requires an argument." >&2
@@ -160,6 +149,10 @@ while true; do
                 exit 1
             fi
             ;;
+        --docker)
+            FORCE_DOCKER=1
+            shift
+            ;;
         -x|--verbose)
             set -x
             shift
@@ -182,12 +175,45 @@ if [[ "$ROLE" != "standalone" && "$ROLE" != "cluster" && "$ROLE" != "observer" ]
     exit 1
 fi
 
+
+COMPOSECMD="sudo podman-compose"
+CONTAINER_ENGINE="sudo podman"
+
+if [ -z "$FORCE_DOCKER" ]; then
+    # test if podman-compose works
+    podman-compose version >/dev/null 2>&1
+    returncode=$?
+    if [ $returncode -ne 0 ]; then
+        FORCE_DOCKER=1
+    fi
+fi
+
+if [ -n "$FORCE_DOCKER" ]; then
+
+    CONTAINER_ENGINE="docker"
+    # test if "docker compose" works
+    docker compose >/dev/null 2>&1
+    returncode=$?
+    if [ $returncode -eq 0 ]; then
+    COMPOSECMD="docker compose"
+    else
+    if ! command -v docker-compose >/dev/null 2>&1; then
+        echo "Error: Neither 'podman-compose' nor 'docker compose' nor 'docker-compose' command is available. Please install one of them." >&2
+        exit 1
+    fi
+    COMPOSECMD="docker-compose"
+    fi
+fi
+
+cd "$wd" || exit 1
+
 echo "We are going to use $COMPOSECMD"
+
+mkdir -p "$output_dir"
 
 rm -f "$output_dir/${OUTPUT} $output_dir/${OUTPUT}.bmap $output_dir/${OUTPUT}.gz"
 # removing the volume in case it exists from a precedent build operation
-docker rm -f fai-setup 2>/dev/null
-docker volume rm build_debian_iso_ext 2>/dev/null
+$COMPOSECMD -f "$wd"/docker-compose.yml down --volumes 2>/dev/null
 
 set -e
 
@@ -203,10 +229,10 @@ $COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-setup \
 $COMPOSECMD -f "$wd"/docker-compose.yml up --no-start fai-setup
 
 # Adding the SEAPATH config
-docker cp "$wd"/build_tmp/. fai-setup:ext/srv/fai/config/
+$CONTAINER_ENGINE cp "$wd"/build_tmp/. fai-setup:ext/srv/fai/config/
 
 # Stopping the container after having added stuff in it
-$COMPOSECMD -f "$wd"/docker-compose.yml down
+$COMPOSECMD -f "$wd"/docker-compose.yml down fai-setup
 
 # Creating the disk
 # patches /sbin/install_packages (bug in the process of being corrected upstream)
@@ -220,11 +246,16 @@ $COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-cd bash -c "\
 
 # Retrieving the ISO from the volume
 $COMPOSECMD -f "$wd"/docker-compose.yml up --no-start fai-setup
-docker cp fai-setup:/ext/"${OUTPUT}" "$output_dir/"
-$COMPOSECMD -f "$wd"/docker-compose.yml down --remove-orphans
+OUTPUT_PATH=$($CONTAINER_ENGINE volume inspect --format '{{ .Mountpoint }}' build_debian_iso_ext)/${OUTPUT}
+sudo mv "$OUTPUT_PATH" "$output_dir/${OUTPUT}"
+sudo chown "$(id -u):$(id -g)" "$output_dir/${OUTPUT}"
 
-# Removing the volume
-docker volume rm build_debian_iso_ext
+# Ensure all is stopped and cleaned (this command may fail if some containers are not running)
+set +e
+$COMPOSECMD -f "$wd"/docker-compose.yml down --remove-orphans --volumes 2>/dev/null
+set -e
+
+rm -rf "$wd"/build_tmp/*
 
 if command -v bmaptool >/dev/null ; then
 
@@ -237,5 +268,4 @@ if command -v bmaptool >/dev/null ; then
     fi
 fi
 
-
-rm -rf "$wd"/build_tmp/*
+echo "SEAPATH image generation completed."
