@@ -1,22 +1,21 @@
-# LVM RAID 1 configuration with system and ceph on the same RAID disks
+# Copyright (C) 2025 Savoir-faire Linux, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+# LVM RAID 1 configuration for system and ceph on separate disk (not managed
+# here).  This configuration is also suitable for "standalone" SEAPATH.
 
 # p=<partlabel> <mountpoint> <size>   <fs type> <mount options> <misc options>
 
 disk_config disk1 disklabel:gpt fstabkey:uuid align-at:1M
 primary    /boot/efi   500M  vfat  errors=remount-ro,nofail
 primary    -            50G  -     -
-primary    -             2G  -     -
 
 disk_config disk2 disklabel:gpt fstabkey:uuid align-at:1M
 primary    /boot/efi2  500M  vfat  errors=remount-ro,nofail
 primary    -            50G  -     -
-primary    -             2G  -     -
 
 disk_config lvm
 vg vg1      disk1.2,disk2.2
 vg1-root        /            20G   ext4    noatime,rw  lvcreateopts="-m 1 --type raid1 --nosync" createopts="-I 256"
 vg1-swap        swap          2G   swap    sw          lvcreateopts="-m 1 --type raid1 --nosync"
 vg1-varlog      /var/log      5G   ext4    defaults    lvcreateopts="-m 1 --type raid1 --nosync" createopts="-I 256"
-
-vg vg_ceph  disk1.3,disk2.3
-vg_ceph-lv_ceph -             1G   -       -           lvcreateopts="-m 1 --type raid1 --nosync"

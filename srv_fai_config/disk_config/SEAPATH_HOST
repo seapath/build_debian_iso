@@ -1,12 +1,12 @@
-# <type> <mountpoint> <size>   <fs type> <mount options> <misc options>
+# One disk configuration with system and ceph on the same disk
 
-# entire disk with LVM, separate /home
+# <type> <mountpoint> <size>   <fs type> <mount options> <misc options>
 
 disk_config disk1 disklabel:gpt fstabkey:uuid align-at:1M
 
 primary /boot/efi  512M  vfat    rw
-primary -          50G	 -       -
-primary -          2G	 -       -
+primary -          50G   -       -
+primary -          2G    -       -
 
 disk_config lvm
 

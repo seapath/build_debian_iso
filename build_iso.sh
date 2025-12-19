@@ -65,7 +65,7 @@ if [ "$1" == "--custom" ]; then
   done
 
   addFlagCombination() {
-    listFlags=("french" "FRENCH keyboard rather than english" "OFF" "german" "GERMAN keyboard rather than english" "OFF" "dbg" "DEBUG packages" "OFF" "raid" "lvm RAID" "OFF" "cockpit" "COCKPIT packages" "OFF" "kerberos" "KERBEROS packages" "OFF" "cluster" "CLUSTER rather than standalone" "ON")
+    listFlags=("french" "FRENCH keyboard rather than english" "OFF" "german" "GERMAN keyboard rather than english" "OFF" "dbg" "DEBUG packages" "OFF" "raid" "lvm RAID" "OFF" "ceph_disk" "Ceph dedicated disk" "OFF" "cockpit" "COCKPIT packages" "OFF" "kerberos" "KERBEROS packages" "OFF" "cluster" "CLUSTER rather than standalone" "ON")
     arrVar=()
     if CHOICES=$(whiptail --separate-output --checklist "Choose flags combination to add to grub" 18 60 7 "${listFlags[@]}" 3>&1 1>&2 2>&3); then
       # code 0
@@ -183,7 +183,7 @@ else
     seapatharch="SEAPATH_AMD64"
 fi
 # Creating the mirror
-CLASSES="FAIBASE,DEBIAN,GRUB_EFI,SEAPATH_COMMON,SEAPATH_HOST,${finalClasses}USERCUSTOMIZATION,${userClasses},${seapatharch},LAST"
+CLASSES="FAIBASE,DEBIAN,GRUB_EFI,SEAPATH_COMMON,SEAPATH_HOST,SEAPATH_ISO,${finalClasses}USERCUSTOMIZATION,${userClasses},${seapatharch},LAST"
 $COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-setup bash -c "\
     cp /etc/fai/apt/keys/* /etc/apt/trusted.gpg.d/ &&\
     fai-mirror -c $CLASSES /ext/mirror"

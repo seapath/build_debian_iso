@@ -2,7 +2,21 @@
 
 ![ShellCheck](https://github.com/seapath/build_debian_iso/actions/workflows/shellcheck.yml/badge.svg)
 
-Code to build a debian seapath ISO file using FAI Project
+Code to build a debian SEAPATH self installer ISO file or raw images using FAI Project.
+
+Self installer ISO file can be used to install SEAPATH on physical hardware without any user interaction (using preseed/debconf).
+The raw images can be used with [SEAPATH installer](https://github.com/seapath/seapath-installer/) to have an interactive installation of SEAPATH.
+
+These scripts are based on FAI Project (Fully Automated Installation) : https://fai-project.org/ and target the X86_64 and ARM64 architectures with UEFI support.
+
+**Note:** If you want pre-built images instead of building them yourself, you can find them at the [Releases](https://github.com/seapath/build_debian_iso/releases) section of this repository.
+
+## Prerequisites
+
+- A linux host with docker and docker-compose script or the docker compose v2 plugin installed
+- At large enough disk space to store the images
+
+## Build the ISO file
 
 On a linux machine with docker and docker-compose, building the iso file should be possible by simply running
 ```
@@ -13,6 +27,17 @@ from the directory where you want the .iso file stored.
 Note that this iso is only to be used on UEFI systems. Legacy BIOS is not supported on SEAPATH.
 
 However please checkout the Customization section first. There are some things that must be done before building.
+
+## Generate SEAPATH Debian image for SEAPATH Installer
+
+The script `generate_seapath_image.sh` will create a raw image that can be used with the SEAPATH Installer.
+
+The script can generate images for one of this three roles:
+- standalone: a single node installation
+- cluster: a hypervisor node that will be part of a cluster
+- observer: a node that will be used as an observer in the cluster
+
+The script also support optionals parameters described in the usage message.
 
 ## Customization
 Some customization you will want to make before building.
@@ -38,6 +63,9 @@ Both folders "build_debian_iso/usercustomization and build_debian_iso/srv_fai_co
 more information about password hash : https://linuxconfig.org/how-to-hash-passwords-on-linux
 
 **keyboard Layout:**
+
+Only for self installer ISO (build_iso.sh):
+
 * HOST: by default the keyboard will be US. You can use the FRENCH of GERMAN classes to change this. For any other layout, you can create your own debconf in build_debian_iso/usercustomization/debconf/USERCUSTOMIZATION (or create your own class, see "User-defined classes" below)
 * VM: by default the build_qcow2 script will import the FRENCH class, you can override the keyboard layout by creating your own debco nf in build_debian_iso/usercustomization/debconf/USERCUSTOMIZATION.
 
@@ -48,6 +76,8 @@ more information about password hash : https://linuxconfig.org/how-to-hash-passw
 * SERVER, LOGUSER: if you want the installation logs to be uploaded, using SCP, to a server, for which the login username will be LOGUSER and the password "fai"
 
 more info: https://fai-project.org/fai-guide
+
+#### Customization the self installer ISO (build_iso.sh)
 
 **Classes and Flags Customization:**
 
@@ -76,10 +106,12 @@ The possibles flags to create a grub menu item are:
 * cockpit: enables the SEAPATH_COCKPIT class
 * kerberos: enables the SEAPATH_KERBEROS class
 * cluster: enables the SEAPATH_CLUSTER class. Uncheck this for a standalone installation.
+* ceph_disk: to use a dedicated disk for ceph storage (only for cluster mode).
 
 If you want an "english, no debug, no raid, no cockpit, no kerberos, standalone" installation, then you need to uncheck everything, which will result in a fake "noflag" grub menu item being added. This is normal.
 
-**User-defined classes:**
+
+#### User-defined classes
 
 The user can manage his own classes by:
 - copying the template file user_classes.conf.example to user_classes.conf
