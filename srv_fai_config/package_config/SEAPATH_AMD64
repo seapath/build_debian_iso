@@ -5,3 +5,7 @@ linux-image-rt-amd64
 intel-microcode
 grub-efi-amd64-signed
 amd64-microcode
+
+PACKAGES install-norec
+linux-image-amd64-
+
