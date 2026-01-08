@@ -14,7 +14,7 @@ primary -          50G    -      -
 
 disk_config lvm
 
-vg vg2  disk1.2
-vg2-root    /          15G      ext4    noatime,rw lvcreateopts="--zero n"
-vg2-varlog  /var/log    5G      ext4    noatime,rw lvcreateopts="--zero n"
-vg2-swap    swap      500M      swap    sw lvcreateopts="--zero n"
+vg vg1  disk1.2
+vg1-root    /          15G      ext4    noatime,rw lvcreateopts="--zero n"
+vg1-varlog  /var/log    5G      ext4    noatime,rw lvcreateopts="--zero n"
+vg1-swap    swap      500M      swap    sw lvcreateopts="--zero n"
