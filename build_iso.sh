@@ -23,9 +23,46 @@ cp -r "$wd/usercustomization/"* "$wd/build_tmp"
 
 finalClasses="SEAPATH_CLUSTER,SEAPATH_DBG,SEAPATH_KERBEROS,SEAPATH_COCKPIT,"
 
-if [ "$1" == "--custom" ]; then
+# Parse command line arguments
+CUSTOM_MODE=false
+CLASSES_ARG=""
+MENU_ARG=""
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --custom)
+      CUSTOM_MODE=true
+      shift
+      ;;
+    --classes)
+      if [ -z "$2" ] || [[ "$2" == --* ]]; then
+        echo "Error: --classes requires a value" >&2
+        exit 1
+      fi
+      CLASSES_ARG="$2"
+      CUSTOM_MODE=true
+      shift 2
+      ;;
+    --menu)
+      if [ -z "$2" ] || [[ "$2" == --* ]]; then
+        echo "Error: --menu requires a value" >&2
+        exit 1
+      fi
+      MENU_ARG="$2"
+      CUSTOM_MODE=true
+      shift 2
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+
+if [ "$CUSTOM_MODE" == true ]; then
 
   cp "$wd"/etc_fai/grub_base.cfg "$wd"/etc_fai/grub.cfg
+  
+  # Helper functions for TUI
   # add index to an array, for each value
   function addIndexToArray1 {
     local -n myarray=$1
@@ -43,87 +80,134 @@ if [ "$1" == "--custom" ]; then
       arrVar+=("${myarray[$((idx*2-1))]}")
     done
   }
+  
+  # If --classes is provided, use it directly, otherwise use TUI
+  if [ -n "$CLASSES_ARG" ]; then
+    # Add comma at the end if not present
+    if [[ "$CLASSES_ARG" != *"," ]]; then
+      finalClasses="$CLASSES_ARG,"
+    else
+      finalClasses="$CLASSES_ARG"
+    fi
+  else
+    # Use TUI for classes selection
 
   listClasses=("SEAPATH_CLUSTER" "ON" "SEAPATH_DBG" "ON" "SEAPATH_COCKPIT" "ON" "SEAPATH_KERBEROS" "ON")
   arrVar=()
   addIndexToArray2 listClasses
 
-  CHOICES=$(whiptail --separate-output --checklist "Choose package classes to add to iso" 18 60 7 \
-  "${arrVar[@]}" 3>&1 1>&2 2>&3)
-  finalClasses=""
-  for CHOICE in $CHOICES; do
-    c=${CHOICE//)/}
-    c=$(((c-1)*2))
-    finalClasses="$finalClasses""${listClasses[$c]}"","
-  done
-
-  addFlagCombination() {
-    listFlags=("french" "FRENCH keyboard rather than english" "OFF" "german" "GERMAN keyboard rather than english" "OFF" "dbg" "DEBUG packages" "OFF" "raid" "lvm RAID" "OFF" "ceph_disk" "Ceph dedicated disk" "OFF" "cockpit" "COCKPIT packages" "OFF" "kerberos" "KERBEROS packages" "OFF" "cluster" "CLUSTER rather than standalone" "ON")
-    arrVar=()
-    if CHOICES=$(whiptail --separate-output --checklist "Choose flags combination to add to grub" 18 60 7 "${listFlags[@]}" 3>&1 1>&2 2>&3); then
-      # code 0
-      finalFlags=""
-      if [ -z "$CHOICES" ]; then
-        finalFlags="noflag"
-      else
-        for CHOICE in $CHOICES; do
-          finalFlags="$finalFlags""${CHOICE}"","
-        done
-        finalFlags=${finalFlags::-1}
-      fi
-      menuItems+=("$finalFlags")
-    fi
-  }
-
-  menuItems=()
-
-  while true
-  do
-    menuItemsStr=""
-    for menuItem in "${menuItems[@]}"; do
-      menuItemsStr="$menuItemsStr\n""$menuItem"
+    CHOICES=$(whiptail --separate-output --checklist "Choose package classes to add to iso" 18 60 7 \
+    "${arrVar[@]}" 3>&1 1>&2 2>&3)
+    finalClasses=""
+    for CHOICE in $CHOICES; do
+      c=${CHOICE//)/}
+      c=$(((c-1)*2))
+      finalClasses="$finalClasses""${listClasses[$c]}"","
     done
-    whiptail --msgbox "this is the list of grub menu entries:\n$menuItemsStr\n" 20 100
-    CHOICE=$(
-    whiptail --title "grub menu" --cancel-button "exit" --menu "Make your choice:" 22 100 14 \
-      "1)" "add grub entry (flag combinaison)"   \
-      "2)" "continue"   \
-      3>&2 2>&1 1>&3
-    )
-    [[ "$?" = 1 ]] && break
-
-    case $CHOICE in
-      "1)") addFlagCombination
-      ;;
-      "2)") break
-      ;;
-    esac
-  done
-
-  if [ ${#menuItems[@]} -gt 0 ]; then
-  # if user has defined grub items, make him choose a default one
-    CHOICE=$(
-    addIndexToArray1 menuItems
-    whiptail --title "choose default grub item" --cancel-button "exit" --menu "choose default grub entry:" 22 100 14 \
-      "${arrVar[@]}" \
-      3>&2 2>&1 1>&3
-    )
-    [[ "$?" = 1 ]] && exit
-    c=${CHOICE//)/}
-
-    echo "set default=\"  SEAPATH installation - ${menuItems[$((c-1))]}\""  > /tmp/seapathlistfai.txt
-    echo "set timeout=5" >> /tmp/seapathlistfai.txt
-    for menuItem in "${menuItems[@]}"; do
-      entry="menuentry \"  SEAPATH installation - $menuItem\" {
+  fi
+  
+  # If --menu is provided, parse it directly, otherwise use TUI
+  if [ -n "$MENU_ARG" ]; then
+    # Split menu items by semicolon
+    IFS=';' read -ra MENU_ITEMS <<< "$MENU_ARG"
+    menuItems=()
+    for item in "${MENU_ITEMS[@]}"; do
+      # Trim whitespace
+      item=$(echo "$item" | xargs)
+      if [ -n "$item" ]; then
+        menuItems+=("$item")
+      fi
+    done
+    
+    # If we have menu items, generate the grub config
+    if [ ${#menuItems[@]} -gt 0 ]; then
+      # First item is the default
+      defaultMenuItem="${menuItems[0]}"
+      
+      echo "set default=\"  SEAPATH installation - $defaultMenuItem\""  > /tmp/seapathlistfai.txt
+      echo "set timeout=5" >> /tmp/seapathlistfai.txt
+      for menuItem in "${menuItems[@]}"; do
+        entry="menuentry \"  SEAPATH installation - $menuItem\" {
         search --set=root --file /FAI-CD
         linux   /boot/vmlinuz FAI_FLAGS=\"$menuItem,verbose,sshd,createvt,reboot\" FAI_ACTION=install FAI_CONFIG_SRC=file:///var/lib/fai/config rd.live.image root=live:CDLABEL=FAI_CD ipv6.disable=1
         initrd  /boot/initrd.img
     }"
-      echo "$entry" >> /tmp/seapathlistfai.txt
+        echo "$entry" >> /tmp/seapathlistfai.txt
+      done
+      
+      sed -i -ne '/## BEGIN CUSTOM MENU ITEMS/ {p; r /tmp/seapathlistfai.txt' -e ':a; n; /## END CUSTOM MENU ITEMS/ {p; b}; ba}; p' "$wd"/etc_fai/grub.cfg
+      rm -f /tmp/seapathlistfai.txt
+    fi
+  else
+    # Use TUI for menu selection
+    addFlagCombination() {
+      listFlags=("french" "FRENCH keyboard rather than english" "OFF" "german" "GERMAN keyboard rather than english" "OFF" "dbg" "DEBUG packages" "OFF" "raid" "lvm RAID" "OFF" "ceph_disk" "Ceph dedicated disk" "OFF" "cockpit" "COCKPIT packages" "OFF" "kerberos" "KERBEROS packages" "OFF" "cluster" "CLUSTER rather than standalone" "ON")
+      arrVar=()
+      if CHOICES=$(whiptail --separate-output --checklist "Choose flags combination to add to grub" 18 60 7 "${listFlags[@]}" 3>&1 1>&2 2>&3); then
+        # code 0
+        finalFlags=""
+        if [ -z "$CHOICES" ]; then
+          finalFlags="noflag"
+        else
+          for CHOICE in $CHOICES; do
+            finalFlags="$finalFlags""${CHOICE}"","
+          done
+          finalFlags=${finalFlags::-1}
+        fi
+        menuItems+=("$finalFlags")
+      fi
+    }
+
+    menuItems=()
+
+    while true
+    do
+      menuItemsStr=""
+      for menuItem in "${menuItems[@]}"; do
+        menuItemsStr="$menuItemsStr\n""$menuItem"
+      done
+      whiptail --msgbox "this is the list of grub menu entries:\n$menuItemsStr\n" 20 100
+      CHOICE=$(
+      whiptail --title "grub menu" --cancel-button "exit" --menu "Make your choice:" 22 100 14 \
+        "1)" "add grub entry (flag combinaison)"   \
+        "2)" "continue"   \
+        3>&2 2>&1 1>&3
+      )
+      [[ "$?" = 1 ]] && break
+
+      case $CHOICE in
+        "1)") addFlagCombination
+        ;;
+        "2)") break
+        ;;
+      esac
     done
 
-    sed -i -ne '/## BEGIN CUSTOM MENU ITEMS/ {p; r /tmp/seapathlistfai.txt' -e ':a; n; /## END CUSTOM MENU ITEMS/ {p; b}; ba}; p' "$wd"/etc_fai/grub.cfg
-    rm -f /tmp/seapathlistfai.txt
+    if [ ${#menuItems[@]} -gt 0 ]; then
+    # if user has defined grub items, make him choose a default one
+      CHOICE=$(
+      addIndexToArray1 menuItems
+      whiptail --title "choose default grub item" --cancel-button "exit" --menu "choose default grub entry:" 22 100 14 \
+        "${arrVar[@]}" \
+        3>&2 2>&1 1>&3
+      )
+      [[ "$?" = 1 ]] && exit
+      c=${CHOICE//)/}
+
+      echo "set default=\"  SEAPATH installation - ${menuItems[$((c-1))]}\""  > /tmp/seapathlistfai.txt
+      echo "set timeout=5" >> /tmp/seapathlistfai.txt
+      for menuItem in "${menuItems[@]}"; do
+        entry="menuentry \"  SEAPATH installation - $menuItem\" {
+        search --set=root --file /FAI-CD
+        linux   /boot/vmlinuz FAI_FLAGS=\"$menuItem,verbose,sshd,createvt,reboot\" FAI_ACTION=install FAI_CONFIG_SRC=file:///var/lib/fai/config rd.live.image root=live:CDLABEL=FAI_CD ipv6.disable=1
+        initrd  /boot/initrd.img
+    }"
+        echo "$entry" >> /tmp/seapathlistfai.txt
+      done
+
+      sed -i -ne '/## BEGIN CUSTOM MENU ITEMS/ {p; r /tmp/seapathlistfai.txt' -e ':a; n; /## END CUSTOM MENU ITEMS/ {p; b}; ba}; p' "$wd"/etc_fai/grub.cfg
+      rm -f /tmp/seapathlistfai.txt
+    fi
   fi
 
 fi
