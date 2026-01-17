@@ -1,7 +1,0 @@
-# Example configuration file for container images
-# Copy this file to container_images.conf and customize it
-# Format: one image per line as registry/image:tag
-# Lines starting with # are ignored, as well as empty lines
-
-# quay.io/ceph/ceph:v20.2.0
-# docker.io/library/registry:2
