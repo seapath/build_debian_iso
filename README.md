@@ -77,16 +77,16 @@ Only for self installer ISO (build_iso.sh):
 
 **Container Images Customization:**
 
-By default, the ISO includes container images needed for SEAPATH cluster functionality (Ceph images, registry, etc.). The list of images to include can be customized:
+By default, the ISO includes container images needed for SEAPATH functionality. Each class can have its own list of container images:
 
-* The default configuration is in `srv_fai_config/files/etc/container_images.conf/SEAPATH_CLUSTER` (using FAI native file structure)
-* You can override it by creating `usercustomization/container_images.conf` at the root of the usercustomization directory
-* The file will be automatically copied to the correct FAI structure (`files/etc/container_images.conf/SEAPATH_CLUSTER`) during the build process
+* Default configurations are in `srv_fai_config/files/etc/container_images.conf/CLASS_NAME` (e.g., `SEAPATH_CLUSTER`, `SEAPATH_HOST`)
+* You can override a class by creating `usercustomization/files/etc/container_images.conf/CLASS_NAME`
+* You can add images by creating `usercustomization/files/etc/container_images.conf/USERCUSTOMIZATION`
+* Each class has its own file, so they don't override each other - all active classes' images are combined
 * The file format is one image per line as `registry/image:tag` (e.g., `quay.io/ceph/ceph:v20.2.0`)
 * Lines starting with `#` are treated as comments and ignored, as well as empty lines
-* You can copy `usercustomization/container_images.conf.example` to `usercustomization/container_images.conf` as a starting point
 
-During installation, the script reads the configuration from the FAI files structure and copies the corresponding image files to `/opt/`. On first boot, all container images from `/opt/*.tgz` are automatically loaded into Podman.
+During installation, the script reads all configuration files from active classes and copies the corresponding image files to `/opt/`. On first boot, all container images from `/opt/*.tgz` are automatically loaded into Podman.
 
 more info: https://fai-project.org/fai-guide
 

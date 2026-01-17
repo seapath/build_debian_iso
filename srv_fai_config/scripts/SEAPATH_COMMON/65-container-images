@@ -1,0 +1,38 @@
+#!/bin/bash
+
+error=0; trap 'error=$(($?>$error?$?:$error))' ERR # save maximum error code
+
+# Copy container images tgz files to /opt
+# This script handles container images for any class that has a container_images.conf file
+# It reads configuration files from all active classes and copies the corresponding image files to /opt/
+# for loading on first boot
+FAI_CONFIG_DIR="/var/lib/fai/config"
+CONTAINER_IMAGES_DIR="$FAI_CONFIG_DIR/files/etc/container_images.conf"
+
+# Collect all images from all classes that have container_images.conf files
+# We check all possible classes and copy images if the config file exists
+for class_conf_file in "$CONTAINER_IMAGES_DIR"/*; do
+    [ -f "$class_conf_file" ] || continue
+    
+    class_name=$(basename "$class_conf_file")
+    echo "Processing container images for class: $class_name"
+    
+    # Read images from config file (ignore comments and empty lines)
+    while IFS= read -r i || [ -n "$i" ]; do
+        # Skip empty lines and comments
+        [[ -z "$i" || "$i" =~ ^[[:space:]]*# ]] && continue
+        # Trim whitespace
+        i=$(echo "$i" | xargs)
+        [[ -z "$i" ]] && continue
+        
+        registry=$(echo $i | cut -d'/' -f2)
+        image=$(echo $i | cut -d'/' -f3 | sed s/://g)
+        fcopy -M /opt/$registry"_"$image.tgz
+    done < "$class_conf_file"
+done
+
+# Setup firstboot service to load container images on first boot
+# The firstboot.sh script loads all .tgz files from /opt/ automatically
+fcopy -m root,root,0755 /firstboot.sh
+fcopy -M /etc/systemd/system/firstboot.service
+$ROOTCMD systemctl enable firstboot.service
