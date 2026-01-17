@@ -75,6 +75,19 @@ Only for self installer ISO (build_iso.sh):
 * REMOTENIC, REMOTEADDR, REMOTEGW: if you want networking to be available right after deployement set ip/gateway to a specified niv (ie: ens0, enp0s1...)
 * SERVER, LOGUSER: if you want the installation logs to be uploaded, using SCP, to a server, for which the login username will be LOGUSER and the password "fai"
 
+**Container Images Customization:**
+
+By default, the ISO includes container images needed for SEAPATH cluster functionality (Ceph images, registry, etc.). The list of images to include can be customized:
+
+* The default configuration is in `srv_fai_config/files/etc/container_images.conf/SEAPATH_CLUSTER` (using FAI native file structure)
+* You can override it by creating `usercustomization/container_images.conf` at the root of the usercustomization directory
+* The file will be automatically copied to the correct FAI structure (`files/etc/container_images.conf/SEAPATH_CLUSTER`) during the build process
+* The file format is one image per line as `registry/image:tag` (e.g., `quay.io/ceph/ceph:v20.2.0`)
+* Lines starting with `#` are treated as comments and ignored, as well as empty lines
+* You can copy `usercustomization/container_images.conf.example` to `usercustomization/container_images.conf` as a starting point
+
+During installation, the script reads the configuration from the FAI files structure and copies the corresponding image files to `/opt/`. On first boot, all container images from `/opt/*.tgz` are automatically loaded into Podman.
+
 more info: https://fai-project.org/fai-guide
 
 #### Customization the self installer ISO (build_iso.sh)
