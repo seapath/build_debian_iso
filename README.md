@@ -94,11 +94,20 @@ more info: https://fai-project.org/fai-guide
 
 **Classes and Flags Customization:**
 
-Running ./build_debian_iso/build_iso.sh with the "--custom" option will allow a user:
-* to customize the packages downloaded and stored in the local mirror of the .iso file
-* to customize the grub menu items, allowing to a unique iso file for multiple installation type.
+The `build_iso.sh` script supports customization of packages and grub menu items in two ways:
 
-Running ./build_debian_iso.sh without custom flag will do : all classes downloaded, and only one grub option with clustermode/lvmraid/english/no_debug/no_kerberos/no_cockpit
+1. **Interactive mode (TUI):** Running `./build_iso.sh --custom` will launch an interactive text user interface where you can:
+   * select which package classes to include in the ISO
+   * create custom grub menu items with different flag combinations
+   * choose the default grub menu entry
+
+2. **Command-line arguments:** For automated builds or non-interactive environments, you can use:
+   * `--classes CLASS1,CLASS2,...` to specify which package classes to include (e.g., `--classes SEAPATH_CLUSTER,SEAPATH_DBG`)
+   * `--menu "item1;item2;item3"` to specify grub menu items separated by semicolons, where the first item is the default (e.g., `--menu "french,cluster;french;cluster"`)
+
+You can combine these options: `./build_iso.sh --classes SEAPATH_CLUSTER,SEAPATH_DBG --menu "french,cluster;french;cluster"`
+
+Running `./build_iso.sh` without any customization options will include all classes and create a single grub option with cluster mode/lvmraid/english/no_debug/no_kerberos/no_cockpit.
 
 **Classes Customization:**
 
