@@ -1,0 +1,5 @@
+# List of container images to include in the ISO for SEAPATH_HOST class
+# Format: one image per line as registry/image:tag
+# Lines starting with # are ignored, as well as empty lines
+# This file can be overridden in usercustomization/files/etc/container_images.conf/SEAPATH_HOST
+

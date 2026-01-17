@@ -21,14 +21,6 @@ find "$wd"/build_tmp/ ! -name .gitkeep -type f -exec rm -f {} +
 cp -r "$wd/srv_fai_config/"* "$wd/build_tmp"
 cp -r "$wd/usercustomization/"* "$wd/build_tmp"
 
-# Ensure container_images.conf is in FAI files structure if provided in usercustomization
-# Priority: usercustomization > srv_fai_config
-if [ -f "$wd/build_tmp/container_images.conf" ]; then
-    mkdir -p "$wd/build_tmp/files/etc/container_images.conf"
-    cp "$wd/build_tmp/container_images.conf" "$wd/build_tmp/files/etc/container_images.conf/SEAPATH_CLUSTER"
-    rm -f "$wd/build_tmp/container_images.conf"
-fi
-
 finalClasses="SEAPATH_CLUSTER,SEAPATH_DBG,SEAPATH_KERBEROS,SEAPATH_COCKPIT,"
 
 # Parse command line arguments
@@ -260,34 +252,61 @@ wget -O /tmp/cephadm/usr/local/bin/cephadm/SEAPATH_CLUSTER https://download.ceph
 echo sudo podman cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
 sudo podman cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
 # Adding the container images
-# Read container_images.conf from FAI files structure (which contains merged srv_fai_config + usercustomization)
-if [ -f "$wd/build_tmp/files/etc/container_images.conf/SEAPATH_CLUSTER" ]; then
-  CONTAINER_IMAGES_CONF="$wd/build_tmp/files/etc/container_images.conf/SEAPATH_CLUSTER"
-elif [ -f "$wd/srv_fai_config/files/etc/container_images.conf/SEAPATH_CLUSTER" ]; then
-  CONTAINER_IMAGES_CONF="$wd/srv_fai_config/files/etc/container_images.conf/SEAPATH_CLUSTER"
-else
-  echo "Warning: container_images.conf not found, skipping image import" >&2
-  CONTAINER_IMAGES_CONF=""
-fi
+# Process container_images.conf files for all classes that have them
+# This handles images for SEAPATH_CLUSTER, SEAPATH_HOST, USERCUSTOMIZATION, and any other classes
+CONTAINER_IMAGES_BASE_DIR="$wd/build_tmp/files/etc/container_images.conf"
+[ -d "$CONTAINER_IMAGES_BASE_DIR" ] || CONTAINER_IMAGES_BASE_DIR="$wd/srv_fai_config/files/etc/container_images.conf"
 
-if [ -n "$CONTAINER_IMAGES_CONF" ] && [ -f "$CONTAINER_IMAGES_CONF" ]; then
-  # Read images from config file (ignore comments and empty lines)
-  while IFS= read -r i || [ -n "$i" ]; do
-    # Skip empty lines and comments
-    [[ -z "$i" || "$i" =~ ^[[:space:]]*# ]] && continue
-    # Trim whitespace
-    i=$(echo "$i" | xargs)
-    [[ -z "$i" ]] && continue
+if [ -d "$CONTAINER_IMAGES_BASE_DIR" ]; then
+  # Clean up any previous temp directory
+  CONTAINER_CACHE="/var/tmp/container_images"
+  rm -rf ${CONTAINER_CACHE}
+  
+  # Process each class configuration file
+  for class_conf_file in "$CONTAINER_IMAGES_BASE_DIR"/*; do
+    [ -f "$class_conf_file" ] || continue
     
-    registry=$(echo $i | cut -d'/' -f2)
-    image=$(echo $i | cut -d'/' -f3 | sed s/://g)
-    sudo podman pull $i
-    mkdir -p /tmp/container_images/opt/$registry"_"$image.tgz
-    sudo podman save $i | gzip > /tmp/container_images/opt/$registry"_"$image.tgz/SEAPATH_CLUSTER
-    echo sudo podman cp /tmp/container_images/. fai-setup:/ext/srv/fai/files/
-    sudo podman cp /tmp/container_images/. fai-setup:/ext/srv/fai/config/files/
-    rm -rf /tmp/container_images/
-  done < "$CONTAINER_IMAGES_CONF"
+    class_name=$(basename "$class_conf_file")
+    echo "Processing container images for class: $class_name"
+    
+    # Read images from config file (ignore comments and empty lines)
+    while IFS= read -r i || [ -n "$i" ]; do
+      # Skip empty lines and comments
+      [[ -z "$i" || "$i" =~ ^[[:space:]]*# ]] && continue
+      # Trim whitespace
+      i=$(echo "$i" | xargs)
+      [[ -z "$i" ]] && continue
+      
+      registry=$(echo $i | cut -d'/' -f2)
+      image=$(echo $i | cut -d'/' -f3 | sed s/://g)
+      image_path="${CONTAINER_CACHE}/opt/${registry}_${image}.tgz"
+      mkdir -p "$image_path"
+      
+      # Check if we already have this image for another class
+      # If yes, we just copy the existing file, otherwise download
+      existing_files=$(find "$image_path" -maxdepth 1 -type f 2>/dev/null | head -1)
+      if [ -z "$existing_files" ]; then
+        # First time we see this image - download it
+        echo "Downloading image: $i"
+        sudo podman pull $i
+        sudo podman save $i | gzip > "$image_path/$class_name"
+      else
+        # Image already downloaded - just copy the existing file for this class
+        # All classes will have the same image content, we just need the file for fcopy
+        cp "$existing_files" "$image_path/$class_name"
+        echo "Reusing existing image: $i (for class $class_name)"
+      fi
+    done < "$class_conf_file"
+  done
+  
+  # Copy all images to the container after processing all classes
+  if [ -d "${CONTAINER_CACHE}" ]; then
+    echo sudo podman cp ${CONTAINER_CACHE}/. fai-setup:/ext/srv/fai/files/
+    sudo podman cp ${CONTAINER_CACHE}/. fai-setup:/ext/srv/fai/config/files/
+    rm -rf ${CONTAINER_CACHE}
+  fi
+else
+  echo "Warning: container_images.conf directory not found, skipping image import" >&2
 fi
 
 # Stopping the container after having added stuff in it
