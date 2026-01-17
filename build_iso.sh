@@ -21,6 +21,14 @@ find "$wd"/build_tmp/ ! -name .gitkeep -type f -exec rm -f {} +
 cp -r "$wd/srv_fai_config/"* "$wd/build_tmp"
 cp -r "$wd/usercustomization/"* "$wd/build_tmp"
 
+# Ensure container_images.conf is in FAI files structure if provided in usercustomization
+# Priority: usercustomization > srv_fai_config
+if [ -f "$wd/build_tmp/container_images.conf" ]; then
+    mkdir -p "$wd/build_tmp/files/etc/container_images.conf"
+    cp "$wd/build_tmp/container_images.conf" "$wd/build_tmp/files/etc/container_images.conf/SEAPATH_CLUSTER"
+    rm -f "$wd/build_tmp/container_images.conf"
+fi
+
 finalClasses="SEAPATH_CLUSTER,SEAPATH_DBG,SEAPATH_KERBEROS,SEAPATH_COCKPIT,"
 
 # Parse command line arguments
@@ -251,18 +259,36 @@ echo wget -O /tmp/cephadm/usr/local/bin/cephadm/SEAPATH_CLUSTER https://download
 wget -O /tmp/cephadm/usr/local/bin/cephadm/SEAPATH_CLUSTER https://download.ceph.com/rpm-20.2.0/el9/noarch/cephadm
 echo sudo podman cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
 sudo podman cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
-# Adding the ceph images
-for i in quay.io/ceph/ceph:v20.2.0 docker.io/library/registry:2
-do
-  registry=$(echo $i | cut -d'/' -f2)
-  image=$(echo $i | cut -d'/' -f3 | sed s/://g)
-  sudo podman pull $i
-  mkdir -p /tmp/ceph_image/opt/$registry"_"$image.tgz
-  sudo podman save $i | gzip > /tmp/ceph_image/opt/$registry"_"$image.tgz/SEAPATH_CLUSTER
-  echo sudo podman cp /tmp/ceph_image/. fai-setup:/ext/src/fai/files/
-  sudo podman cp /tmp/ceph_image/. fai-setup:/ext/srv/fai/config/files/
-  rm -rf /tmp/ceph_image/
-done
+# Adding the container images
+# Read container_images.conf from FAI files structure (which contains merged srv_fai_config + usercustomization)
+if [ -f "$wd/build_tmp/files/etc/container_images.conf/SEAPATH_CLUSTER" ]; then
+  CONTAINER_IMAGES_CONF="$wd/build_tmp/files/etc/container_images.conf/SEAPATH_CLUSTER"
+elif [ -f "$wd/srv_fai_config/files/etc/container_images.conf/SEAPATH_CLUSTER" ]; then
+  CONTAINER_IMAGES_CONF="$wd/srv_fai_config/files/etc/container_images.conf/SEAPATH_CLUSTER"
+else
+  echo "Warning: container_images.conf not found, skipping image import" >&2
+  CONTAINER_IMAGES_CONF=""
+fi
+
+if [ -n "$CONTAINER_IMAGES_CONF" ] && [ -f "$CONTAINER_IMAGES_CONF" ]; then
+  # Read images from config file (ignore comments and empty lines)
+  while IFS= read -r i || [ -n "$i" ]; do
+    # Skip empty lines and comments
+    [[ -z "$i" || "$i" =~ ^[[:space:]]*# ]] && continue
+    # Trim whitespace
+    i=$(echo "$i" | xargs)
+    [[ -z "$i" ]] && continue
+    
+    registry=$(echo $i | cut -d'/' -f2)
+    image=$(echo $i | cut -d'/' -f3 | sed s/://g)
+    sudo podman pull $i
+    mkdir -p /tmp/container_images/opt/$registry"_"$image.tgz
+    sudo podman save $i | gzip > /tmp/container_images/opt/$registry"_"$image.tgz/SEAPATH_CLUSTER
+    echo sudo podman cp /tmp/container_images/. fai-setup:/ext/srv/fai/files/
+    sudo podman cp /tmp/container_images/. fai-setup:/ext/srv/fai/config/files/
+    rm -rf /tmp/container_images/
+  done < "$CONTAINER_IMAGES_CONF"
+fi
 
 # Stopping the container after having added stuff in it
 "${COMPOSECMD[@]}" -f "$(realpath $wd/docker-compose.yml)" down

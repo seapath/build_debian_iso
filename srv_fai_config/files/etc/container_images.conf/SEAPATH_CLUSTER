@@ -1,0 +1,7 @@
+# List of container images to include in the ISO
+# Format: one image per line as registry/image:tag
+# Lines starting with # are ignored, as well as empty lines
+# This file can be overridden in usercustomization/container_images.conf
+
+quay.io/ceph/ceph:v20.2.0
+docker.io/library/registry:2
