@@ -281,7 +281,7 @@ fi
 CLASSES="FAIBASE,DEBIAN,GRUB_EFI,SEAPATH_COMMON,SEAPATH_HOST,SEAPATH_ISO,${finalClasses}USERCUSTOMIZATION,${userClasses},${seapatharch},LAST"
 "${COMPOSECMD[@]}" -f "$(realpath $wd/docker-compose.yml)" run --rm fai-setup bash -c "\
     cp /etc/fai/apt/keys/* /etc/apt/trusted.gpg.d/ &&\
-    fai-mirror -c $CLASSES /ext/mirror"
+    fai-mirror -v -c $CLASSES /ext/mirror"
 
 # Creating the ISO
 "${COMPOSECMD[@]}" -f "$(realpath $wd/docker-compose.yml)" run --rm fai-cd /usr/sbin/fai-cd -f -m /ext/mirror /ext/seapath.iso
