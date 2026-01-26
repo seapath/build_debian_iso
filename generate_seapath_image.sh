@@ -205,7 +205,7 @@ if [ -n "$FORCE_DOCKER" ]; then
     fi
 fi
 
-cd "$wd" || exit 1
+#cd "$wd" || exit 1
 
 echo "We are going to use $COMPOSECMD"
 
@@ -213,7 +213,7 @@ mkdir -p "$output_dir"
 
 rm -f "$output_dir/${OUTPUT} $output_dir/${OUTPUT}.bmap $output_dir/${OUTPUT}.gz"
 # removing the volume in case it exists from a precedent build operation
-$COMPOSECMD -f "$wd"/docker-compose.yml down --volumes 2>/dev/null
+$COMPOSECMD -f "$(realpath $wd/docker-compose.yml)" down --volumes 2>/dev/null
 
 set -e
 
@@ -222,37 +222,42 @@ cp -r "$wd/srv_fai_config/"* "$wd/build_tmp"
 cp -r "$wd/usercustomization/"* "$wd/build_tmp"
 
 # Create the default config space
-$COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-setup \
+$COMPOSECMD -f "$(realpath $wd/docker-compose.yml)" run --rm fai-setup \
     fai-mk-configspace
 
 # Starting the container to add seapath stuff in the config space
-$COMPOSECMD -f "$wd"/docker-compose.yml up --no-start fai-setup
+$COMPOSECMD -f "$(realpath $wd/docker-compose.yml)" up --no-start fai-setup
+
+echo mkdir -p "$wd"/build_tmp/files/usr/local/bin/cephadm
+mkdir -p "$wd"/build_tmp/files/usr/local/bin/cephadm
+echo wget -O "$wd"/build_tmp/files/usr/local/bin/cephadm/SEAPATH_CLUSTER https://download.ceph.com/rpm-20.2.0/el9/noarch/cephadm
+wget -O "$wd"/build_tmp/files/usr/local/bin/cephadm/SEAPATH_CLUSTER https://download.ceph.com/rpm-20.2.0/el9/noarch/cephadm
 
 # Adding the SEAPATH config
 $CONTAINER_ENGINE cp "$wd"/build_tmp/. fai-setup:ext/srv/fai/config/
 
 # Stopping the container after having added stuff in it
-$COMPOSECMD -f "$wd"/docker-compose.yml down fai-setup
+$COMPOSECMD -f "$(realpath $wd/docker-compose.yml)" down fai-setup
 
 # Creating the disk
 # patches /sbin/install_packages (bug in the process of being corrected upstream)
 CLASSES="FAIBASE,DEBIAN,GRUB_EFI,SEAPATH_COMMON,${HYPERVISOR}${CLUSTER}${COCKPIT}${DEBUG},${ARCH},SEAPATH_RAW${CEPH_DISK},USERCUSTOMIZATION,LAST"
 echo "Generate with FAI classes: $CLASSES"
-$COMPOSECMD -f "$wd"/docker-compose.yml run --rm fai-cd bash -c "\
+$COMPOSECMD -f "$(realpath $wd/docker-compose.yml)" run --rm fai-cd bash -c "\
   sed -i -e \"s|-f \\\"\\\$FAI_ROOT/usr/sbin/apt-cache|-f \\\"\\\$FAI_ROOT/usr/bin/apt-cache|\" /sbin/install_packages && \
   sed -i -e \"s/ --allow-change-held-packages//\" /sbin/install_packages && \
   sed -i -e \"s/-c -o compression_type=zstd qcow2/qcow2/\" /usr/sbin/fai-diskimage && \
   fai-diskimage -vu ${HOSTNAME} -S${DISKSIZE} -c$CLASSES -s /ext/srv/fai/config /ext/${OUTPUT}"
 
 # Retrieving the ISO from the volume
-$COMPOSECMD -f "$wd"/docker-compose.yml up --no-start fai-setup
+$COMPOSECMD -f "$(realpath $wd/docker-compose.yml)" up --no-start fai-setup
 OUTPUT_PATH=$($CONTAINER_ENGINE volume inspect --format '{{ .Mountpoint }}' build_debian_iso_ext)/${OUTPUT}
 sudo mv "$OUTPUT_PATH" "$output_dir/${OUTPUT}"
 sudo chown "$(id -u):$(id -g)" "$output_dir/${OUTPUT}"
 
 # Ensure all is stopped and cleaned (this command may fail if some containers are not running)
 set +e
-$COMPOSECMD -f "$wd"/docker-compose.yml down --remove-orphans --volumes 2>/dev/null
+$COMPOSECMD -f "$(realpath $wd/docker-compose.yml)" down --remove-orphans --volumes 2>/dev/null
 set -e
 
 rm -rf "$wd"/build_tmp/*
