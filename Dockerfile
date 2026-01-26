@@ -6,4 +6,4 @@ RUN echo "deb http://fai-project.org/download trixie koeln" > /etc/apt/sources.l
     apt-get -y install fai-server fai-doc fai-setup-storage && \
     apt-get -y install lftp curl whiptail patch && \
     apt-get -y install qemu-utils && \
-    apt-get -y install reprepro xorriso squashfs-tools vim
+    apt-get -y install reprepro xorriso squashfs-tools vim udev
