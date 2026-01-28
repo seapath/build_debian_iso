@@ -7,16 +7,16 @@ output_dir=.
 if command -v podman-compose &> /dev/null && command -v podman &> /dev/null; then
     COMPOSECMD=(sudo podman-compose)
     CONTAINER_ENGINE=(podman)
-    echo "We are going to use ${COMPOSECMD[@]}"
+    echo "We are going to use ${COMPOSECMD[*]}"
 elif command -v docker-compose &> /dev/null && command -v docker &> /dev/null; then
     COMPOSECMD=(docker-compose)
     CONTAINER_ENGINE=(docker)
-    echo "We are going to use ${COMPOSECMD[@]}"
+    echo "We are going to use ${COMPOSECMD[*]}"
 elif command -v docker &> /dev/null && docker compose version &> /dev/null; then
     # Check for newer 'docker compose' (plugin) syntax
     COMPOSECMD=(docker compose)
     CONTAINER_ENGINE=(docker)
-    echo "We are going to use ${COMPOSECMD[@]}"
+    echo "We are going to use ${COMPOSECMD[*]}"
 else
     echo "Error: Neither podman-compose/podman nor docker-compose/docker found in PATH" >&2
     echo "Please install one of the following:" >&2
@@ -25,7 +25,7 @@ else
     exit 1
 fi
 
-echo "We are going to use" "${CONTAINER_ENGINE[@]}" and "${COMPOSECMD[@]}"
+echo "We are going to use" "${CONTAINER_ENGINE[*]}" and "${COMPOSECMD[*]}"
 
 rm -f $output_dir/seapath.iso
 # removing the volume in case it exists from a precedent build operation
@@ -246,7 +246,7 @@ fi
 # Removing 50-host-classes to prevent DEMO and FAIBASE to be added to the list of classes
 # Adding the Bookworm basefiles to that we deploy a Debian v12 distro
 # Patches /sbin/install_packages (bug in the process of being corrected upstream)
-"${COMPOSECMD[@]}" -f "$(realpath $wd/docker-compose.yml)" run --rm fai-setup bash -c "\
+"${COMPOSECMD[@]}" -f "$(realpath "$wd"/docker-compose.yml)" run --rm fai-setup bash -c "\
     echo \"fai-setup -v -e -f \" && \
     fai-setup -v -e -f && \
     echo \"rm -f /ext/srv/fai/config/class/50-host-classes\" && \
@@ -260,7 +260,7 @@ fi
     wget -O /ext/srv/fai/config/basefiles/${bfile} https://fai-project.org/download/basefiles/${bfile}"
 
 # Starting the container to add stuff in it
-"${COMPOSECMD[@]}" -f "$(realpath $wd/docker-compose.yml)" up --no-start fai-setup
+"${COMPOSECMD[@]}" -f "$(realpath "$wd"/docker-compose.yml)" up --no-start fai-setup
 
 # Adding the SEAPATH workspace
 sudo "${CONTAINER_ENGINE[@]}" cp "$wd"/build_tmp/. fai-setup:/ext/srv/fai/config/
@@ -298,8 +298,8 @@ if [ -d "$CONTAINER_IMAGES_BASE_DIR" ]; then
       i=$(echo "$i" | xargs)
       [[ -z "$i" ]] && continue
       
-      registry=$(echo $i | cut -d'/' -f2)
-      image=$(echo $i | cut -d'/' -f3 | sed s/://g)
+      registry=$(echo "$i" | cut -d'/' -f2)
+      image=$(echo "$i" | cut -d'/' -f3 | sed s/://g)
       image_path="${CONTAINER_CACHE}/opt/${registry}_${image}.tgz"
       mkdir -p "$image_path"
       
@@ -309,8 +309,8 @@ if [ -d "$CONTAINER_IMAGES_BASE_DIR" ]; then
       if [ -z "$existing_files" ]; then
         # First time we see this image - download it
         echo "Downloading image: $i"
-        sudo "${CONTAINER_ENGINE[@]}" pull $i
-        sudo "${CONTAINER_ENGINE[@]}" save $i | gzip > "$image_path/$class_name"
+        sudo "${CONTAINER_ENGINE[@]}" pull "$i"
+        sudo "${CONTAINER_ENGINE[@]}" save "$i" | gzip > "$image_path/$class_name"
       else
         # Image already downloaded - just copy the existing file for this class
         # All classes will have the same image content, we just need the file for fcopy
@@ -331,7 +331,7 @@ else
 fi
 
 # Stopping the container after having added stuff in it
-"${COMPOSECMD[@]}" -f "$(realpath $wd/docker-compose.yml)" down
+"${COMPOSECMD[@]}" -f "$(realpath "$wd"/docker-compose.yml)" down
 
 # List user defined Classes
 userClasses=$(grep -Ev "^#|^$" "$wd"/user_classes.conf | tr '\n' ',' | sed -e "s/,$//")
@@ -345,17 +345,17 @@ else
 fi
 # Creating the mirror
 CLASSES="FAIBASE,DEBIAN,GRUB_EFI,SEAPATH_COMMON,SEAPATH_HOST,SEAPATH_ISO,${finalClasses}USERCUSTOMIZATION,${userClasses},${seapatharch},LAST"
-"${COMPOSECMD[@]}" -f "$(realpath $wd/docker-compose.yml)" run --rm fai-setup bash -c "\
+"${COMPOSECMD[@]}" -f "$(realpath "$wd"/docker-compose.yml)" run --rm fai-setup bash -c "\
     cp /etc/fai/apt/keys/* /etc/apt/trusted.gpg.d/ &&\
     fai-mirror -v -c $CLASSES /ext/mirror"
 
 # Creating the ISO
-"${COMPOSECMD[@]}" -f "$(realpath $wd/docker-compose.yml)" run --rm fai-cd /usr/sbin/fai-cd -f -m /ext/mirror /ext/seapath.iso
+"${COMPOSECMD[@]}" -f "$(realpath "$wd"/docker-compose.yml)" run --rm fai-cd /usr/sbin/fai-cd -f -m /ext/mirror /ext/seapath.iso
 
 # Retrieving the ISO from the volume
-"${COMPOSECMD[@]}" -f "$(realpath $wd/docker-compose.yml)" up --no-start fai-setup
+"${COMPOSECMD[@]}" -f "$(realpath "$wd"/docker-compose.yml)" up --no-start fai-setup
 sudo "${CONTAINER_ENGINE[@]}" cp fai-setup:/ext/seapath.iso $output_dir/
-"${COMPOSECMD[@]}" -f "$(realpath $wd/docker-compose.yml)" down --remove-orphans --volumes
+"${COMPOSECMD[@]}" -f "$(realpath "$wd"/docker-compose.yml)" down --remove-orphans --volumes
 
 # Removing temporary files
 rm -rf "$wd"/build_tmp/*
