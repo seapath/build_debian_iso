@@ -3,13 +3,34 @@
 wd=$(dirname "$0")
 output_dir=.
 
-COMPOSECMD=(sudo podman-compose)
-echo "We are going to use" "${COMPOSECMD[@]}"
+# Check for container tools and set commands accordingly
+if command -v podman-compose &> /dev/null && command -v podman &> /dev/null; then
+    COMPOSECMD=(sudo podman-compose)
+    CONTAINER_ENGINE=(podman)
+    echo "We are going to use ${COMPOSECMD[@]}"
+elif command -v docker-compose &> /dev/null && command -v docker &> /dev/null; then
+    COMPOSECMD=(docker-compose)
+    CONTAINER_ENGINE=(docker)
+    echo "We are going to use ${COMPOSECMD[@]}"
+elif command -v docker &> /dev/null && docker compose version &> /dev/null; then
+    # Check for newer 'docker compose' (plugin) syntax
+    COMPOSECMD=(docker compose)
+    CONTAINER_ENGINE=(docker)
+    echo "We are going to use ${COMPOSECMD[@]}"
+else
+    echo "Error: Neither podman-compose/podman nor docker-compose/docker found in PATH" >&2
+    echo "Please install one of the following:" >&2
+    echo "  - podman and podman-compose" >&2
+    echo "  - docker and docker-compose" >&2
+    exit 1
+fi
+
+echo "We are going to use" "${CONTAINER_ENGINE[@]}" and "${COMPOSECMD[@]}"
 
 rm -f $output_dir/seapath.iso
 # removing the volume in case it exists from a precedent build operation
-sudo podman rm -f fai-setup 2>/dev/null
-sudo podman volume rm build_debian_iso_ext 2>/dev/null
+sudo "${CONTAINER_ENGINE[@]}" rm -f fai-setup 2>/dev/null
+sudo "${CONTAINER_ENGINE[@]}" volume rm build_debian_iso_ext 2>/dev/null
 
 set -e
 
@@ -242,15 +263,15 @@ fi
 "${COMPOSECMD[@]}" -f "$(realpath $wd/docker-compose.yml)" up --no-start fai-setup
 
 # Adding the SEAPATH workspace
-sudo podman cp "$wd"/build_tmp/. fai-setup:/ext/srv/fai/config/
+sudo "${CONTAINER_ENGINE[@]}" cp "$wd"/build_tmp/. fai-setup:/ext/srv/fai/config/
 
 # Adding the cephadm binary
 echo mkdir -p /tmp/cephadm/usr/local/bin/cephadm
 mkdir -p /tmp/cephadm/usr/local/bin/cephadm
 echo wget -O /tmp/cephadm/usr/local/bin/cephadm/SEAPATH_CLUSTER https://download.ceph.com/rpm-20.2.0/el9/noarch/cephadm
 wget -O /tmp/cephadm/usr/local/bin/cephadm/SEAPATH_CLUSTER https://download.ceph.com/rpm-20.2.0/el9/noarch/cephadm
-echo sudo podman cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
-sudo podman cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
+echo sudo "${CONTAINER_ENGINE[@]}" cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
+sudo "${CONTAINER_ENGINE[@]}" cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
 # Adding the container images
 # Process container_images.conf files for all classes that have them
 # This handles images for SEAPATH_CLUSTER, SEAPATH_HOST, USERCUSTOMIZATION, and any other classes
@@ -288,8 +309,8 @@ if [ -d "$CONTAINER_IMAGES_BASE_DIR" ]; then
       if [ -z "$existing_files" ]; then
         # First time we see this image - download it
         echo "Downloading image: $i"
-        sudo podman pull $i
-        sudo podman save $i | gzip > "$image_path/$class_name"
+        sudo "${CONTAINER_ENGINE[@]}" pull $i
+        sudo "${CONTAINER_ENGINE[@]}" save $i | gzip > "$image_path/$class_name"
       else
         # Image already downloaded - just copy the existing file for this class
         # All classes will have the same image content, we just need the file for fcopy
@@ -301,8 +322,8 @@ if [ -d "$CONTAINER_IMAGES_BASE_DIR" ]; then
   
   # Copy all images to the container after processing all classes
   if [ -d "${CONTAINER_CACHE}" ]; then
-    echo sudo podman cp ${CONTAINER_CACHE}/. fai-setup:/ext/srv/fai/files/
-    sudo podman cp ${CONTAINER_CACHE}/. fai-setup:/ext/srv/fai/config/files/
+    echo sudo "${CONTAINER_ENGINE[@]}" cp ${CONTAINER_CACHE}/. fai-setup:/ext/srv/fai/files/
+    sudo "${CONTAINER_ENGINE[@]}" cp ${CONTAINER_CACHE}/. fai-setup:/ext/srv/fai/config/files/
     rm -rf ${CONTAINER_CACHE}
   fi
 else
@@ -333,7 +354,7 @@ CLASSES="FAIBASE,DEBIAN,GRUB_EFI,SEAPATH_COMMON,SEAPATH_HOST,SEAPATH_ISO,${final
 
 # Retrieving the ISO from the volume
 "${COMPOSECMD[@]}" -f "$(realpath $wd/docker-compose.yml)" up --no-start fai-setup
-sudo podman cp fai-setup:/ext/seapath.iso $output_dir/
+sudo "${CONTAINER_ENGINE[@]}" cp fai-setup:/ext/seapath.iso $output_dir/
 "${COMPOSECMD[@]}" -f "$(realpath $wd/docker-compose.yml)" down --remove-orphans --volumes
 
 # Removing temporary files
