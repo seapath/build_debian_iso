@@ -141,6 +141,10 @@ The user can manage his own classes by:
 - dealing with a numbered script in usercustomization/class/ folder (for example usercustomization/class/99-custom, chmod 755) to use the class (see srv_fai_config/class/99-seapath script for reference)
 - adding all the files related to the classes in the usercustomization hierarchy (for example usercustomization/package_config/USERCLASS1)
 
+## Debug a problem
+
+Since the fai process is containerized, build_debian_iso uses a bind mount on /tmp/fai so that all the FAI logs are persisted there on the build host.
+This allows the user to debug if the build were to fail for any reason.
 
 ## Build a Virtual Machine image
 
