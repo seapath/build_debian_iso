@@ -13,12 +13,12 @@ These scripts are based on FAI Project (Fully Automated Installation) : https://
 
 ## Prerequisites
 
-- A linux host with docker and docker-compose script or the docker compose v2 plugin installed
+- A linux host with podman and podman-compose
 - At large enough disk space to store the images
 
 ## Build the ISO file
 
-On a linux machine with docker and docker-compose, building the iso file should be possible by simply running
+On a linux machine with podman and podman-compose, building the iso file should be possible by simply running
 ```
 <path_to_build_debian_iso>/build_iso.sh
 ```
@@ -86,7 +86,7 @@ By default, the ISO includes container images needed for SEAPATH functionality. 
 * The file format is one image per line as `registry/image:tag` (e.g., `quay.io/ceph/ceph:v20.2.0`)
 * Lines starting with `#` are treated as comments and ignored, as well as empty lines
 
-During installation, the script reads all configuration files from active classes and copies the corresponding image files to `/opt/`. On first boot, all container images from `/opt/*.tgz` are automatically loaded into Podman.
+During installation, the script reads all configuration files from active classes and copies the corresponding image files to `/opt/`, and then call "podman load -i" on each one of them to load then in the podman local registry.
 
 more info: https://fai-project.org/fai-guide
 
