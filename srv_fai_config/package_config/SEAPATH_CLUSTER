@@ -1,6 +1,5 @@
 # This packages are specific to Cluster Mode
 PACKAGES install-norec
-catatonit
 ceph-common
 conntrackd
 corosync
@@ -8,7 +7,5 @@ crmsh
 libcephfs2
 libvirt-daemon-driver-storage-rbd
 pacemaker
-podman
 python3-ceph-argparse
 python3-cephfs
-uidmap
