@@ -49,13 +49,13 @@ if [ $# -gt 0 ]; then
 fi
 
 COMPOSECMD=(sudo podman-compose)
-CONTAINER_ENGINE=(podman)
+CONTAINER_ENGINE=(sudo podman)
 echo "We are going to use" "${CONTAINER_ENGINE[*]}" and "${COMPOSECMD[*]}"
 
 rm -f $output_dir/seapath-vm.qcow2
 # removing the volume in case it exists from a precedent build operation
-sudo "${CONTAINER_ENGINE[@]}" rm -f fai-setup 2>/dev/null
-sudo "${CONTAINER_ENGINE[@]}" volume rm build_debian_iso_ext 2>/dev/null
+"${CONTAINER_ENGINE[@]}" rm -f fai-setup 2>/dev/null
+"${CONTAINER_ENGINE[@]}" volume rm build_debian_iso_ext 2>/dev/null
 
 set -ex
 
@@ -71,7 +71,7 @@ cp -r "$wd/usercustomization/"* "$wd/build_tmp"
 "${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" up --no-start fai-setup
 
 # Adding the SEAPATH config
-sudo "${CONTAINER_ENGINE[@]}" cp "$wd"/build_tmp/. fai-setup:ext/srv/fai/config/
+"${CONTAINER_ENGINE[@]}" cp "$wd"/build_tmp/. fai-setup:ext/srv/fai/config/
 
 # Stopping the container after having added stuff in it
 "${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" down
@@ -95,10 +95,10 @@ CLASSES="DEBIAN,FAIBASE,FRENCH,TRIXIE64,SEAPATH_COMMON,GRUB_EFI,SEAPATH_RAW,${se
 
 # Retrieving the ISO from the volume
 "${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" up --no-start fai-setup
-echo sudo "${CONTAINER_ENGINE[@]}" cp fai-setup:/ext/seapath-vm.qcow2 $output_dir/
-sudo "${CONTAINER_ENGINE[@]}" cp fai-setup:/ext/seapath-vm.qcow2 $output_dir/
+echo "${CONTAINER_ENGINE[@]}" cp fai-setup:/ext/seapath-vm.qcow2 $output_dir/
+"${CONTAINER_ENGINE[@]}" cp fai-setup:/ext/seapath-vm.qcow2 $output_dir/
 "${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" down --remove-orphans
 
 # Removing the volume
-sudo "${CONTAINER_ENGINE[@]}" volume rm build_debian_iso_ext
+"${CONTAINER_ENGINE[@]}" volume rm build_debian_iso_ext
 rm -rf "$wd"/build_tmp/*

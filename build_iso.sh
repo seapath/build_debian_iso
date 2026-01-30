@@ -4,14 +4,14 @@ wd=$(dirname "$0")
 output_dir=.
 
 COMPOSECMD=(sudo podman-compose)
-CONTAINER_ENGINE=(podman)
+CONTAINER_ENGINE=(sudo podman)
 COMPOSE_FILE="$(realpath "$wd"/podman-compose.yml)"
 echo "We are going to use" "${CONTAINER_ENGINE[*]}" and "${COMPOSECMD[*]}"
 
 rm -f $output_dir/seapath.iso
 # removing the volume in case it exists from a precedent build operation
-sudo "${CONTAINER_ENGINE[@]}" rm -f fai-setup 2>/dev/null
-sudo "${CONTAINER_ENGINE[@]}" volume rm build_debian_iso_ext 2>/dev/null
+"${CONTAINER_ENGINE[@]}" rm -f fai-setup 2>/dev/null
+"${CONTAINER_ENGINE[@]}" volume rm build_debian_iso_ext 2>/dev/null
 
 set -e
 
@@ -244,15 +244,15 @@ fi
 "${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" up --no-start fai-setup
 
 # Adding the SEAPATH workspace
-sudo "${CONTAINER_ENGINE[@]}" cp "$wd"/build_tmp/. fai-setup:/ext/srv/fai/config/
+"${CONTAINER_ENGINE[@]}" cp "$wd"/build_tmp/. fai-setup:/ext/srv/fai/config/
 
 # Adding the cephadm binary
 echo mkdir -p /tmp/cephadm/usr/local/bin/cephadm
 mkdir -p /tmp/cephadm/usr/local/bin/cephadm
 echo wget -O /tmp/cephadm/usr/local/bin/cephadm/SEAPATH_CLUSTER https://download.ceph.com/rpm-20.2.0/el9/noarch/cephadm
 wget -O /tmp/cephadm/usr/local/bin/cephadm/SEAPATH_CLUSTER https://download.ceph.com/rpm-20.2.0/el9/noarch/cephadm
-echo sudo "${CONTAINER_ENGINE[@]}" cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
-sudo "${CONTAINER_ENGINE[@]}" cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
+echo "${CONTAINER_ENGINE[@]}" cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
+"${CONTAINER_ENGINE[@]}" cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
 # Adding the container images
 # Process container_images.conf files for all classes that have them
 # This handles images for SEAPATH_CLUSTER, SEAPATH_HOST, USERCUSTOMIZATION, and any other classes
@@ -290,8 +290,8 @@ if [ -d "$CONTAINER_IMAGES_BASE_DIR" ]; then
       if [ -z "$existing_files" ]; then
         # First time we see this image - download it
         echo "Downloading image: $i"
-        sudo "${CONTAINER_ENGINE[@]}" pull "$i"
-        sudo "${CONTAINER_ENGINE[@]}" save "$i" | gzip > "$image_path"
+        "${CONTAINER_ENGINE[@]}" pull "$i"
+        "${CONTAINER_ENGINE[@]}" save "$i" | gzip > "$image_path"
       else
         # Image already downloaded - just copy the existing file for this class
         # All classes will have the same image content, we just need the file for fcopy
@@ -303,8 +303,8 @@ if [ -d "$CONTAINER_IMAGES_BASE_DIR" ]; then
   
   # Copy all images to the container after processing all classes
   if [ -d "${CONTAINER_CACHE}" ]; then
-    echo sudo "${CONTAINER_ENGINE[@]}" cp ${CONTAINER_CACHE}/. fai-setup:/ext/srv/fai/files/
-    sudo "${CONTAINER_ENGINE[@]}" cp ${CONTAINER_CACHE}/. fai-setup:/ext/srv/fai/config/files/
+    echo "${CONTAINER_ENGINE[@]}" cp ${CONTAINER_CACHE}/. fai-setup:/ext/srv/fai/files/
+    "${CONTAINER_ENGINE[@]}" cp ${CONTAINER_CACHE}/. fai-setup:/ext/srv/fai/config/files/
     rm -rf ${CONTAINER_CACHE}
   fi
 else
@@ -335,7 +335,7 @@ CLASSES="FAIBASE,DEBIAN,GRUB_EFI,SEAPATH_COMMON,SEAPATH_HOST,SEAPATH_ISO,${final
 
 # Retrieving the ISO from the volume
 "${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" up --no-start fai-setup
-sudo "${CONTAINER_ENGINE[@]}" cp fai-setup:/ext/seapath.iso $output_dir/
+"${CONTAINER_ENGINE[@]}" cp fai-setup:/ext/seapath.iso $output_dir/
 "${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" down --remove-orphans --volumes
 
 # Removing temporary files
