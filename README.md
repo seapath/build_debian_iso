@@ -13,7 +13,7 @@ These scripts are based on FAI Project (Fully Automated Installation) : https://
 
 ## Prerequisites
 
-- A linux host with podman and podman-compose
+- A linux host with podman and podman-compose (and aardvark-dns as a podman dependency)
 - At large enough disk space to store the images
 
 ## Build the ISO file
