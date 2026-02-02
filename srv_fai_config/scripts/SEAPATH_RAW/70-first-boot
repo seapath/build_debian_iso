@@ -1,0 +1,15 @@
+#!/bin/bash
+
+error=0; trap 'error=$(($?>$error?$?:$error))' ERR # save maximum error code
+
+# Set machine-id to uninitialized so systemd generates a unique one on first boot
+# Each deployed instance will generate a unique machine-id
+echo "uninitialized" > "$FAI_ROOT/etc/machine-id"
+
+# Make D-Bus machine-id a symlink to /etc/machine-id
+# Otherwise systemd reads the stale D-Bus machine-id from the image
+rm -f "$FAI_ROOT/var/lib/dbus/machine-id"
+ln -s /etc/machine-id "$FAI_ROOT/var/lib/dbus/machine-id"
+
+# Delete SSH host keys so fresh ones are generated on first boot
+rm -f $FAI_ROOT/etc/ssh/ssh_host*
