@@ -1,6 +1,7 @@
 # This packages are specific to the Host (Standalone or Cluster) and should not be installed on the VM
 PACKAGES install-norec
 busybox
+catatonit
 firmware-amd-graphics
 firmware-misc-nonfree
 firmware-linux-nonfree
@@ -18,6 +19,7 @@ nginx
 ntfs-3g
 openvswitch-switch
 patch
+podman
 python3-flaskext.wtf
 python3-pip
 python3-libvirt
@@ -28,3 +30,4 @@ qemu-system-x86
 qemu-utils
 smartmontools
 snmpd
+uidmap
