@@ -18,6 +18,7 @@ linux-perf
 nginx
 ntfs-3g
 openvswitch-switch
+openvswitch-switch-dpdk
 patch
 podman
 python3-flaskext.wtf
