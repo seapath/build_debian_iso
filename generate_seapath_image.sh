@@ -221,6 +221,8 @@ rm -rf "$wd"/build_tmp/*
 cp -r "$wd/srv_fai_config/"* "$wd/build_tmp"
 cp -r "$wd/usercustomization/"* "$wd/build_tmp"
 
+$COMPOSECMD build
+
 # Create the default config space
 $COMPOSECMD -f "$(realpath $wd/docker-compose.yml)" run --rm fai-setup \
     fai-mk-configspace
