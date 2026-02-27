@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version="1.0"
+version="2.0"
 
 print_usage() {
     echo 'This script generates SEAPATH images base on Debian to be used in the "seapath-installer".'
@@ -22,7 +22,6 @@ print_usage() {
     echo "  -o, --output-dir DIR   Specify the output directory (default is current directory)"
     echo "  -a, --arch ARCH        Specify the architecture (AMD64 or ARM64). Default is AMD64"
     echo "  -x, --verbose          Enable debug mode for the script"
-    echo "      --docker           Force using 'docker' instead of 'podman' (if both are installed)"
     echo "      --ceph-disk        Include Ceph dedicated disk configuration"
     echo "      --hostname NAME    Specify the hostname (default is seapath)"
 }
@@ -45,7 +44,6 @@ OUTPUT=seapath.raw
 ROLE="$1"
 HOSTNAME=seapath
 COCKPIT=
-FORCE_DOCKER=
 DISKSIZE="60G"
 if [ "$ROLE" != "cluster" ]; then
     CEPH_DISK=",SEAPATH_CEPH_DISK"
@@ -64,7 +62,7 @@ if [ "$ROLE" == "cluster" ] || [ "$ROLE" == "observer" ]; then
 fi
 shift
 
-if ! OPTIONS=$(getopt -o hvs:cn:o:a:xd --long help,version,disk-size:,enable-cockpit,name:,output-dir:,ceph-disk,arch:,hostname:,verbose,docker -- "$@"); then
+if ! OPTIONS=$(getopt -o hvs:cn:o:a:xd --long help,version,disk-size:,enable-cockpit,name:,output-dir:,ceph-disk,arch:,hostname:,verbose -- "$@"); then
     print_usage
     exit 1
 fi
@@ -149,10 +147,6 @@ while true; do
                 exit 1
             fi
             ;;
-        --docker)
-            FORCE_DOCKER=1
-            shift
-            ;;
         -x|--verbose)
             set -x
             shift
@@ -175,45 +169,16 @@ if [[ "$ROLE" != "standalone" && "$ROLE" != "cluster" && "$ROLE" != "observer" ]
     exit 1
 fi
 
-
-COMPOSECMD="sudo podman-compose"
-CONTAINER_ENGINE="sudo podman"
-
-if [ -z "$FORCE_DOCKER" ]; then
-    # test if podman-compose works
-    podman-compose version >/dev/null 2>&1
-    returncode=$?
-    if [ $returncode -ne 0 ]; then
-        FORCE_DOCKER=1
-    fi
-fi
-
-if [ -n "$FORCE_DOCKER" ]; then
-
-    CONTAINER_ENGINE="docker"
-    # test if "docker compose" works
-    docker compose >/dev/null 2>&1
-    returncode=$?
-    if [ $returncode -eq 0 ]; then
-    COMPOSECMD="docker compose"
-    else
-    if ! command -v docker-compose >/dev/null 2>&1; then
-        echo "Error: Neither 'podman-compose' nor 'docker compose' nor 'docker-compose' command is available. Please install one of them." >&2
-        exit 1
-    fi
-    COMPOSECMD="docker-compose"
-    fi
-fi
-
-#cd "$wd" || exit 1
-
-echo "We are going to use $COMPOSECMD"
+COMPOSECMD=(sudo podman-compose)
+CONTAINER_ENGINE=(sudo podman)
+COMPOSE_FILE="$(realpath "$wd"/podman-compose.yml)"
+echo "We are going to use" "${CONTAINER_ENGINE[*]}" and "${COMPOSECMD[*]}"
 
 mkdir -p "$output_dir"
 
 rm -f "$output_dir/${OUTPUT} $output_dir/${OUTPUT}.bmap $output_dir/${OUTPUT}.gz"
 # removing the volume in case it exists from a precedent build operation
-$COMPOSECMD -f "$(realpath $wd/docker-compose.yml)" down --volumes 2>/dev/null
+"${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" down --volumes 2>/dev/null
 
 set -e
 
@@ -221,14 +186,14 @@ rm -rf "$wd"/build_tmp/*
 cp -r "$wd/srv_fai_config/"* "$wd/build_tmp"
 cp -r "$wd/usercustomization/"* "$wd/build_tmp"
 
-$COMPOSECMD build
+"${COMPOSECMD[@]}" build
 
 # Create the default config space
-$COMPOSECMD -f "$(realpath $wd/docker-compose.yml)" run --rm fai-setup \
+"${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" run --rm fai-setup \
     fai-mk-configspace
 
 # Starting the container to add seapath stuff in the config space
-$COMPOSECMD -f "$(realpath $wd/docker-compose.yml)" up --no-start fai-setup
+"${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" up --no-start fai-setup
 
 echo mkdir -p "$wd"/build_tmp/files/usr/local/bin/cephadm
 mkdir -p "$wd"/build_tmp/files/usr/local/bin/cephadm
@@ -236,30 +201,30 @@ echo wget -O "$wd"/build_tmp/files/usr/local/bin/cephadm/SEAPATH_CLUSTER https:/
 wget -O "$wd"/build_tmp/files/usr/local/bin/cephadm/SEAPATH_CLUSTER https://download.ceph.com/rpm-20.2.0/el9/noarch/cephadm
 
 # Adding the SEAPATH config
-$CONTAINER_ENGINE cp "$wd"/build_tmp/. fai-setup:ext/srv/fai/config/
+"${CONTAINER_ENGINE[@]}" cp "$wd"/build_tmp/. fai-setup:ext/srv/fai/config/
 
 # Stopping the container after having added stuff in it
-$COMPOSECMD -f "$(realpath $wd/docker-compose.yml)" down fai-setup
+"${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" down fai-setup
 
 # Creating the disk
 # patches /sbin/install_packages (bug in the process of being corrected upstream)
 CLASSES="FAIBASE,DEBIAN,GRUB_EFI,SEAPATH_COMMON,${HYPERVISOR}${CLUSTER}${COCKPIT}${DEBUG},${ARCH},SEAPATH_RAW${CEPH_DISK},USERCUSTOMIZATION,LAST"
 echo "Generate with FAI classes: $CLASSES"
-$COMPOSECMD -f "$(realpath $wd/docker-compose.yml)" run --rm fai-cd bash -c "\
+"${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" run --rm fai-cd bash -c "\
   sed -i -e \"s|-f \\\"\\\$FAI_ROOT/usr/sbin/apt-cache|-f \\\"\\\$FAI_ROOT/usr/bin/apt-cache|\" /sbin/install_packages && \
   sed -i -e \"s/ --allow-change-held-packages//\" /sbin/install_packages && \
   sed -i -e \"s/-c -o compression_type=zstd qcow2/qcow2/\" /usr/sbin/fai-diskimage && \
   fai-diskimage -vu ${HOSTNAME} -S${DISKSIZE} -c$CLASSES -s /ext/srv/fai/config /ext/${OUTPUT}"
 
 # Retrieving the ISO from the volume
-$COMPOSECMD -f "$(realpath $wd/docker-compose.yml)" up --no-start fai-setup
-OUTPUT_PATH=$($CONTAINER_ENGINE volume inspect --format '{{ .Mountpoint }}' build_debian_iso_ext)/${OUTPUT}
+"${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" up --no-start fai-setup
+OUTPUT_PATH=$("${CONTAINER_ENGINE[@]}" volume inspect --format '{{ .Mountpoint }}' build_debian_iso_ext)/${OUTPUT}
 sudo mv "$OUTPUT_PATH" "$output_dir/${OUTPUT}"
 sudo chown "$(id -u):$(id -g)" "$output_dir/${OUTPUT}"
 
 # Ensure all is stopped and cleaned (this command may fail if some containers are not running)
 set +e
-$COMPOSECMD -f "$(realpath $wd/docker-compose.yml)" down --remove-orphans --volumes 2>/dev/null
+"${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" down --remove-orphans --volumes 2>/dev/null
 set -e
 
 rm -rf "$wd"/build_tmp/*

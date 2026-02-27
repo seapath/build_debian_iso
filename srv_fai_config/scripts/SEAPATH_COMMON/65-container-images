@@ -5,7 +5,7 @@ error=0; trap 'error=$(($?>$error?$?:$error))' ERR # save maximum error code
 # Copy container images tgz files to /opt
 # This script handles container images for any class that has a container_images.conf file
 # It reads configuration files from all active classes and copies the corresponding image files to /opt/
-# for loading on first boot
+# for loading then with "$ROOTCMD podman load -i"
 FAI_CONFIG_DIR="/var/lib/fai/config"
 CONTAINER_IMAGES_DIR="$FAI_CONFIG_DIR/files/etc/container_images.conf"
 
@@ -25,14 +25,15 @@ for class_conf_file in "$CONTAINER_IMAGES_DIR"/*; do
         i=$(echo "$i" | xargs)
         [[ -z "$i" ]] && continue
         
-        registry=$(echo $i | cut -d'/' -f2)
-        image=$(echo $i | cut -d'/' -f3 | sed s/://g)
-        fcopy -M /opt/$registry"_"$image.tgz
+        registry=$(echo "$i" | cut -d'/' -f2)
+        image=$(echo "$i" | cut -d'/' -f3 | sed s/://g)
+
+        # this is to prevent shellcheck SC2154 because $target is injected at runtime
+        "${target:?FAI variable 'target' must be set}"
+
+        cp "$FAI_CONFIG_DIR/files/opt/${registry}_${image}.tgz" "$target/opt/"
+        $ROOTCMD podman load -i "/opt/${registry}_${image}.tgz"
+        rm -f "$target/opt/${registry}_${image}.tgz"
+
     done < "$class_conf_file"
 done
-
-# Setup firstboot service to load container images on first boot
-# The firstboot.sh script loads all .tgz files from /opt/ automatically
-fcopy -m root,root,0755 /firstboot.sh
-fcopy -M /etc/systemd/system/firstboot.service
-$ROOTCMD systemctl enable firstboot.service
