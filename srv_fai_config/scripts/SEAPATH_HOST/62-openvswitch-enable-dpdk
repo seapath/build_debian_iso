@@ -1,8 +1,0 @@
-#!/bin/bash
-
-error=0; trap 'error=$(($?>$error?$?:$error))' ERR # save maximum error code
-
-DPDK_OVS=$($ROOTCMD update-alternatives --list ovs-vswitchd | grep dpdk)
-if [ -n "$DPDK_OVS" ]; then
-    $ROOTCMD update-alternatives --set ovs-vswitchd "$DPDK_OVS"
-fi
