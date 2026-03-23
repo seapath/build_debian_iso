@@ -2,6 +2,80 @@
 
 version="2.0"
 
+function generate_seapath_metadata() {
+    OUTPUT=$OUTPUT output_dir=$output_dir role=$ROLE python3 - << END
+from pathlib import Path
+import xml.etree.ElementTree as ET
+import hashlib
+from os import environ
+
+working_dir = environ.get('output_dir', '')
+bmap_file = f'{environ.get('OUTPUT', '')}.bmap'
+
+role = environ.get('role', '')
+role = role.lower()
+
+if 'standalone' in role:
+    setup = 'Standalone'
+else:
+    setup = 'Cluster'
+
+# image_deploy_dir = Path(d.getVar('IMGDEPLOYDIR'))
+# bmap_image_name = d.getVar('IMAGE_LINK_NAME')
+bmap_path = working_dir + f'/{bmap_file}'
+print(bmap_path)
+# if not bmap_path.exists():
+#    raise 'Missing bmap file: %s' % bmap_path
+
+bmap_tree = ET.parse(str(bmap_path))
+root = bmap_tree.getroot()
+
+for tag, value in [
+    ('ImageName',        'SEAPATH Debian'),
+    ('ImageVersion',     '1.2.0'),
+    ('ImageDescription', 'A production image for SEAPATH'),
+    ('ImageSetup', setup),
+    ('ImageFlavor', 'Debian'),
+]:
+    node = ET.SubElement(root, tag)
+    node.text = f' {value} '
+    node.tail = '\n'
+
+
+# bmap-tools check for bmap file interity with a checksum computed
+# image build. As we modify the file we need to update the checksum
+# of the file:
+#   1. Reset the checksum to 0
+#   2. Compute the checksum of the file
+#   3. Replace with the new computed checksum
+bmap_file_checksum = root.find('BmapFileChecksum')
+len_bmap_file_checksum = len(str.strip(bmap_file_checksum.text))
+
+bmap_file_checksum.text = '0' * len_bmap_file_checksum
+root.tail = '\n'
+
+bmap_tree.write(str(bmap_path), encoding='utf-8', xml_declaration=False)
+
+checksum_type=root.find('ChecksumType')
+checksum_type_value = str.strip(checksum_type.text)
+
+block_size=root.find('BlockSize')
+block_size_value = int(str.strip(block_size.text))
+hash_obj = hashlib.new(str.strip(checksum_type.text))
+
+with open(bmap_path, 'rb') as file:
+    while chunk := file.read(block_size_value):
+        hash_obj.update(chunk)
+
+bmap_file_updated_hash = hash_obj.hexdigest()
+bmap_file_checksum.text = bmap_file_updated_hash
+
+bmap_tree.write(str(bmap_path), encoding='utf-8', xml_declaration=False)
+
+END
+
+}
+
 print_usage() {
     echo 'This script generates SEAPATH images base on Debian to be used in the "seapath-installer".'
     echo ""
@@ -39,6 +113,7 @@ if [ "${1,,}" == "-h" ] || [ "${1,,}" == "--help" ]; then
 fi
 
 wd=$(dirname "$0")
+SEAPATH_VERSION="1.2.0"
 output_dir=.
 OUTPUT=seapath.raw
 ROLE="$1"
@@ -238,6 +313,7 @@ if command -v bmaptool >/dev/null ; then
     else
         gzip "$output_dir/${OUTPUT}"
     fi
+    generate_seapath_metadata
 fi
 
 echo "SEAPATH image generation completed."
