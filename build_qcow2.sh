@@ -55,7 +55,7 @@ echo "We are going to use" "${CONTAINER_ENGINE[*]}" and "${COMPOSECMD[*]}"
 rm -f $output_dir/seapath-vm.qcow2
 # removing the volume in case it exists from a precedent build operation
 "${CONTAINER_ENGINE[@]}" rm -f fai-setup 2>/dev/null
-"${CONTAINER_ENGINE[@]}" volume rm build_debian_iso_ext 2>/dev/null
+"${CONTAINER_ENGINE[@]}" volume rm seapath-debian-ext 2>/dev/null
 
 set -ex
 
@@ -100,5 +100,5 @@ echo "${CONTAINER_ENGINE[@]}" cp fai-setup:/ext/seapath-vm.qcow2 $output_dir/
 "${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" down --remove-orphans
 
 # Removing the volume
-"${CONTAINER_ENGINE[@]}" volume rm build_debian_iso_ext
+"${CONTAINER_ENGINE[@]}" volume rm seapath-debian-ext
 rm -rf "$wd"/build_tmp/*
