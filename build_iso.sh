@@ -11,7 +11,7 @@ echo "We are going to use" "${CONTAINER_ENGINE[*]}" and "${COMPOSECMD[*]}"
 rm -f $output_dir/seapath.iso
 # removing the volume in case it exists from a precedent build operation
 "${CONTAINER_ENGINE[@]}" rm -f fai-setup 2>/dev/null
-"${CONTAINER_ENGINE[@]}" volume rm build_debian_iso_ext 2>/dev/null
+"${CONTAINER_ENGINE[@]}" volume rm seapath-debian-ext 2>/dev/null
 
 set -e
 

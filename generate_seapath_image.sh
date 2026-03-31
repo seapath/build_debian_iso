@@ -218,7 +218,7 @@ echo "Generate with FAI classes: $CLASSES"
 
 # Retrieving the ISO from the volume
 "${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" up --no-start fai-setup
-OUTPUT_PATH=$("${CONTAINER_ENGINE[@]}" volume inspect --format '{{ .Mountpoint }}' build_debian_iso_ext)/${OUTPUT}
+OUTPUT_PATH=$("${CONTAINER_ENGINE[@]}" volume inspect --format '{{ .Mountpoint }}' seapath-debian-ext)/${OUTPUT}
 sudo mv "$OUTPUT_PATH" "$output_dir/${OUTPUT}"
 sudo chown "$(id -u):$(id -g)" "$output_dir/${OUTPUT}"
 
