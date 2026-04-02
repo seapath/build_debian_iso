@@ -41,6 +41,7 @@ fi
 wd=$(dirname "$0")
 output_dir=.
 ext_dir=$wd/ext
+fai_config_dir=$ext_dir/srv/fai/config
 OUTPUT=seapath.raw
 ROLE="$1"
 HOSTNAME=seapath
@@ -197,18 +198,14 @@ sudo rm -rf "$ext_dir"/*
 
 set -e
 
-rm -rf "$wd"/build_tmp/*
-cp -r "$wd/srv_fai_config/"* "$wd/build_tmp"
-cp -r "$wd/usercustomization/"* "$wd/build_tmp"
-
 # Create the default config space
 docker_run fai-mk-configspace
 
-mkdir -p "$wd"/build_tmp/files/usr/local/bin/cephadm
-wget -O "$wd"/build_tmp/files/usr/local/bin/cephadm/SEAPATH_CLUSTER https://download.ceph.com/rpm-20.2.0/el9/noarch/cephadm
+sudo cp -r "$wd/srv_fai_config/"* "$fai_config_dir"
+sudo cp -r "$wd/usercustomization/"* "$fai_config_dir"
 
-# Adding the SEAPATH config
-sudo cp -r "$wd/build_tmp/." "$ext_dir/srv/fai/config/"
+sudo mkdir -p "$fai_config_dir/files/usr/local/bin/cephadm"
+sudo wget -O "$fai_config_dir/files/usr/local/bin/cephadm/SEAPATH_CLUSTER" https://download.ceph.com/rpm-20.2.0/el9/noarch/cephadm
 
 # Creating the disk
 # patches /sbin/install_packages (bug in the process of being corrected upstream)
@@ -226,8 +223,6 @@ sudo chown "$(id -u):$(id -g)" "$output_dir/${OUTPUT}"
 
 # Clean the build volume
 sudo rm -rf $ext_dir
-
-rm -rf "$wd"/build_tmp/*
 
 if command -v bmaptool >/dev/null ; then
 
