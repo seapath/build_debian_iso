@@ -3,6 +3,8 @@
 /*.bmap
 /*.raw
 /*.qcow2
+/sbom.*
+
 usercustomization/class/*
 usercustomization/debconf/*
 usercustomization/disk_config/*
