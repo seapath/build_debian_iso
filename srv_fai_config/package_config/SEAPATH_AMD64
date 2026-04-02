@@ -3,6 +3,7 @@ msr-tools
 intel-cmt-cat
 linux-image-rt-amd64
 intel-microcode
+firmware-intel-misc
 grub-efi-amd64-signed
 amd64-microcode
 
