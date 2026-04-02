@@ -191,7 +191,7 @@ function docker_run {
 
 mkdir -p "$output_dir" "$ext_dir" "/tmp/fai"
 
-rm -f "$output_dir/${OUTPUT} $output_dir/${OUTPUT}.bmap $output_dir/${OUTPUT}.gz"
+rm -f "$output_dir/${OUTPUT}"{,.bmap,.gz} sbom{.spdx,.syft}.json
 # Removing the ext dir in case it exists from a precedent build operation.
 sudo rm -rf "$ext_dir"/*
 
@@ -200,6 +200,7 @@ set -e
 # Create the default config space
 docker_run fai-mk-configspace
 
+sudo mkdir "$ext_dir/output"
 sudo cp -r "$wd/srv_fai_config/"* "$fai_config_dir"
 sudo cp -r "$wd/usercustomization/"* "$fai_config_dir"
 
@@ -214,11 +215,11 @@ docker_run bash -c "\
   sed -i -e \"s|-f \\\"\\\$FAI_ROOT/usr/sbin/apt-cache|-f \\\"\\\$FAI_ROOT/usr/bin/apt-cache|\" /sbin/install_packages && \
   sed -i -e \"s/ --allow-change-held-packages//\" /sbin/install_packages && \
   sed -i -e \"s/-c -o compression_type=zstd qcow2/qcow2/\" /usr/sbin/fai-diskimage && \
-  fai-diskimage -vu ${HOSTNAME} -S${DISKSIZE} -c$CLASSES -s /ext/srv/fai/config /ext/${OUTPUT}"
+  fai-diskimage -vu ${HOSTNAME} -S${DISKSIZE} -c$CLASSES -s /ext/srv/fai/config /ext/output/${OUTPUT}"
 
-# Retrieving the ISO from the volume
-sudo mv "$ext_dir/${OUTPUT}" "$output_dir/${OUTPUT}"
-sudo chown "$(id -u):$(id -g)" "$output_dir/${OUTPUT}"
+# Retrieving the output files from the volume (image and SBOM)
+sudo mv "$ext_dir/output/"* "$output_dir/"
+sudo chown -R "$(id -u):$(id -g)" "$output_dir/"*
 
 # Clean the build volume
 sudo rm -rf $ext_dir

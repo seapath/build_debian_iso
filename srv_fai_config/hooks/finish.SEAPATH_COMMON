@@ -1,0 +1,8 @@
+#!/bin/bash
+
+echo "Starting SBOM generation."
+mkdir /ext/sbom/
+syft scan "$FAI_ROOT" \
+    --exclude ./var/lib/containers/ \
+    -o spdx-json@2.3=/ext/output/sbom.spdx.json \
+    -o json=/ext/output/sbom.syft.json
