@@ -12,6 +12,7 @@ usercustomization/package_config/*
 usercustomization/scripts/*
 !usercustomization/*/.gitkeep
 build_tmp/*
+ext/*
 !build_tmp/.gitkeep
 etc_fai/grub.cfg
 user_classes.conf
