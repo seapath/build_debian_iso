@@ -40,6 +40,7 @@ fi
 
 wd=$(dirname "$0")
 output_dir=.
+ext_dir=$wd/ext
 OUTPUT=seapath.raw
 ROLE="$1"
 HOSTNAME=seapath
@@ -169,16 +170,29 @@ if [[ "$ROLE" != "standalone" && "$ROLE" != "cluster" && "$ROLE" != "observer" ]
     exit 1
 fi
 
-COMPOSECMD=(sudo podman-compose)
 CONTAINER_ENGINE=(sudo podman)
-COMPOSE_FILE="$(realpath "$wd"/podman-compose.yml)"
-echo "We are going to use" "${CONTAINER_ENGINE[*]}" and "${COMPOSECMD[*]}"
+echo "We are going to use" "${CONTAINER_ENGINE[*]}"
 
-mkdir -p "$output_dir"
+CONTAINER_IMAGE_NAME=fai
+
+"${CONTAINER_ENGINE[@]}" build . --tag "$CONTAINER_IMAGE_NAME"
+
+function docker_run {
+    "${CONTAINER_ENGINE[@]}" run \
+        --rm \
+        --privileged \
+        -v ./ext:/ext:Z \
+        -v ./etc_fai:/etc/fai:ro,Z \
+        -v /dev:/dev \
+        -v /tmp/fai:/var/log/fai:Z \
+        "$CONTAINER_IMAGE_NAME" "$@"
+}
+
+mkdir -p "$output_dir" "$ext_dir" "/tmp/fai"
 
 rm -f "$output_dir/${OUTPUT} $output_dir/${OUTPUT}.bmap $output_dir/${OUTPUT}.gz"
-# removing the volume in case it exists from a precedent build operation
-"${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" down --volumes 2>/dev/null
+# Removing the ext dir in case it exists from a precedent build operation.
+sudo rm -rf "$ext_dir"/*
 
 set -e
 
@@ -186,46 +200,31 @@ rm -rf "$wd"/build_tmp/*
 cp -r "$wd/srv_fai_config/"* "$wd/build_tmp"
 cp -r "$wd/usercustomization/"* "$wd/build_tmp"
 
-"${COMPOSECMD[@]}" build
-
 # Create the default config space
-"${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" run --rm fai-setup \
-    fai-mk-configspace
+docker_run fai-mk-configspace
 
-# Starting the container to add seapath stuff in the config space
-"${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" up --no-start fai-setup
-
-echo mkdir -p "$wd"/build_tmp/files/usr/local/bin/cephadm
 mkdir -p "$wd"/build_tmp/files/usr/local/bin/cephadm
-echo wget -O "$wd"/build_tmp/files/usr/local/bin/cephadm/SEAPATH_CLUSTER https://download.ceph.com/rpm-20.2.0/el9/noarch/cephadm
 wget -O "$wd"/build_tmp/files/usr/local/bin/cephadm/SEAPATH_CLUSTER https://download.ceph.com/rpm-20.2.0/el9/noarch/cephadm
 
 # Adding the SEAPATH config
-"${CONTAINER_ENGINE[@]}" cp "$wd"/build_tmp/. fai-setup:ext/srv/fai/config/
-
-# Stopping the container after having added stuff in it
-"${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" down fai-setup
+sudo cp -r "$wd/build_tmp/." "$ext_dir/srv/fai/config/"
 
 # Creating the disk
 # patches /sbin/install_packages (bug in the process of being corrected upstream)
 CLASSES="FAIBASE,DEBIAN,GRUB_EFI,SEAPATH_COMMON,${HYPERVISOR}${CLUSTER}${COCKPIT}${DEBUG},${ARCH},SEAPATH_RAW${CEPH_DISK},USERCUSTOMIZATION,LAST"
 echo "Generate with FAI classes: $CLASSES"
-"${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" run --rm fai-cd bash -c "\
+docker_run bash -c "\
   sed -i -e \"s|-f \\\"\\\$FAI_ROOT/usr/sbin/apt-cache|-f \\\"\\\$FAI_ROOT/usr/bin/apt-cache|\" /sbin/install_packages && \
   sed -i -e \"s/ --allow-change-held-packages//\" /sbin/install_packages && \
   sed -i -e \"s/-c -o compression_type=zstd qcow2/qcow2/\" /usr/sbin/fai-diskimage && \
   fai-diskimage -vu ${HOSTNAME} -S${DISKSIZE} -c$CLASSES -s /ext/srv/fai/config /ext/${OUTPUT}"
 
 # Retrieving the ISO from the volume
-"${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" up --no-start fai-setup
-OUTPUT_PATH=$("${CONTAINER_ENGINE[@]}" volume inspect --format '{{ .Mountpoint }}' seapath-debian-ext)/${OUTPUT}
-sudo mv "$OUTPUT_PATH" "$output_dir/${OUTPUT}"
+sudo mv "$ext_dir/${OUTPUT}" "$output_dir/${OUTPUT}"
 sudo chown "$(id -u):$(id -g)" "$output_dir/${OUTPUT}"
 
-# Ensure all is stopped and cleaned (this command may fail if some containers are not running)
-set +e
-"${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" down --remove-orphans --volumes 2>/dev/null
-set -e
+# Clean the build volume
+sudo rm -rf $ext_dir
 
 rm -rf "$wd"/build_tmp/*
 
