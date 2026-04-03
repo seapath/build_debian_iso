@@ -3,6 +3,8 @@
 /*.bmap
 /*.raw
 /*.qcow2
+/sbom.*
+
 usercustomization/class/*
 usercustomization/debconf/*
 usercustomization/disk_config/*
@@ -12,6 +14,7 @@ usercustomization/package_config/*
 usercustomization/scripts/*
 !usercustomization/*/.gitkeep
 build_tmp/*
+ext/*
 !build_tmp/.gitkeep
 etc_fai/grub.cfg
 user_classes.conf

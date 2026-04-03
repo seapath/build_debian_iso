@@ -7,3 +7,6 @@ RUN echo "deb http://fai-project.org/download trixie koeln" > /etc/apt/sources.l
     apt-get -y install lftp curl whiptail patch && \
     apt-get -y install qemu-utils && \
     apt-get -y install reprepro xorriso squashfs-tools vim udev
+
+# Syft is a tool for SBOM generation
+RUN curl -sSfL https://get.anchore.io/syft | sh -s -- -b /usr/local/bin
