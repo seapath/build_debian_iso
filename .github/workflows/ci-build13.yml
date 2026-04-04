@@ -22,7 +22,7 @@ jobs:
     runs-on: [self-hosted, runner-RTE-cibuild13]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Make build_iso.sh executable (if needed)
         run: chmod +x .release/generate_images.sh
