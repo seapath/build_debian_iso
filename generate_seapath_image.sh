@@ -228,6 +228,48 @@ sudo cp -r "$wd/usercustomization/"* "$fai_config_dir"
 sudo mkdir -p "$fai_config_dir/files/usr/local/bin/cephadm"
 sudo wget -O "$fai_config_dir/files/usr/local/bin/cephadm/SEAPATH_CLUSTER" https://download.ceph.com/rpm-20.2.0/el9/noarch/cephadm
 
+# Adding the container images
+# Process container_images.conf files for all classes that have them
+# This handles images for SEAPATH_CLUSTER, SEAPATH_HOST, USERCUSTOMIZATION, and any other classes
+CONTAINER_IMAGES_CONFIG_DIR="$fai_config_dir/files/etc/container_images.conf"
+
+if [ -d "$CONTAINER_IMAGES_CONFIG_DIR" ]; then
+    image_dir="$fai_config_dir/files/opt/images"
+    sudo mkdir -p "$image_dir"
+    # Process each class configuration file
+    for class_conf_file in "$CONTAINER_IMAGES_CONFIG_DIR"/*; do
+        [ -f "$class_conf_file" ] || continue
+
+        class_name=$(basename "$class_conf_file")
+
+        if ! has_class "$class_name"; then
+            echo "Skipped download of images for class $class_name"
+            continue
+        fi
+        echo "Processing container images for class $class_name"
+
+        # Read images from config file (ignore comments and empty lines)
+        while IFS= read -r i || [ -n "$i" ]; do
+            # Skip empty lines and comments
+            [[ -z "$i" || "$i" =~ ^[[:space:]]*# ]] && continue
+            # Trim whitespace
+            i=$(echo "$i" | xargs)
+            [[ -z "$i" ]] && continue
+
+            registry=$(echo "$i" | cut -d'/' -f2)
+            image=$(echo "$i" | cut -d'/' -f3 | sed s/://g)
+            image_file="$image_dir/${registry}_${image}"
+
+            echo "Downloading image: $i"
+            "${CONTAINER_ENGINE[@]}" pull "$i"
+            echo "Saving image $i to $image_file"
+            "${CONTAINER_ENGINE[@]}" save "$i" --format oci-archive --output "$image_file"
+        done < "$class_conf_file"
+    done
+else
+    echo "Warning: container_images.conf directory not found, skipping image import" >&2
+fi
+
 # Creating the disk
 # patches /sbin/install_packages (bug in the process of being corrected upstream)
 docker_run bash -c "\

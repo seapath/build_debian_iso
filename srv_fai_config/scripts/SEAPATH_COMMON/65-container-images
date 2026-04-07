@@ -1,39 +1,28 @@
 #!/bin/bash
 
 error=0; trap 'error=$(($?>$error?$?:$error))' ERR # save maximum error code
+shopt -s nullglob
 
-# Copy container images tgz files to /opt
-# This script handles container images for any class that has a container_images.conf file
-# It reads configuration files from all active classes and copies the corresponding image files to /opt/
-# for loading then with "$ROOTCMD podman load -i"
-FAI_CONFIG_DIR="/var/lib/fai/config"
-CONTAINER_IMAGES_DIR="$FAI_CONFIG_DIR/files/etc/container_images.conf"
+BUILD_IMAGES_DIR="$FAI/files/opt/images"
+LOCAL_IMAGES_DIR="/opt/images"
 
-# Collect all images from all classes that have container_images.conf files
-# We check all possible classes and copy images if the config file exists
-for class_conf_file in "$CONTAINER_IMAGES_DIR"/*; do
-    [ -f "$class_conf_file" ] || continue
-    
-    class_name=$(basename "$class_conf_file")
-    echo "Processing container images for class: $class_name"
-    
-    # Read images from config file (ignore comments and empty lines)
-    while IFS= read -r i || [ -n "$i" ]; do
-        # Skip empty lines and comments
-        [[ -z "$i" || "$i" =~ ^[[:space:]]*# ]] && continue
-        # Trim whitespace
-        i=$(echo "$i" | xargs)
-        [[ -z "$i" ]] && continue
-        
-        registry=$(echo "$i" | cut -d'/' -f2)
-        image=$(echo "$i" | cut -d'/' -f3 | sed s/://g)
+mkdir -p "$FAI_ROOT$LOCAL_IMAGES_DIR"
 
-        # this is to prevent shellcheck SC2154 because $target is injected at runtime
-        "${target:?FAI variable 'target' must be set}"
+# Collect all images that have been saved to the build directory and load them
+# in the guest local image storage.
+# No need to parse the container_images.conf files again since the image
+# generation script already does it and save the needed images in /opt/images.
+for build_image_file in "$BUILD_IMAGES_DIR"/*; do
+    image_name=$(basename "$build_image_file")
+    echo "Loading container image $image_name"
+    image_path="$LOCAL_IMAGES_DIR/$image_name"
 
-        cp "$FAI_CONFIG_DIR/files/opt/${registry}_${image}.tgz" "$target/opt/"
-        $ROOTCMD podman load -i "/opt/${registry}_${image}.tgz"
-        rm -f "$target/opt/${registry}_${image}.tgz"
+    # We copy the image since chrooted podman does not have access to the
+    # files outside its local filesystem.
+    cp "$build_image_file" "$FAI_ROOT$image_path"
+    $ROOTCMD podman load -i "$image_path"
+    rm -f "$FAI_ROOT$image_path"
 
-    done < "$class_conf_file"
+    # NOTE: the original image file is not removed since it will be later used
+    # for SBOM generation
 done

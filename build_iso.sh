@@ -281,8 +281,8 @@ if [ -d "$CONTAINER_IMAGES_BASE_DIR" ]; then
       
       registry=$(echo "$i" | cut -d'/' -f2)
       image=$(echo "$i" | cut -d'/' -f3 | sed s/://g)
-      image_path="${CONTAINER_CACHE}/opt/${registry}_${image}.tgz"
-      mkdir -p "${CONTAINER_CACHE}/opt/"
+      image_path="${CONTAINER_CACHE}/opt/images/${registry}_${image}.tgz"
+      mkdir -p "${CONTAINER_CACHE}/opt/images"
       
       # Check if we already have this image for another class
       # If yes, we just copy the existing file, otherwise download
