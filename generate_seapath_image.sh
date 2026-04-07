@@ -43,26 +43,19 @@ output_dir=.
 ext_dir=$wd/ext
 fai_config_dir=$ext_dir/srv/fai/config
 OUTPUT=seapath.raw
+
 ROLE="$1"
+shift
 HOSTNAME=seapath
 COCKPIT=
-DISKSIZE="60G"
-if [ "$ROLE" != "cluster" ]; then
-    CEPH_DISK=",SEAPATH_CEPH_DISK"
-else
-    CEPH_DISK=
-fi
-ARCH="SEAPATH_AMD64"
-HYPERVISOR=
-CLUSTER=
 DEBUG=
-if [ "$ROLE" == "standalone" ] || [ "$ROLE" == "cluster" ]; then
-    HYPERVISOR=",SEAPATH_HOST"
+DISKSIZE="60G"
+ARCH="SEAPATH_AMD64"
+if [ "$ROLE" != "cluster" ]; then
+    CEPH_DISK=true
+else
+    CEPH_DISK=false
 fi
-if [ "$ROLE" == "cluster" ] || [ "$ROLE" == "observer" ]; then
-    CLUSTER=",SEAPATH_CLUSTER"
-fi
-shift
 
 if ! OPTIONS=$(getopt -o hvs:cn:o:a:xd --long help,version,disk-size:,enable-cockpit,name:,output-dir:,ceph-disk,arch:,hostname:,verbose -- "$@"); then
     print_usage
@@ -106,11 +99,11 @@ while true; do
             fi
             ;;
         -c|--enable-cockpit)
-            COCKPIT=",SEAPATH_COCKPIT"
+            COCKPIT=true
             shift
             ;;
         -d|--enable-debug)
-            DEBUG=",SEAPATH_DBG"
+            DEBUG=true
             shift
             ;;
         -n|--name)
@@ -134,7 +127,7 @@ while true; do
             ;;
         --ceph-disk)
             if [ "$ROLE" == "cluster" ]; then
-                CEPH_DISK=",SEAPATH_CEPH_DISK"
+                CEPH_DISK=true
             else
                 echo "Warning: --ceph-disk option is only applicable for 'cluster' role. Ignoring." >&2
             fi
@@ -170,6 +163,34 @@ if [[ "$ROLE" != "standalone" && "$ROLE" != "cluster" && "$ROLE" != "observer" ]
     echo "Error: Invalid role specified: $ROLE" >&2
     exit 1
 fi
+
+IFS=','
+CLASSES=(FAIBASE DEBIAN GRUB_EFI SEAPATH_COMMON)
+if [ "$ROLE" == "standalone" ] || [ "$ROLE" == "cluster" ]; then
+    CLASSES+=("SEAPATH_HOST")
+fi
+if [ "$ROLE" == "cluster" ] || [ "$ROLE" == "observer" ]; then
+    CLASSES+=("SEAPATH_CLUSTER")
+fi
+if [ "$COCKPIT" = true ]; then
+    CLASSES+=("SEAPATH_COCKPIT")
+fi
+if [ "$DEBUG" = true ]; then
+    CLASSES+=("SEAPATH_DBG")
+fi
+CLASSES+=("$ARCH" SEAPATH_RAW)
+if [ "$CEPH_DISK" = true ]; then
+    CLASSES+=("SEAPATH_CEPH_DISK")
+fi
+CLASSES+=(USERCUSTOMIZATION LAST)
+
+echo "Generate with FAI classes: ${CLASSES[*]}"
+
+function has_class {
+    class_name=$1
+    [[ "${IFS}${CLASSES[*]}${IFS}" =~ ${IFS}${class_name}${IFS} ]]
+    return $?
+}
 
 CONTAINER_ENGINE=(sudo podman)
 echo "We are going to use" "${CONTAINER_ENGINE[*]}"
@@ -209,13 +230,11 @@ sudo wget -O "$fai_config_dir/files/usr/local/bin/cephadm/SEAPATH_CLUSTER" https
 
 # Creating the disk
 # patches /sbin/install_packages (bug in the process of being corrected upstream)
-CLASSES="FAIBASE,DEBIAN,GRUB_EFI,SEAPATH_COMMON,${HYPERVISOR}${CLUSTER}${COCKPIT}${DEBUG},${ARCH},SEAPATH_RAW${CEPH_DISK},USERCUSTOMIZATION,LAST"
-echo "Generate with FAI classes: $CLASSES"
 docker_run bash -c "\
   sed -i -e \"s|-f \\\"\\\$FAI_ROOT/usr/sbin/apt-cache|-f \\\"\\\$FAI_ROOT/usr/bin/apt-cache|\" /sbin/install_packages && \
   sed -i -e \"s/ --allow-change-held-packages//\" /sbin/install_packages && \
   sed -i -e \"s/-c -o compression_type=zstd qcow2/qcow2/\" /usr/sbin/fai-diskimage && \
-  fai-diskimage -vu ${HOSTNAME} -S${DISKSIZE} -c$CLASSES -s /ext/srv/fai/config /ext/output/${OUTPUT}"
+  fai-diskimage -vu ${HOSTNAME} -S${DISKSIZE} -c${CLASSES[*]} -s /ext/srv/fai/config /ext/output/${OUTPUT}"
 
 # Retrieving the output files from the volume (image and SBOM)
 sudo mv "$ext_dir/output/"* "$output_dir/"
