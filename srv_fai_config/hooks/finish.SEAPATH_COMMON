@@ -13,7 +13,7 @@ function scan_rootfs {
         --exclude ./var/lib/containers/ \
         --source-name "SEAPATH Debian" \
         --source-supplier "SEAPATH using FAI v$FAI_VERSION" \
-        --source-version "unknown" \
+        --source-version "$SEAPATH_VERSION" \
         -o json=/ext/output/sbom/rootfs.syft.json
 }
 
