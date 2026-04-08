@@ -1,6 +1,8 @@
 #!/bin/bash
 
-version="2.0"
+version="2.1"
+
+set -e
 
 print_usage() {
     echo 'This script generates SEAPATH images base on Debian to be used in the "seapath-installer".'
@@ -210,13 +212,14 @@ function docker_run {
         "$CONTAINER_IMAGE_NAME" "$@"
 }
 
+# Removing the old generated artifacts
+rm -f "$output_dir/${OUTPUT}"{,.bmap,.gz}
+rm -rf "$output_dir/sbom"
+
+# Removing the build directory in case it exists from a precedent build operation.
+sudo rm -rf "$ext_dir"
+
 mkdir -p "$output_dir" "$ext_dir" "/tmp/fai"
-
-rm -f "$output_dir/${OUTPUT}"{,.bmap,.gz} sbom{.spdx,.syft}.json
-# Removing the ext dir in case it exists from a precedent build operation.
-sudo rm -rf "$ext_dir"/*
-
-set -e
 
 # Create the default config space
 docker_run fai-mk-configspace
@@ -282,8 +285,8 @@ docker_run bash -c "\
 sudo mv "$ext_dir/output/"* "$output_dir/"
 sudo chown -R "$(id -u):$(id -g)" "$output_dir/"*
 
-# Clean the build volume
-sudo rm -rf $ext_dir
+# Clean the build directory
+sudo rm -rf "$ext_dir"
 
 if command -v bmaptool >/dev/null ; then
 

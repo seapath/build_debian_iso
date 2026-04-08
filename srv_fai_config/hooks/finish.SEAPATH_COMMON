@@ -1,8 +1,41 @@
 #!/bin/bash
 
+shopt -s nullglob
+
+sbom_dir="/ext/output/sbom"
+images_sbom_dir="$sbom_dir/images"
+
+mkdir -p "$sbom_dir" "$images_sbom_dir"
+
+function scan_rootfs {
+    echo "Scanning rootfs at $FAI_ROOT..."
+    syft scan "$FAI_ROOT" \
+        --exclude ./var/lib/containers/ \
+        --source-name "SEAPATH Debian" \
+        --source-supplier "SEAPATH using FAI v$FAI_VERSION" \
+        --source-version "unknown" \
+        -o json=/ext/output/sbom/rootfs.syft.json
+}
+
+function scan_image {
+    image_file=$1
+    image_name=$(basename "$build_image_file")
+
+    echo "Scanning image $image_name..."
+    syft scan "$image_file" \
+        -o json="$images_sbom_dir/$image_name.syft.json"
+}
+
+function scan_all_images {
+    BUILD_IMAGES_DIR="$FAI/files/opt/images"
+
+    echo "Searching for images to scan in $BUILD_IMAGES_DIR..."
+    for build_image_file in "$BUILD_IMAGES_DIR"/*; do
+        scan_image "$build_image_file"
+    done
+}
+
 echo "Starting SBOM generation."
-mkdir /ext/sbom/
-syft scan "$FAI_ROOT" \
-    --exclude ./var/lib/containers/ \
-    -o spdx-json@2.3=/ext/output/sbom.spdx.json \
-    -o json=/ext/output/sbom.syft.json
+
+scan_rootfs
+scan_all_images
