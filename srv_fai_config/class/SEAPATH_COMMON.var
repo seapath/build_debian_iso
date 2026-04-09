@@ -53,3 +53,5 @@ REMOTEGW=10.0.0.1
 # all: DHCP will be enable for all interface
 # [interface]: DHCP will be enable for the interface. e.g enp1s0
 REMOTEDHCP=no
+
+SEAPATH_VERSION=1.2.0
