@@ -2,6 +2,10 @@
 
 shopt -s nullglob
 
+# We only generate the SBOMs when generating RAW image since we want to get it
+# at build time, not at deploy time. This script would be ran too late when
+# generating an ISO file.
+
 sbom_dir="/ext/output/sbom"
 images_sbom_dir="$sbom_dir/images"
 
