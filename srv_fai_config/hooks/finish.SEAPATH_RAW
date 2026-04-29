@@ -14,7 +14,7 @@ mkdir -p "$sbom_dir" "$images_sbom_dir"
 function scan_rootfs {
     echo "Scanning rootfs at $FAI_ROOT..."
     syft scan "$FAI_ROOT" \
-        --exclude ./var/lib/containers/ \
+        --exclude ./var/lib/containers \
         --source-name "SEAPATH Debian" \
         --source-supplier "SEAPATH using FAI v$FAI_VERSION" \
         --source-version "$SEAPATH_VERSION" \
