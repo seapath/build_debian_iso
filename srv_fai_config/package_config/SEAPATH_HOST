@@ -1,5 +1,6 @@
 # This packages are specific to the Host (Standalone or Cluster) and should not be installed on the VM
 PACKAGES install-norec
+arping
 busybox
 catatonit
 firmware-amd-graphics
