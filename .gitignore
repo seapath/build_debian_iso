@@ -19,3 +19,4 @@ ext/*
 etc_fai/grub.cfg
 user_classes.conf
 .vscode/
+__pycache__/
