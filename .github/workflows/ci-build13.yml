@@ -24,12 +24,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Make build_iso.sh executable (if needed)
-        run: chmod +x .release/generate_images.sh
+      - name: Make ci_build.sh executable (if needed)
+        run: chmod +x .release/ci_build.sh
 
-      - name: Run release script
+      - name: Run CI build script
         run: |
-          .release/generate_images.sh
+          .release/ci_build.sh
         shell: bash
 
       - name: Check exit code
