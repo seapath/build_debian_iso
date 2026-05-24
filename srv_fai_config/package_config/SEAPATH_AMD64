@@ -1,12 +1,11 @@
-PACKAGES install-norec
+PACKAGES install-norec SEAPATH_HOST
 msr-tools
 intel-cmt-cat
-linux-image-rt-amd64
-intel-microcode
 firmware-intel-misc
-grub-efi-amd64-signed
-amd64-microcode
 
 PACKAGES install-norec
+linux-image-rt-amd64
+intel-microcode
+grub-efi-amd64-signed
+amd64-microcode
 linux-image-amd64-
-
