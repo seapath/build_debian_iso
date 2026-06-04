@@ -13,6 +13,8 @@ rootfs images), rename them with the current git-described version, and
 optionally publish them to the matching GitHub release.
 
 Options:
+  --tag        Use this specific tag instead of guessing it from the git
+               describe command.
   --publish    Upload the renamed artifacts to the GitHub release matching
                the current tag. Requires being on an exact, clean tag and
                that the release already exists on GitHub.
@@ -25,6 +27,10 @@ while [ $# -gt 0 ]; do
         --publish)
             PUBLISH=true
             shift
+            ;;
+        --tag)
+            VERSION="$2"
+            shift 2
             ;;
         -h|--help)
             print_usage
@@ -48,7 +54,9 @@ if ! command -v bmaptool >/dev/null; then
     exit 1
 fi
 
-VERSION=$(git describe --tags --dirty)
+if [ -z "$VERSION" ]; then
+  VERSION=$(git describe --tags --dirty)
+fi
 
 if $PUBLISH; then
     if ! command -v gh >/dev/null; then
