@@ -1,0 +1,58 @@
+name: Build and Upload to S3
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_id:
+        type: string
+        required: false
+        description: >-
+          Build identifier for organizing artifacts in S3.
+          If not provided, defaults to current timestamp (YYYY-MM-DD/HH-MM-SS).
+
+permissions: read-all
+
+jobs:
+  generate-and-upload:
+    name: Generate images and upload to S3
+    runs-on: [self-hosted, runner-RTE-cibuild13]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Make image generator executable
+        run: chmod +x .release/generate_images.sh
+
+      - name: Set build ID (default to timestamp if not provided)
+        working-directory: ${{ github.workspace }}
+        run: |
+          BUILD_ID='${{ inputs.build_id }}'
+          if [ -z "$BUILD_ID" ]; then
+            BUILD_ID=$(date +%F-%H-%M-%S)
+          fi
+          echo "BUILD_ID=$BUILD_ID" >> "$GITHUB_ENV"
+
+      - name: Generate release images
+        run: |
+          .release/generate_images.sh --tag ${BUILD_ID}
+
+      - name: Upload to S3
+        env:
+          S3CMD_ACCESS_KEY: ${{ secrets.S3CMD_ACCESS_KEY }}
+          S3CMD_SECRET_KEY: ${{ secrets.S3CMD_SECRET_KEY }}
+          S3_BUCKET: s3://seapath-releases
+          S3_HOST: e1e604922c4057433cbe77d3700ac51c.r2.cloudflarestorage.com
+          S3_HOST_BUCKET: "%(bucket)s.e1e604922c4057433cbe77d3700ac51c.r2.cloudflarestorage.com"
+        run: |
+          which s3cmd || pip install s3cmd
+
+          s3cmd \
+            --access_key=${S3CMD_ACCESS_KEY} \
+            --secret_key=${S3CMD_SECRET_KEY} \
+            --host=${S3_HOST} \
+            --host-bucket=${S3_HOST_BUCKET} \
+            sync release-files/ "${S3_BUCKET}/builds/${BUILD_ID}/"
+
+          echo "Version: ${BUILD_ID}"
+          echo "Bucket: ${S3_BUCKET}"
+          ls -lah "$UPLOAD_DIR/"
