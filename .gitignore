@@ -20,3 +20,4 @@ etc_fai/grub.cfg
 user_classes.conf
 .vscode/
 __pycache__/
+release-files/

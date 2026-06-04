@@ -92,22 +92,27 @@ build_role() {
     mv -f seapath.raw.bmap "${base}.raw.bmap"
 }
 
+mkdir -p release-files/
+
 ./build_iso.sh
-mv -f seapath.iso "$ISO"
+mv -f seapath.iso   release-files/"$ISO"
 
 ./build_qcow2.sh
-mv -f seapath-vm.qcow2 "$QCOW"
+mv -f seapath-vm.qcow2  release-files/"$QCOW"
 
-build_role standalone "$STANDALONE" -c
-build_role cluster    "$CLUSTER"    -c --ceph-disk
-build_role observer   "$OBSERVER"   -c
+build_role standalone  release-files/"$STANDALONE" -c
+build_role cluster     release-files/"$CLUSTER"    -c --ceph-disk
+build_role observer    release-files/"$OBSERVER"   -c
 
 if $PUBLISH; then
     gh release upload "$TAG" \
-        "$ISO" \
-        "$QCOW" \
-        "${STANDALONE}.raw.gz" "${STANDALONE}.raw.bmap" \
-        "${CLUSTER}.raw.gz"    "${CLUSTER}.raw.bmap" \
-        "${OBSERVER}.raw.gz"   "${OBSERVER}.raw.bmap" \
+        release-files/"$ISO" \
+        release-files/"$QCOW" \
+        release-files/"${STANDALONE}.raw.gz" \
+        release-files/"${STANDALONE}.raw.bmap" \
+        release-files/"${CLUSTER}.raw.gz" \
+        release-files/"${CLUSTER}.raw.bmap" \
+        release-files/"${OBSERVER}.raw.gz" \
+        release-files/"${OBSERVER}.raw.bmap" \
         --clobber
 fi
