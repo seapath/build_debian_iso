@@ -1,4 +1,5 @@
 name: Build and Upload to S3
+run-name: Build ${{ inputs.build_id || github.run_number }}
 
 on:
   workflow_dispatch:
