@@ -88,17 +88,26 @@ fi
 
 # Creating the VM
 # patches /sbin/install_packages (bug in the process of being corrected upstream)
-# patches GRUB_EFI/10-setup: "efibootmgr -v" runs on the build host (not in the
-# chroot) for LVM-backed boot devices, but build hosts have no EFI firmware, so
-# it fails with "EFI variables are not supported on this system" and aborts the
-# whole script. It is only an informational dump of NVRAM boot entries, so we
-# can safely ignore its failure.
+# patches GRUB_EFI/10-setup:
+# - "efibootmgr -v" runs on the build host (not in the chroot) for LVM-backed
+#   boot devices, but build hosts have no EFI firmware, so it fails with "EFI
+#   variables are not supported on this system" and aborts the whole script.
+#   It is only an informational dump of NVRAM boot entries, so we can safely
+#   ignore its failure.
+# - for LVM-backed boot devices, the script calls "grub-install $opts $GROOT"
+#   without --force-extra-removable/--no-nvram (unlike its loop-device branch),
+#   so the resulting image gets neither a usable NVRAM entry (the build host
+#   has no EFI firmware to write one to, and none could be embedded in a
+#   portable image anyway) nor a fallback bootloader at \EFI\BOOT\BOOTX64.EFI.
+#   Fresh UEFI firmware then has nothing to boot and drops to the UEFI Shell.
+#   Force the same flags as the loop-device branch so the image is bootable.
 CLASSES="DEBIAN,FAIBASE,FRENCH,TRIXIE64,SEAPATH_COMMON,GRUB_EFI,SEAPATH_RAW,${seapatharch},SEAPATH_VM,USERCUSTOMIZATION,BUILD_QCOW2,LAST"
 "${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" run --rm fai-cd bash -c "\
   sed -i -e \"s|-f \\\"\\\$FAI_ROOT/usr/sbin/apt-cache|-f \\\"\\\$FAI_ROOT/usr/bin/apt-cache|\" /sbin/install_packages && \
   sed -i -e \"s/ --allow-change-held-packages//\" /sbin/install_packages && \
   sed -i -e \"s/-c -o compression_type=zstd qcow2/qcow2/\" /usr/sbin/fai-diskimage && \
   sed -i -e \"s/efibootmgr -v/efibootmgr -v || true/\" /ext/srv/fai/config/scripts/GRUB_EFI/10-setup && \
+  sed -i -e \"s/grub-install \\\$opts \\\"\\\$GROOT\\\"/grub-install \\\$opts --force-extra-removable --no-nvram \\\"\\\$GROOT\\\"/\" /ext/srv/fai/config/scripts/GRUB_EFI/10-setup && \
   fai-diskimage -vu seapath-vm -S${DISKSIZE} -c$CLASSES -s /ext/srv/fai/config /ext/seapath-vm.qcow2"
 
 # Retrieving the ISO from the volume
