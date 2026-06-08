@@ -282,10 +282,16 @@ fi
 
 # Creating the disk
 # patches /sbin/install_packages (bug in the process of being corrected upstream)
+# patches GRUB_EFI/10-setup: "efibootmgr -v" runs on the build host (not in the
+# chroot) for LVM-backed boot devices, but build hosts have no EFI firmware, so
+# it fails with "EFI variables are not supported on this system" and aborts the
+# whole script. It is only an informational dump of NVRAM boot entries, so we
+# can safely ignore its failure.
 docker_run bash -c "\
   sed -i -e \"s|-f \\\"\\\$FAI_ROOT/usr/sbin/apt-cache|-f \\\"\\\$FAI_ROOT/usr/bin/apt-cache|\" /sbin/install_packages && \
   sed -i -e \"s/ --allow-change-held-packages//\" /sbin/install_packages && \
   sed -i -e \"s/-c -o compression_type=zstd qcow2/qcow2/\" /usr/sbin/fai-diskimage && \
+  sed -i -e \"s/efibootmgr -v/efibootmgr -v || true/\" /ext/srv/fai/config/scripts/GRUB_EFI/10-setup && \
   fai-diskimage -vu ${HOSTNAME} -S${DISKSIZE} -c${CLASSES[*]} -s /ext/srv/fai/config /ext/output/${OUTPUT}"
 
 # Retrieving the output files from the volume (image and SBOM)
