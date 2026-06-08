@@ -3,6 +3,7 @@
 set -euo pipefail
 
 PUBLISH=false
+VERSION=''
 
 print_usage() {
     cat <<EOF
