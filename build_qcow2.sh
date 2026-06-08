@@ -59,6 +59,8 @@ rm -f $output_dir/seapath-vm.qcow2
 
 set -ex
 
+"${CONTAINER_ENGINE[@]}" build "$wd" --tag fai
+
 rm -rf "$wd"/build_tmp/*
 cp -r "$wd/srv_fai_config/"* "$wd/build_tmp"
 cp -r "$wd/usercustomization/"* "$wd/build_tmp"

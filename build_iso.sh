@@ -15,6 +15,8 @@ rm -f $output_dir/seapath.iso
 
 set -e
 
+"${CONTAINER_ENGINE[@]}" build "$wd" --tag fai
+
 if [ ! -f "$wd"/etc_fai/grub.cfg ]; then
   cp "$wd"/etc_fai/grub_base.cfg "$wd"/etc_fai/grub.cfg
 fi

@@ -15,10 +15,15 @@ permissions: read-all
 jobs:
   generate-and-upload:
     name: Generate images and upload to S3
-    runs-on: [self-hosted, runner-RTE-cibuild13]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y podman podman-compose bmap-tools pigz
 
       - name: Make image generator executable
         run: chmod +x .release/generate_images.sh
@@ -35,6 +40,20 @@ jobs:
       - name: Generate release images
         run: |
           .release/generate_images.sh --tag ${BUILD_ID}
+
+      - name: Collect FAI logs on failure
+        if: failure()
+        run: |
+          sudo tar -czf fai-logs.tar.gz -C /tmp fai
+          sudo chown "$(id -u):$(id -g)" fai-logs.tar.gz
+
+      - name: Upload FAI logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fai-logs-${{ github.run_id }}
+          path: fai-logs.tar.gz
+          if-no-files-found: ignore
 
       - name: Upload to S3
         env:

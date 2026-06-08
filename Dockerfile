@@ -9,4 +9,6 @@ RUN echo "deb http://fai-project.org/download trixie koeln" > /etc/apt/sources.l
     apt-get -y install reprepro xorriso squashfs-tools vim udev
 
 # Syft is a tool for SBOM generation
-RUN curl -sSfL https://get.anchore.io/syft | sh -s -- -b /usr/local/bin
+# Pin version to avoid querying GitHub's releases API at build time
+ARG SYFT_VERSION=v1.18.1
+RUN curl -sSfL https://get.anchore.io/syft | sh -s -- -b /usr/local/bin ${SYFT_VERSION}
