@@ -58,6 +58,7 @@ fi
 if [ -z "$VERSION" ]; then
   VERSION=$(git describe --tags --dirty)
 fi
+export VERSION
 
 if $PUBLISH; then
     if ! command -v gh >/dev/null; then

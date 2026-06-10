@@ -47,7 +47,13 @@ if [ "${1,,}" == "-h" ] || [ "${1,,}" == "--help" ]; then
 fi
 
 wd=$(dirname "$0")
-SEAPATH_VERSION=$(git -C "$wd" describe --tags --dirty 2>/dev/null || echo "unknown")
+
+if [ -z "$VERSION" ]; then
+    SEAPATH_VERSION=$(git -C "$wd" describe --tags --dirty 2>/dev/null || echo "unknown")
+else
+    SEAPATH_VERSION=$VERSION
+fi
+
 output_dir=.
 ext_dir=$wd/ext
 fai_config_dir=$ext_dir/srv/fai/config
