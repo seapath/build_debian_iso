@@ -8,13 +8,25 @@ from os import environ
 working_dir = environ.get("output_dir", "")
 bmap_file = f"{environ.get('OUTPUT', '')}.bmap"
 
+ImageName = ""
+ImageDescription = ""
+
 role = environ.get("role", "")
 role = role.lower()
 
 if "standalone" in role:
+    ImageName = "SEAPATH Debian hypervisor"
+    ImageDescription = "A production hypervisor image for a SEAPATH standalone setup"
     setup = "Standalone"
-else:
+elif "cluster" in role:
+    ImageName = "SEAPATH Debian hypervisor"
+    ImageDescription = "A production hypervisor image for a SEAPATH cluster setup"
     setup = "Cluster"
+elif "observer" in role:
+    ImageName = "SEAPATH Debian observer"
+    ImageDescription = "A production observer image for a SEAPATH cluster setup"
+    setup = "Cluster"
+
 
 bmap_path = Path(working_dir) / bmap_file
 if not bmap_path.exists():
@@ -26,9 +38,9 @@ root = bmap_tree.getroot()
 seapath_version = environ.get("SEAPATH_VERSION", "unknown")
 
 for tag, value in [
-    ("ImageName", "SEAPATH Debian"),
+    ("ImageName", ImageName),
     ("ImageVersion", seapath_version),
-    ("ImageDescription", "A production image for SEAPATH"),
+    ("ImageDescription", ImageDescription),
     ("ImageSetup", setup),
     ("ImageFlavor", "Debian"),
 ]:
