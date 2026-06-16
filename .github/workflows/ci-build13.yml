@@ -30,11 +30,11 @@ jobs:
           sudo apt-get install -y podman podman-compose bmap-tools pigz
 
       - name: Make ci_build.sh executable (if needed)
-        run: chmod +x .release/ci_build.sh
+        run: chmod +x .release/generate_images.sh
 
       - name: Run CI build script
         run: |
-          .release/ci_build.sh
+          .release/generate_images.sh --tag ci
         shell: bash
 
       - name: Collect FAI logs on failure
