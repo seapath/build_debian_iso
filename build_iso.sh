@@ -248,11 +248,13 @@ fi
 # Adding the SEAPATH workspace
 "${CONTAINER_ENGINE[@]}" cp "$wd"/build_tmp/. fai-setup:/ext/srv/fai/config/
 
-# Adding the cephadm binary
-echo mkdir -p /tmp/cephadm/usr/local/bin/cephadm
+# Adding the cephadm binary and patching Ceph container image version
+# shellcheck source=scripts/lib/ceph_version.sh
+source "$wd/scripts/lib/ceph_version.sh"
+patch_ceph_container_image "$wd/build_tmp/files/etc/container_images.conf/SEAPATH_CLUSTER"
+
 mkdir -p /tmp/cephadm/usr/local/bin/cephadm
-echo wget -O /tmp/cephadm/usr/local/bin/cephadm/SEAPATH_CLUSTER https://download.ceph.com/rpm-20.2.0/el9/noarch/cephadm
-wget -O /tmp/cephadm/usr/local/bin/cephadm/SEAPATH_CLUSTER https://download.ceph.com/rpm-20.2.0/el9/noarch/cephadm
+download_cephadm /tmp/cephadm/usr/local/bin/cephadm/SEAPATH_CLUSTER
 echo "${CONTAINER_ENGINE[@]}" cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
 "${CONTAINER_ENGINE[@]}" cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
 # Adding the container images

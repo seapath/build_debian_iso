@@ -241,8 +241,15 @@ sudo mkdir "$ext_dir/output"
 sudo cp -r "$wd/srv_fai_config/"* "$fai_config_dir"
 sudo cp -r "$wd/usercustomization/"* "$fai_config_dir"
 
+# shellcheck source=scripts/lib/ceph_version.sh
+source "$wd/scripts/lib/ceph_version.sh"
+patch_ceph_container_image "$fai_config_dir/files/etc/container_images.conf/SEAPATH_CLUSTER"
+
+cephadm_tmp=$(mktemp)
+download_cephadm "$cephadm_tmp"
 sudo mkdir -p "$fai_config_dir/files/usr/local/bin/cephadm"
-sudo wget -O "$fai_config_dir/files/usr/local/bin/cephadm/SEAPATH_CLUSTER" https://download.ceph.com/rpm-20.2.0/el9/noarch/cephadm
+sudo install -m 0755 "$cephadm_tmp" "$fai_config_dir/files/usr/local/bin/cephadm/SEAPATH_CLUSTER"
+rm -f "$cephadm_tmp"
 
 # Adding the container images
 # Process container_images.conf files for all classes that have them

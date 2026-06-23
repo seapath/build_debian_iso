@@ -18,4 +18,4 @@ jobs:
       - name: ShellCheck
         uses: ludeeus/action-shellcheck@2.0.0
         env:
-          SHELLCHECK_OPTS: -e SC2086 -e SC2154
+          SHELLCHECK_OPTS: -x -e SC2086 -e SC2154

@@ -2,6 +2,7 @@
 # Format: one image per line as registry/image:tag
 # Lines starting with # are ignored, as well as empty lines
 # This file can be overridden in usercustomization/files/etc/container_images.conf/SEAPATH_CLUSTER
+# The quay.io/ceph/ceph image is injected at build time (see scripts/lib/ceph_version.sh).
+# To pin a version, create usercustomization/class/ceph.version (see ceph.version.example).
 
-quay.io/ceph/ceph:v20.2.0
 docker.io/library/registry:2
