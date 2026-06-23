@@ -83,10 +83,29 @@ By default, the ISO includes container images needed for SEAPATH functionality. 
 * You can override a class by creating `usercustomization/files/etc/container_images.conf/CLASS_NAME`
 * You can add images by creating `usercustomization/files/etc/container_images.conf/USERCUSTOMIZATION`
 * Each class has its own file, so they don't override each other - all active classes' images are combined
-* The file format is one image per line as `registry/image:tag` (e.g., `quay.io/ceph/ceph:v20.2.0`)
+* The file format is one image per line as `registry/image:tag` (e.g., `docker.io/library/registry:2`)
 * Lines starting with `#` are treated as comments and ignored, as well as empty lines
 
 During installation, the script reads all configuration files from active classes and copies the corresponding image files to `/opt/`, and then call "podman load -i" on each one of them to load then in the podman local registry.
+
+**Ceph version (cluster builds):**
+
+When building with the `SEAPATH_CLUSTER` class (`build_iso.sh` or `generate_seapath_image.sh` with the `cluster` role), the build scripts automatically:
+
+* download the matching `cephadm` binary from `download.ceph.com`
+* pull the corresponding `quay.io/ceph/ceph` container image
+
+By default, the latest Ceph release available on `download.ceph.com` is used. No manual update is required after cloning the repository.
+
+To pin a specific Ceph version instead, create `usercustomization/class/ceph.version` with a single line such as `20.2.0`. This file is not tracked by git (see `.gitignore`). See `ceph.version.example` at the repository root for the expected format.
+
+Resolution order:
+
+1. `CEPH_VERSION` environment variable (one-off override, e.g. `CEPH_VERSION=20.2.0 ./build_iso.sh`)
+2. `usercustomization/class/ceph.version` (persistent local override)
+3. latest release from `download.ceph.com`
+
+The Ceph container image line in `SEAPATH_CLUSTER` is injected at build time; you do not need to maintain it manually in `container_images.conf`.
 
 more info: https://fai-project.org/fai-guide
 
