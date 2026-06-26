@@ -1,0 +1,13 @@
+# SEAPATH cloud-init configuration
+#
+# SEAPATH VMs provisioned with cloud-init use a NoCloud seed disk attached at
+# deployment time (see the seapath ansible deploy_vms roles). Restrict the
+# datasource detection to NoCloud so cloud-init does not probe cloud metadata
+# services that do not exist in this environment.
+datasource_list: [ NoCloud, None ]
+
+# Render the network configuration through netplan (netplan.io is installed and
+# backed by systemd-networkd, which SEAPATH enables for the VM).
+system_info:
+  network:
+    renderers: [ netplan ]
