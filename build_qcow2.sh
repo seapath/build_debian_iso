@@ -5,8 +5,9 @@ output_dir=.
 COMPOSE_FILE="$(realpath "$wd"/podman-compose.yml)"
 
 DISKSIZE="10G"
-if ! OPTIONS=$(getopt -o hvs: --long help,version,vmdisksize: -- "$@"); then
-    echo "Usage: $0 [-h|--help] [-v|--version] [-s|--vmdisksize SIZE]" >&2
+CLOUD_INIT=
+if ! OPTIONS=$(getopt -o hvs:c --long help,version,vmdisksize:,cloud-init -- "$@"); then
+    echo "Usage: $0 [-h|--help] [-v|--version] [-s|--vmdisksize SIZE] [-c|--cloud-init]" >&2
     exit 1
 fi
 eval set -- "$OPTIONS"
@@ -18,6 +19,7 @@ while true; do
             echo "  -h, --help           Display this help message"
             echo "  -v, --version        Display version information"
             echo "  -s, --vmdisksize SIZE Specify the VM disk size (required argument)"
+            echo "  -c, --cloud-init     Include cloud-init in the VM image (SEAPATH_CLOUD_INIT class)"
             exit 0
             ;;
         -v|--version)
@@ -33,6 +35,10 @@ while true; do
                 echo "Error: The -s|--vmdisksize option requires an argument." >&2
                 exit 1
             fi
+            ;;
+        -c|--cloud-init)
+            CLOUD_INIT=true
+            shift
             ;;
         --)
             shift
@@ -101,7 +107,11 @@ fi
 #   portable image anyway) nor a fallback bootloader at \EFI\BOOT\BOOTX64.EFI.
 #   Fresh UEFI firmware then has nothing to boot and drops to the UEFI Shell.
 #   Force the same flags as the loop-device branch so the image is bootable.
-CLASSES="DEBIAN,FAIBASE,FRENCH,TRIXIE64,SEAPATH_COMMON,GRUB_EFI,SEAPATH_RAW,${seapatharch},SEAPATH_VM,USERCUSTOMIZATION,BUILD_QCOW2,LAST"
+CLOUD_INIT_CLASS=
+if [ "$CLOUD_INIT" = true ]; then
+    CLOUD_INIT_CLASS="SEAPATH_CLOUD_INIT,"
+fi
+CLASSES="DEBIAN,FAIBASE,FRENCH,TRIXIE64,SEAPATH_COMMON,GRUB_EFI,SEAPATH_RAW,${seapatharch},SEAPATH_VM,${CLOUD_INIT_CLASS}USERCUSTOMIZATION,BUILD_QCOW2,LAST"
 "${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" run --rm fai-cd bash -c "\
   sed -i -e \"s|-f \\\"\\\$FAI_ROOT/usr/sbin/apt-cache|-f \\\"\\\$FAI_ROOT/usr/bin/apt-cache|\" /sbin/install_packages && \
   sed -i -e \"s/ --allow-change-held-packages//\" /sbin/install_packages && \

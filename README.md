@@ -172,3 +172,17 @@ To build a basic VM for the SEAPATH project, simply launch the script `build_qco
 Note that the lvm2 package must be installed on your build host.
 
 Please refer to the configuration section above. To customize the Virtual Machine properly, the file SEAPATH_COMMON.var must be filled.
+
+### cloud-init
+
+cloud-init is **not** installed by default. To build a VM image that can be
+provisioned with cloud-init, enable the optional `SEAPATH_CLOUD_INIT` class:
+
+```
+build_qcow2.sh --cloud-init
+```
+
+This installs `cloud-init` in the image and configures it to use only the
+NoCloud datasource (`/etc/cloud/cloud.cfg.d/90_seapath.cfg`). At deployment time
+the SEAPATH ansible `deploy_vms` roles attach a NoCloud seed disk to configure
+the guest (hostname, users, network, packages, ...) on first boot.

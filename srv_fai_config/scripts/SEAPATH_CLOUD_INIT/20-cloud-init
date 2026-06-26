@@ -1,0 +1,10 @@
+#!/bin/bash
+
+error=0; trap 'error=$(($?>$error?$?:$error))' ERR # save maximum error code
+
+fcopy -M /etc/cloud/cloud.cfg.d/90_seapath.cfg
+
+$ROOTCMD systemctl enable cloud-init-local.service
+$ROOTCMD systemctl enable cloud-init.service
+$ROOTCMD systemctl enable cloud-config.service
+$ROOTCMD systemctl enable cloud-final.service
