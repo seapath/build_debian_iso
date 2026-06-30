@@ -38,18 +38,20 @@ jobs:
         shell: bash
 
       - name: Upload hypervisor image artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: hypervisor-image
           path: release-files/*virtual-cluster*.qcow2
           if-no-files-found: error
+          retention-days: 1
 
       - name: Upload VM image artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: vm-image
           path: release-files/*guest*.qcow2
           if-no-files-found: error
+          retention-days: 1
 
       - name: Collect FAI logs on failure
         if: failure()
@@ -69,7 +71,9 @@ jobs:
         run: echo "Script exited successfully!"
   test-virtual-cluster:
     needs: CI-build
-    uses: paullgk/virtual-cluster/.github/workflows/ansible-setup.yml@main
+    uses: paullgk/virtual-cluster/.github/workflows/debian-setup.yml@main
     with:
       hypervisor_image_url: /tmp/images/hypervisor.qcow2
+      hypervisor_image_filename: seapath-ci-generic-virtual-cluster.rootfs.raw.qcow2
       vm_image_url: /tmp/images/vm.qcow2
+      vm_image_filename: seapath-ci-guest.qcow2

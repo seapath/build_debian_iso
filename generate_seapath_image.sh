@@ -142,10 +142,10 @@ while true; do
             fi
             ;;
         --ceph-disk)
-            if [ "$ROLE" == "cluster" ]; then
+            if [ "$ROLE" == "cluster" ] || [ "$ROLE" == "virtual-hypervisor" ]; then
                 CEPH_DISK=true
             else
-                echo "Warning: --ceph-disk option is only applicable for 'cluster' role. Ignoring." >&2
+                echo "Warning: --ceph-disk option is only applicable for 'cluster' and 'virtual-hypervisor' roles. Ignoring." >&2
             fi
             shift
             ;;

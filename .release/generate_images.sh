@@ -102,15 +102,15 @@ build_role() {
 
 mkdir -p release-files/
 
-./build_iso.sh
-mv -f seapath.iso   release-files/"$ISO"
+# ./build_iso.sh
+# mv -f seapath.iso   release-files/"$ISO"
 
 ./build_qcow2.sh
 mv -f seapath-vm.qcow2  release-files/"$QCOW"
 
-build_role standalone  release-files/"$STANDALONE" -c
-build_role cluster     release-files/"$CLUSTER"    -c --ceph-disk
-build_role observer    release-files/"$OBSERVER"   -c
+# build_role standalone  release-files/"$STANDALONE" -c
+# build_role cluster     release-files/"$CLUSTER"    -c --ceph-disk
+# build_role observer    release-files/"$OBSERVER"   -c
 build_role virtual-hypervisor    release-files/"$VIRTUAL_HYPERVISOR"   -c --ceph-disk
 
 if $PUBLISH; then
