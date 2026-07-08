@@ -19,6 +19,7 @@ print_usage() {
     echo "  standalone             Generate a standalone hypervisor image"
     echo "  cluster                Generate a hypervisor image for cluster deployment"
     echo "  observer               Generate a cluster observer node image"
+    echo "  virtual-hypervisor     Generate a qcow2 virtual hypervisor image "
     echo ""
     echo "Options:"
     echo "  -h, --help             Display this help message"
@@ -141,10 +142,10 @@ while true; do
             fi
             ;;
         --ceph-disk)
-            if [ "$ROLE" == "cluster" ]; then
+            if [ "$ROLE" == "cluster" ] || [ "$ROLE" == "virtual-hypervisor" ]; then
                 CEPH_DISK=true
             else
-                echo "Warning: --ceph-disk option is only applicable for 'cluster' role. Ignoring." >&2
+                echo "Warning: --ceph-disk option is only applicable for 'cluster' and 'virtual-hypervisor' roles. Ignoring." >&2
             fi
             shift
             ;;
@@ -174,17 +175,17 @@ while true; do
     esac
 done
 
-if [[ "$ROLE" != "standalone" && "$ROLE" != "cluster" && "$ROLE" != "observer" ]]; then
+if [[ "$ROLE" != "standalone" && "$ROLE" != "cluster" && "$ROLE" != "observer" && "$ROLE" != "virtual-hypervisor" ]]; then
     echo "Error: Invalid role specified: $ROLE" >&2
     exit 1
 fi
 
 IFS=','
 CLASSES=(FAIBASE DEBIAN GRUB_EFI SEAPATH_COMMON)
-if [ "$ROLE" == "standalone" ] || [ "$ROLE" == "cluster" ]; then
+if [ "$ROLE" == "standalone" ] || [ "$ROLE" == "cluster" ] || [ "$ROLE" == "virtual-hypervisor" ]; then
     CLASSES+=("SEAPATH_HOST")
 fi
-if [ "$ROLE" == "cluster" ] || [ "$ROLE" == "observer" ]; then
+if [ "$ROLE" == "cluster" ] || [ "$ROLE" == "observer" ] || [ "$ROLE" == "virtual-hypervisor" ]; then
     CLASSES+=("SEAPATH_CLUSTER")
 fi
 if [ "$COCKPIT" = true ]; then
@@ -323,16 +324,24 @@ sudo chown -R "$(id -u):$(id -g)" "$output_dir/"*
 # Clean the build directory
 sudo rm -rf "$ext_dir"
 
-if command -v bmaptool >/dev/null ; then
+if [ "$ROLE" == "virtual-hypervisor" ]; then
+    qemu-img convert \
+    -f raw -O qcow2 \
+    -S 4k \
+    -o preallocation=off,lazy_refcounts=on,compat=1.1 \
+    "$output_dir/${OUTPUT}" "$output_dir/${OUTPUT}.qcow2"
 
-    bmaptool create -o "$output_dir/${OUTPUT}.bmap" "$output_dir/${OUTPUT}"
+else
+    if command -v bmaptool >/dev/null ; then
 
-    if command -v pigz >/dev/null ; then
-        pigz "$output_dir/${OUTPUT}"
-    else
-        gzip "$output_dir/${OUTPUT}"
+        bmaptool create -o "$output_dir/${OUTPUT}.bmap" "$output_dir/${OUTPUT}"
+
+        if command -v pigz >/dev/null ; then
+            pigz "$output_dir/${OUTPUT}"
+        else
+            gzip "$output_dir/${OUTPUT}"
+        fi
+        generate_seapath_metadata
     fi
-    generate_seapath_metadata
 fi
-
 echo "SEAPATH image generation completed."

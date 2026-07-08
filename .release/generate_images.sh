@@ -84,27 +84,34 @@ QCOW="seapath-${VERSION}-guest.qcow2"
 STANDALONE="seapath-${VERSION}-generic-standalone.rootfs"
 CLUSTER="seapath-${VERSION}-generic-cluster.rootfs"
 OBSERVER="seapath-${VERSION}-generic-observer.rootfs"
+VIRTUAL_HYPERVISOR="seapath-${VERSION}-generic-virtual-cluster.rootfs"
 
 build_role() {
     local role="$1"
     local base="$2"
     shift 2
     ./generate_seapath_image.sh "$role" "$@"
-    mv -f seapath.raw.gz   "${base}.raw.gz"
-    mv -f seapath.raw.bmap "${base}.raw.bmap"
+
+    if [ "$role" == "virtual-hypervisor" ]; then
+        mv -f seapath.raw.qcow2   "${base}.raw.qcow2"
+    else
+        mv -f seapath.raw.gz   "${base}.raw.gz"
+        mv -f seapath.raw.bmap "${base}.raw.bmap"
+    fi
 }
 
 mkdir -p release-files/
 
-./build_iso.sh
-mv -f seapath.iso   release-files/"$ISO"
+# ./build_iso.sh
+# mv -f seapath.iso   release-files/"$ISO"
 
 ./build_qcow2.sh
 mv -f seapath-vm.qcow2  release-files/"$QCOW"
 
-build_role standalone  release-files/"$STANDALONE" -c
-build_role cluster     release-files/"$CLUSTER"    -c --ceph-disk
-build_role observer    release-files/"$OBSERVER"   -c
+# build_role standalone  release-files/"$STANDALONE" -c
+# build_role cluster     release-files/"$CLUSTER"    -c --ceph-disk
+# build_role observer    release-files/"$OBSERVER"   -c
+build_role virtual-hypervisor    release-files/"$VIRTUAL_HYPERVISOR"   -c --ceph-disk
 
 if $PUBLISH; then
     gh release upload "$TAG" \
@@ -116,5 +123,6 @@ if $PUBLISH; then
         release-files/"${CLUSTER}.raw.bmap" \
         release-files/"${OBSERVER}.raw.gz" \
         release-files/"${OBSERVER}.raw.bmap" \
+        release-files/"$VIRTUAL_HYPERVISOR" \
         --clobber
 fi

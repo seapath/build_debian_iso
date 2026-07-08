@@ -24,7 +24,7 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y podman podman-compose bmap-tools pigz
+          sudo apt-get install -y podman podman-compose bmap-tools pigz qemu-utils
 
       - name: Make image generator executable
         run: chmod +x .release/generate_images.sh
