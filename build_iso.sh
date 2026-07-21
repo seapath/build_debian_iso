@@ -348,7 +348,9 @@ else
 fi
 
 # Stopping the container after having added stuff in it
-"${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" down
+# Only fai-setup has been created so far, tearing down the whole stack would
+# complain about fai-cd not existing.
+"${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" down fai-setup
 
 # Creating the mirror
 "${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" run --rm fai-setup bash -c "\
@@ -358,8 +360,9 @@ fi
 # Creating the ISO
 "${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" run --rm fai-cd /usr/sbin/fai-cd -f -m /ext/mirror /ext/seapath.iso
 
-# Retrieving the ISO from the volume
-"${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" up --no-start fai-setup
+# Retrieving the ISO from the volume. fai-cd is also created (it only ever ran
+# with --rm) so the final down finds every container and stays silent.
+"${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" up --no-start fai-setup fai-cd
 "${CONTAINER_ENGINE[@]}" cp fai-setup:/ext/seapath.iso $output_dir/
 "${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" down --remove-orphans --volumes
 
