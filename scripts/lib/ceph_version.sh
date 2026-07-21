@@ -5,7 +5,7 @@
 # Version resolution order:
 #   1. CEPH_VERSION environment variable
 #   2. usercustomization/class/ceph.version (not tracked by git)
-#   3. latest release from download.ceph.com
+#   3. latest stable release from download.ceph.com
 
 _ceph_lib_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT="${REPO_ROOT:-$(cd "$_ceph_lib_dir/../.." && pwd)}"
@@ -42,20 +42,24 @@ resolve_ceph_version() {
         return 0
     fi
 
+    # Ceph publishes development (x.0.z) and release candidate (x.1.z) builds
+    # next to the stable ones, and they sort above the latest stable release as
+    # soon as a new major is being prepared. Only consider the stable channel
+    # (x.2.z), so that a build never silently lands on a pre-release.
     CEPH_VERSION=$(
         curl -sf https://download.ceph.com/ \
-            | grep -oE 'rpm-[0-9]+\.[0-9]+\.[0-9]+' \
+            | grep -oE 'rpm-[0-9]+\.2\.[0-9]+' \
             | sed 's/rpm-//' \
             | sort -Vu \
             | tail -1
     )
 
     if [ -z "$CEPH_VERSION" ]; then
-        echo "Error: could not determine the latest Ceph version" >&2
+        echo "Error: could not determine the latest stable Ceph version" >&2
         return 1
     fi
 
-    echo "Using latest Ceph version: ${CEPH_VERSION}" >&2
+    echo "Using latest stable Ceph version: ${CEPH_VERSION}" >&2
 }
 
 cephadm_download_url() {

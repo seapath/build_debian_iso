@@ -95,7 +95,7 @@ When building with the `SEAPATH_CLUSTER` class (`build_iso.sh` or `generate_seap
 * download the matching `cephadm` binary from `download.ceph.com`
 * pull the corresponding `quay.io/ceph/ceph` container image
 
-By default, the latest Ceph release available on `download.ceph.com` is used. No manual update is required after cloning the repository.
+By default, the latest stable Ceph release available on `download.ceph.com` is used. No manual update is required after cloning the repository. Development (`x.0.z`) and release candidate (`x.1.z`) builds are ignored; use one of the overrides below to build against a pre-release.
 
 To pin a specific Ceph version instead, create `usercustomization/class/ceph.version` with a single line such as `20.2.0`. This file is not tracked by git (see `.gitignore`). See `ceph.version.example` at the repository root for the expected format.
 
@@ -103,7 +103,7 @@ Resolution order:
 
 1. `CEPH_VERSION` environment variable (one-off override, e.g. `CEPH_VERSION=20.2.0 ./build_iso.sh`)
 2. `usercustomization/class/ceph.version` (persistent local override)
-3. latest release from `download.ceph.com`
+3. latest stable release (`x.2.z`) from `download.ceph.com`
 
 The Ceph container image line in `SEAPATH_CLUSTER` is injected at build time; you do not need to maintain it manually in `container_images.conf`.
 
