@@ -270,6 +270,11 @@ if has_class SEAPATH_CLUSTER; then
   # shellcheck source=scripts/lib/ceph_version.sh
   source "$wd/scripts/lib/ceph_version.sh"
   patch_ceph_container_image "$wd/build_tmp/files/etc/container_images.conf/SEAPATH_CLUSTER"
+  # The workspace was copied before the patch, refresh the config space copy so
+  # that it lists the Ceph image actually embedded in the ISO.
+  "${CONTAINER_ENGINE[@]}" cp \
+    "$wd/build_tmp/files/etc/container_images.conf/SEAPATH_CLUSTER" \
+    fai-setup:/ext/srv/fai/config/files/etc/container_images.conf/SEAPATH_CLUSTER
 
   mkdir -p /tmp/cephadm/usr/local/bin/cephadm
   download_cephadm /tmp/cephadm/usr/local/bin/cephadm/SEAPATH_CLUSTER
