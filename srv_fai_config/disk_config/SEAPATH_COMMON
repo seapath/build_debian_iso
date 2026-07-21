@@ -1,4 +1,9 @@
-# One disk configuration with system and ceph on the same disk
+# Default one disk configuration for the system, used by every role. It is
+# overridden by the classes coming later in the class list: SEAPATH_RAID,
+# SEAPATH_VM, or USERCUSTOMIZATION for a local layout.
+#
+# Ceph disks are not managed here: they are declared per node in the Ansible
+# inventory (ceph_osd_disks) and handed over to cephadm as whole devices.
 
 # <type> <mountpoint> <size>   <fs type> <mount options> <misc options>
 
@@ -6,7 +11,6 @@ disk_config disk1 disklabel:gpt fstabkey:uuid align-at:1M
 
 primary /boot/efi  512M  vfat    rw
 primary -          50G   -       -
-primary -          2G    -       -
 
 disk_config lvm
 
@@ -14,6 +18,3 @@ vg vg1  disk1.2
 vg1-root    /          15G      ext4    noatime,rw lvcreateopts="--zero n"
 vg1-varlog  /var/log    5G      ext4    noatime,rw lvcreateopts="--zero n"
 vg1-swap    swap      500M      swap    sw         lvcreateopts="--zero n"
-
-vg vg_ceph  disk1.3
-vg_ceph-lv_ceph -           1G   -       - lvcreateopts="--zero n"

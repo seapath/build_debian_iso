@@ -147,7 +147,8 @@ The possibles flags to create a grub menu item are:
 * cockpit: enables the SEAPATH_COCKPIT class
 * kerberos: enables the SEAPATH_KERBEROS class
 * cluster: enables the SEAPATH_CLUSTER class. Uncheck this for a standalone installation.
-* ceph_disk: to use a dedicated disk for ceph storage (only for cluster mode).
+
+The disk configurations only cover the system disks. Disks given to Ceph are left untouched by the installer: declare them per node in the Ansible inventory (`ceph_osd_disks`), one OSD per whole device.
 
 If you want an "english, no debug, no raid, no cockpit, no kerberos, standalone" installation, then you need to uncheck everything, which will result in a fake "noflag" grub menu item being added. This is normal.
 

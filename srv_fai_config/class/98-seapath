@@ -8,12 +8,10 @@ echo DEBIAN FAIBASE TRIXIE64 SEAPATH_COMMON SEAPATH_HOST
 [ "$flag_german" ] && echo "GERMAN"
 [ "$flag_french" ] && echo "FRENCH"
 [ "$flag_cluster" ] && echo "SEAPATH_CLUSTER"
-[ "$flag_raid" ] && [ "$flag_cluster" ] && echo "SEAPATH_RAID"
-[ ! "$flag_raid" ] && [ ! "$flag_cluster" ] && echo "SEAPATH_CEPH_DISK"
-[ "$flag_raid" ] && [ ! "$flag_cluster" ] && echo "SEAPATH_RAID_CEPH_DISK"
+# The disk configurations only cover the system: Ceph disks are declared per
+# node in the Ansible inventory, so the layout no longer depends on the role.
+[ "$flag_raid" ] && echo "SEAPATH_RAID"
 [ "$flag_raiddemo" ] && echo "SEAPATH_RAID SEAPATH_RAID_DEMO"
-[ "$flag_ceph_disk" ] && echo "SEAPATH_CEPH_DISK"
-[ "$flag_ceph_disk" ] && [ "$flag_raid" ] && echo "SEAPATH_RAID_CEPH_DISK"
 [ "$flag_dbg" ] && echo "SEAPATH_DBG"
 [ "$flag_kerberos" ] && echo "SEAPATH_KERBEROS"
 [ "$flag_cockpit" ] && echo "SEAPATH_COCKPIT"
