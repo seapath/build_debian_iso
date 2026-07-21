@@ -241,15 +241,20 @@ sudo mkdir "$ext_dir/output"
 sudo cp -r "$wd/srv_fai_config/"* "$fai_config_dir"
 sudo cp -r "$wd/usercustomization/"* "$fai_config_dir"
 
-# shellcheck source=scripts/lib/ceph_version.sh
-source "$wd/scripts/lib/ceph_version.sh"
-patch_ceph_container_image "$fai_config_dir/files/etc/container_images.conf/SEAPATH_CLUSTER"
+# Adding the cephadm binary and patching Ceph container image version
+if has_class SEAPATH_CLUSTER; then
+    # shellcheck source=scripts/lib/ceph_version.sh
+    source "$wd/scripts/lib/ceph_version.sh"
+    patch_ceph_container_image "$fai_config_dir/files/etc/container_images.conf/SEAPATH_CLUSTER"
 
-cephadm_tmp=$(mktemp)
-download_cephadm "$cephadm_tmp"
-sudo mkdir -p "$fai_config_dir/files/usr/local/bin/cephadm"
-sudo install -m 0755 "$cephadm_tmp" "$fai_config_dir/files/usr/local/bin/cephadm/SEAPATH_CLUSTER"
-rm -f "$cephadm_tmp"
+    cephadm_tmp=$(mktemp)
+    download_cephadm "$cephadm_tmp"
+    sudo mkdir -p "$fai_config_dir/files/usr/local/bin/cephadm"
+    sudo install -m 0755 "$cephadm_tmp" "$fai_config_dir/files/usr/local/bin/cephadm/SEAPATH_CLUSTER"
+    rm -f "$cephadm_tmp"
+else
+    echo "SEAPATH_CLUSTER is not selected: skipping cephadm and Ceph image setup"
+fi
 
 # Adding the container images
 # Process container_images.conf files for all classes that have them
