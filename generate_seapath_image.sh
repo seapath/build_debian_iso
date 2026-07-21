@@ -30,7 +30,6 @@ print_usage() {
     echo "  -o, --output-dir DIR   Specify the output directory (default is current directory)"
     echo "  -a, --arch ARCH        Specify the architecture (AMD64 or ARM64). Default is AMD64"
     echo "  -x, --verbose          Enable debug mode for the script"
-    echo "      --ceph-disk        Include Ceph dedicated disk configuration"
     echo "      --hostname NAME    Specify the hostname (default is seapath)"
 }
 
@@ -66,13 +65,8 @@ COCKPIT=
 DEBUG=
 DISKSIZE="60G"
 ARCH="SEAPATH_AMD64"
-if [ "$ROLE" != "cluster" ]; then
-    CEPH_DISK=true
-else
-    CEPH_DISK=false
-fi
 
-if ! OPTIONS=$(getopt -o hvs:cn:o:a:xd --long help,version,disk-size:,enable-cockpit,name:,output-dir:,ceph-disk,arch:,hostname:,verbose -- "$@"); then
+if ! OPTIONS=$(getopt -o hvs:cn:o:a:xd --long help,version,disk-size:,enable-cockpit,name:,output-dir:,arch:,hostname:,verbose -- "$@"); then
     print_usage
     exit 1
 fi
@@ -140,14 +134,6 @@ while true; do
                 exit 1
             fi
             ;;
-        --ceph-disk)
-            if [ "$ROLE" == "cluster" ]; then
-                CEPH_DISK=true
-            else
-                echo "Warning: --ceph-disk option is only applicable for 'cluster' role. Ignoring." >&2
-            fi
-            shift
-            ;;
         --hostname)
             if [ -n "$2" ] && [[ $2 != -* ]]; then
                 HOSTNAME="$2"
@@ -194,9 +180,6 @@ if [ "$DEBUG" = true ]; then
     CLASSES+=("SEAPATH_DBG")
 fi
 CLASSES+=("$ARCH" SEAPATH_RAW)
-if [ "$CEPH_DISK" = true ]; then
-    CLASSES+=("SEAPATH_CEPH_DISK")
-fi
 CLASSES+=(USERCUSTOMIZATION LAST)
 
 echo "Generate with FAI classes: ${CLASSES[*]}"

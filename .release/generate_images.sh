@@ -103,7 +103,7 @@ mv -f seapath.iso   release-files/"$ISO"
 mv -f seapath-vm.qcow2  release-files/"$QCOW"
 
 build_role standalone  release-files/"$STANDALONE" -c
-build_role cluster     release-files/"$CLUSTER"    -c --ceph-disk
+build_role cluster     release-files/"$CLUSTER"    -c
 build_role observer    release-files/"$OBSERVER"   -c
 
 if $PUBLISH; then
