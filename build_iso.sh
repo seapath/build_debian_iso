@@ -248,15 +248,37 @@ fi
 # Adding the SEAPATH workspace
 "${CONTAINER_ENGINE[@]}" cp "$wd"/build_tmp/. fai-setup:/ext/srv/fai/config/
 
-# Adding the cephadm binary and patching Ceph container image version
-# shellcheck source=scripts/lib/ceph_version.sh
-source "$wd/scripts/lib/ceph_version.sh"
-patch_ceph_container_image "$wd/build_tmp/files/etc/container_images.conf/SEAPATH_CLUSTER"
+# List user defined Classes
+userClasses=$(grep -Ev "^#|^$" "$wd"/user_classes.conf | tr '\n' ',' | sed -e "s/,$//")
 
-mkdir -p /tmp/cephadm/usr/local/bin/cephadm
-download_cephadm /tmp/cephadm/usr/local/bin/cephadm/SEAPATH_CLUSTER
-echo "${CONTAINER_ENGINE[@]}" cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
-"${CONTAINER_ENGINE[@]}" cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
+# ARM64 or AMD64
+if [ "$arch" == "aarch64" ]; then
+    seapatharch="SEAPATH_ARM64"
+else
+    seapatharch="SEAPATH_AMD64"
+fi
+
+CLASSES="FAIBASE,DEBIAN,GRUB_EFI,SEAPATH_COMMON,SEAPATH_HOST,SEAPATH_ISO,${finalClasses}USERCUSTOMIZATION,${userClasses},${seapatharch},LAST"
+echo "Building with FAI classes: $CLASSES"
+
+function has_class {
+  [[ ",${CLASSES}," == *",$1,"* ]]
+}
+
+# Adding the cephadm binary and patching Ceph container image version
+if has_class SEAPATH_CLUSTER; then
+  # shellcheck source=scripts/lib/ceph_version.sh
+  source "$wd/scripts/lib/ceph_version.sh"
+  patch_ceph_container_image "$wd/build_tmp/files/etc/container_images.conf/SEAPATH_CLUSTER"
+
+  mkdir -p /tmp/cephadm/usr/local/bin/cephadm
+  download_cephadm /tmp/cephadm/usr/local/bin/cephadm/SEAPATH_CLUSTER
+  echo "${CONTAINER_ENGINE[@]}" cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
+  "${CONTAINER_ENGINE[@]}" cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
+else
+  echo "SEAPATH_CLUSTER is not selected: skipping cephadm and Ceph image setup"
+fi
+
 # Adding the container images
 # Process container_images.conf files for all classes that have them
 # This handles images for SEAPATH_CLUSTER, SEAPATH_HOST, USERCUSTOMIZATION, and any other classes
@@ -273,6 +295,11 @@ if [ -d "$CONTAINER_IMAGES_BASE_DIR" ]; then
     [ -f "$class_conf_file" ] || continue
     
     class_name=$(basename "$class_conf_file")
+
+    if ! has_class "$class_name"; then
+      echo "Skipped download of images for class: $class_name"
+      continue
+    fi
     echo "Processing container images for class: $class_name"
     
     # Read images from config file (ignore comments and empty lines)
@@ -318,18 +345,7 @@ fi
 # Stopping the container after having added stuff in it
 "${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" down
 
-# List user defined Classes
-userClasses=$(grep -Ev "^#|^$" "$wd"/user_classes.conf | tr '\n' ',' | sed -e "s/,$//")
-
-# ARM64 or AMD64
-arch=$(uname -m)
-if [ "$arch" == "aarch64" ]; then
-    seapatharch="SEAPATH_ARM64"
-else
-    seapatharch="SEAPATH_AMD64"
-fi
 # Creating the mirror
-CLASSES="FAIBASE,DEBIAN,GRUB_EFI,SEAPATH_COMMON,SEAPATH_HOST,SEAPATH_ISO,${finalClasses}USERCUSTOMIZATION,${userClasses},${seapatharch},LAST"
 "${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" run --rm fai-setup bash -c "\
     cp /etc/fai/apt/keys/* /etc/apt/trusted.gpg.d/ &&\
     fai-mirror -v -c $CLASSES /ext/mirror"
