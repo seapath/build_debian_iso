@@ -248,8 +248,11 @@ fi
 # Adding the SEAPATH workspace
 "${CONTAINER_ENGINE[@]}" cp "$wd"/build_tmp/. fai-setup:/ext/srv/fai/config/
 
-# List user defined Classes
-userClasses=$(grep -Ev "^#|^$" "$wd"/user_classes.conf | tr '\n' ',' | sed -e "s/,$//")
+# List user defined Classes, if the template has been instantiated
+userClasses=""
+if [ -f "$wd"/user_classes.conf ]; then
+    userClasses=$(grep -Ev "^#|^$" "$wd"/user_classes.conf | tr '\n' ',' | sed -e "s/,$//")
+fi
 
 # ARM64 or AMD64
 if [ "$arch" == "aarch64" ]; then
@@ -258,7 +261,7 @@ else
     seapatharch="SEAPATH_AMD64"
 fi
 
-CLASSES="FAIBASE,DEBIAN,GRUB_EFI,SEAPATH_COMMON,SEAPATH_HOST,SEAPATH_ISO,${finalClasses}USERCUSTOMIZATION,${userClasses},${seapatharch},LAST"
+CLASSES="FAIBASE,DEBIAN,GRUB_EFI,SEAPATH_COMMON,SEAPATH_HOST,SEAPATH_ISO,${finalClasses}USERCUSTOMIZATION,${userClasses:+${userClasses},}${seapatharch},LAST"
 echo "Building with FAI classes: $CLASSES"
 
 function has_class {
