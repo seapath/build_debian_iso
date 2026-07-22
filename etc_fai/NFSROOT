@@ -26,6 +26,7 @@ PACKAGES install-norec
 dracut live-boot- initramfs-tools-
 dracut-config-generic
 dracut-network isc-dhcp-client
+ethtool # fai-make-nfsroot 6.6 adds it to the initrd through install_items
 curl lftp
 util-linux-extra
 less
