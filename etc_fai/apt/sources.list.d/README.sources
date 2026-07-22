@@ -1,0 +1,5 @@
+# Additional apt sources (*.list or deb822 *.sources) picked up by fai-mirror
+# and fai-make-nfsroot. This comments-only file keeps the directory in git and
+# its name is deliberate: apt notices files without a known extension, the
+# fai-mirror backports detection globs sources.list.d/* so the file must not
+# be hidden, and its *.list rewrite loop breaks on absolute paths.
