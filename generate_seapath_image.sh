@@ -25,6 +25,7 @@ print_usage() {
     echo "  -v, --version          Display version information"
     echo "  -s, --disk-size        SIZE Specify the disk size (default is 60G)"
     echo "  -c, --enable-cockpit   Enable Cockpit installation"
+    echo "  -w, --enable-webui     Enable the SEAPATH web UI installation"
     echo "  -d, --enable-debug     Generate a debug image with additional tools"
     echo "  -n, --name NAME        Specify the output image name without extension (default is seapath)"
     echo "  -o, --output-dir DIR   Specify the output directory (default is current directory)"
@@ -62,11 +63,12 @@ ROLE="$1"
 shift
 HOSTNAME=seapath
 COCKPIT=
+WEBUI=
 DEBUG=
 DISKSIZE="60G"
 ARCH="SEAPATH_AMD64"
 
-if ! OPTIONS=$(getopt -o hvs:cn:o:a:xd --long help,version,disk-size:,enable-cockpit,name:,output-dir:,arch:,hostname:,verbose -- "$@"); then
+if ! OPTIONS=$(getopt -o hvs:cwn:o:a:xd --long help,version,disk-size:,enable-cockpit,enable-webui,name:,output-dir:,arch:,hostname:,verbose -- "$@"); then
     print_usage
     exit 1
 fi
@@ -109,6 +111,10 @@ while true; do
             ;;
         -c|--enable-cockpit)
             COCKPIT=true
+            shift
+            ;;
+        -w|--enable-webui)
+            WEBUI=true
             shift
             ;;
         -d|--enable-debug)
@@ -175,6 +181,9 @@ if [ "$ROLE" == "cluster" ] || [ "$ROLE" == "observer" ]; then
 fi
 if [ "$COCKPIT" = true ]; then
     CLASSES+=("SEAPATH_COCKPIT")
+fi
+if [ "$WEBUI" = true ]; then
+    CLASSES+=("SEAPATH_WEBUI")
 fi
 if [ "$DEBUG" = true ]; then
     CLASSES+=("SEAPATH_DBG")
