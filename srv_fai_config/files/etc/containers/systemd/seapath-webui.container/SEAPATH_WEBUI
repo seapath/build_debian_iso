@@ -1,0 +1,139 @@
+# Copyright (C) 2026, RTE (http://www.rte-france.com)
+# SPDX-License-Identifier: Apache-2.0
+#
+# Installed to /etc/containers/systemd/. Templated by the
+# deploy_seapath_webui role at M5, and shipped as is by the ISO before that.
+#
+# Note how small the host surface is. The configuration plane goes out over
+# SSH, even to the local node, so no host configuration is ever written from
+# here. Nothing below is writable except the service's own state and, from M1,
+# the .ssh directory of the `ansible` account, which is the trust material.
+# Every other mount is read only and serves an observation view.
+
+[Unit]
+Description=SEAPATH management web UI and API
+After=network-online.target libvirtd.service
+Wants=network-online.target
+
+[Container]
+Image=docker.io/insatomcat/seapath-webui:latest
+ContainerName=seapath-webui
+Network=host
+
+# Service state: PKI, session secret, and from M1 the SSH keys and the run
+# artefacts. The inventory repository is separate so it can be backed up,
+# cloned and exported on its own.
+Volume=/etc/seapath/webui:/etc/seapath/webui:rw
+Volume=/etc/seapath/inventory:/etc/seapath/inventory:rw
+Volume=/var/lib/seapath-webui:/var/lib/seapath-webui:rw
+
+# Trust material, from M1: where this node's own key and the peer keys are
+# installed for the `ansible` account. Templated by the role from the account's
+# real home, never hardcoded. The service appends single lines to
+# authorized_keys and never rewrites the file, because the ISO seeded it with
+# the site key that a conventional Ansible control machine uses.
+Volume=/home/ansible/.ssh:/home/ansible/.ssh:rw
+
+# Node identity. The container has its own UTS namespace, so without these the
+# view would show a container id instead of the machine's name, and the
+# certificate would be issued to one.
+Volume=/etc/hostname:/etc/hostname:ro
+Volume=/etc/os-release:/etc/os-release:ro
+Volume=/etc/machine-id:/etc/machine-id:ro
+
+# The machine's public SSH host keys. Read off the filesystem so the first SSH
+# connection is verified without prompting and without accepting an unverified
+# key. No network is involved, so there is nothing to intercept.
+Volume=/etc/ssh:/etc/ssh:ro
+
+# Read only views.
+# /proc is deliberately not mounted: uptime, cpuinfo, cmdline, stat and, with
+# the host network namespace, net/route are not namespaced, so the container's
+# own /proc already reports the host's values.
+Volume=/sys:/sys:ro
+# How `systemctl` reaches the host's systemd. These two mounts are necessary and
+# not sufficient: the third part of the answer is that the reading runs under an
+# unprivileged uid, in app/hosts/local.py, because as root systemctl uses
+# systemd's private socket and nothing else, and no container can use that one.
+#
+# /run/systemd/system, and only that. It is what `sd_booted()` tests, and
+# without it systemctl refuses to do anything at all, saying the system was not
+# booted with systemd. Its parent is not mounted because it carries
+# /run/systemd/private, which is a trap: root systemctl connects to it, then
+# reads the peer credentials, and the kernel cannot express the host's PID 1 in
+# this container's PID namespace, so it reports pid 0 and systemd rejects it
+# with ENODATA. Since v257 there is no fallback to the bus from there either.
+#
+# The other answer would be --pid=host, which this design forbids, and rightly:
+# needing the host's PID namespace to read a unit state is out of proportion.
+Volume=/run/systemd/system:/run/systemd/system:ro
+# The bus itself, which is where an unprivileged systemctl goes. The directory
+# and not the socket, because dbus recreates the socket when it restarts and a
+# bind mount of the file would then point at an inode nothing listens on. Read
+# only is enough: connecting to a socket is not a write to the filesystem, and
+# what a client may ask the bus for is decided by the bus policy alone.
+Volume=/run/dbus:/run/dbus:ro
+# The journal. The parent directories and not /var/log/journal itself: that
+# directory does not exist on a machine whose journal is volatile, a missing
+# bind mount source is a container that does not start, and creating it is what
+# turns the host's journal persistent. Changing how the machine logs is not a
+# side effect this service is allowed to have.
+Volume=/var/log:/var/log:ro
+Volume=/run/log:/run/log:ro
+Volume=/etc/tuned:/etc/tuned:ro
+Volume=/run/tuned:/run/tuned:ro
+# The stable by-path names, which are what ceph_osd_disks holds. The whole
+# device tree is not needed, only the symlinks.
+Volume=/dev/disk:/dev/disk:ro
+# The directory, not corosync.conf itself: that file only appears once
+# cluster_setup_ha.yaml has run, and a bind mount of a source that does not
+# exist keeps the container from starting on a standalone node.
+Volume=/etc/corosync:/etc/corosync:ro
+Volume=/var/lib/pacemaker:/var/lib/pacemaker:ro
+
+# Runtime plane, from M2.
+Volume=/var/run/libvirt/libvirt-sock:/var/run/libvirt/libvirt-sock
+Volume=/etc/ceph:/etc/ceph:ro
+
+# PAM authentication against the local accounts, and the Unix group that grants
+# each role. The whole directory read only, rather than a bind mount of
+# /etc/passwd, /etc/group and /etc/shadow: `usermod` and `passwd` write a new
+# file and rename it over the old one, so a bind mount of the file pins the
+# inode the container started with, and an operator added to seapath-admin stays
+# locked out until this service is restarted. The image symlinks the three files
+# into this mount, and a symlink is resolved at every open.
+Volume=/etc:/run/host/etc:ro
+
+Environment=PYTHONUNBUFFERED=1
+# Administration address, from ip_addr in the inventory. Substituted by the
+# role, and left unset here so a fresh ISO listens on every address.
+#Environment=SEAPATH_WEBUI_BIND_ADDRESS=192.168.200.121
+# Extra names in the self signed certificate, from ip_addr and, in a cluster,
+# cluster_ip_addr. Only affects how loudly the browser complains: what the
+# operator verifies is the fingerprint printed on the console.
+#Environment=SEAPATH_WEBUI_TLS_ADDITIONAL_SANS=192.168.200.121,192.168.55.1
+
+[Service]
+Restart=always
+RestartSec=5
+
+# Dropping this file on a machine and starting the unit has to be enough. A
+# missing bind mount source is a container that does not start, and podman
+# cannot be relied on to create one, so the directories are created here rather
+# than left to the Ansible role, to the ISO, or to the operator's memory. All of
+# them are inert when empty: the mounts that would not be, /var/log/journal
+# above all, take an existing parent instead.
+ExecStartPre=/usr/bin/mkdir -p /etc/seapath/webui /etc/seapath/inventory \
+    /var/lib/seapath-webui /etc/corosync /var/lib/pacemaker /etc/ceph \
+    /etc/tuned /run/tuned /run/dbus /run/log
+# The TLS private key, the SSH private key and the session secret live there.
+ExecStartPre=/usr/bin/chmod 0700 /etc/seapath/webui
+# Housekeeping CPUs only, substituted from the node's isolated set by the
+# Ansible role. Never a hardcoded value, and the exact opposite of the rtperfui
+# quadlet: this service must never compete with a real time guest.
+CPUAffinity=0-1
+CPUQuota=50%
+Nice=5
+
+[Install]
+WantedBy=multi-user.target

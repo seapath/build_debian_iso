@@ -107,6 +107,17 @@ Resolution order:
 
 The Ceph container image line in `SEAPATH_CLUSTER` is injected at build time; you do not need to maintain it manually in `container_images.conf`.
 
+**SEAPATH web UI (SEAPATH_WEBUI class):**
+
+The `SEAPATH_WEBUI` class embeds the management web UI in the image:
+
+* the container image listed in `srv_fai_config/files/etc/container_images.conf/SEAPATH_WEBUI` is pulled at build time and loaded in the podman local storage of the installed system
+* the quadlet `srv_fai_config/files/etc/containers/systemd/seapath-webui.container/SEAPATH_WEBUI` is installed to `/etc/containers/systemd/seapath-webui.container`. `podman-system-generator` turns it into the `seapath-webui.service` unit at boot and honours its `[Install]` section, so nothing has to be enabled at install time
+
+With `build_iso.sh`, the class is selected at build time (it decides what the ISO carries) and the `webui` grub flag is selected at install time (it decides whether the quadlet is installed on that machine). With `generate_seapath_image.sh`, use the `-w|--enable-webui` option.
+
+Values that depend on the node (bind address, certificate SANs, CPU affinity) are left commented or set to a safe default in the shipped quadlet: the `deploy_seapath_webui` Ansible role templates them from the inventory.
+
 more info: https://fai-project.org/fai-guide
 
 #### Customization the self installer ISO (build_iso.sh)
@@ -126,7 +137,7 @@ The `build_iso.sh` script supports customization of packages and grub menu items
 
 You can combine these options: `./build_iso.sh --classes SEAPATH_CLUSTER,SEAPATH_DBG --menu "french,cluster;french;cluster"`
 
-Running `./build_iso.sh` without any customization options will include all classes and create a single grub option with cluster mode/lvmraid/english/no_debug/no_kerberos/no_cockpit.
+Running `./build_iso.sh` without any customization options will include all classes and create a single grub option with cluster mode/lvmraid/english/no_debug/no_kerberos/no_cockpit/no_webui.
 
 **Classes Customization:**
 
@@ -137,14 +148,16 @@ Packages are organized in several classes:
 * SEAPATH_DBG: packages for debug purposes
 * SEAPATH_KERBEROS: packages if you need you host to be able to join a kerberos realm / activedirectory domain
 * SEAPATH_COCKPIT: packages for cockpit administration
+* SEAPATH_WEBUI: the SEAPATH management web UI, shipped as a podman quadlet and its container image
 
-The SEAPATH_COMMON is mandatory, and the SEAPATH_HOST is mandatory for build_iso.sh. The other 4 classes can be enabled/disabled.
+The SEAPATH_COMMON is mandatory, and the SEAPATH_HOST is mandatory for build_iso.sh. The other 5 classes can be enabled/disabled.
 
 The possibles flags to create a grub menu item are:
 * french: enables the FRENCH class to set the french keyboard layout. Without this flag, the keyboard is by default (qwerty)
 * dbg: enables the SEAPATH_DBG class (installs the debug packages)
 * raid: enables the SEAPATH_RAID that will create a disk partitioning with RAID1 (lvmraid): it requires 2 disks.
 * cockpit: enables the SEAPATH_COCKPIT class
+* webui: enables the SEAPATH_WEBUI class (installs /etc/containers/systemd/seapath-webui.container)
 * kerberos: enables the SEAPATH_KERBEROS class
 * cluster: enables the SEAPATH_CLUSTER class. Uncheck this for a standalone installation.
 
