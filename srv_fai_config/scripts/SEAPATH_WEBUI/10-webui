@@ -1,0 +1,11 @@
+#!/bin/bash
+
+error=0; trap 'error=$(($?>$error?$?:$error))' ERR # save maximum error code
+
+# Install the quadlet. podman-system-generator turns it into a systemd service
+# at boot and honours its [Install] section, so there is nothing to enable here.
+# Note: the container image is handled by SEAPATH_COMMON/65-container-images.
+$ROOTCMD mkdir -p /etc/containers/systemd
+fcopy -m root,root,0644 /etc/containers/systemd/seapath-webui.container
+
+exit $error

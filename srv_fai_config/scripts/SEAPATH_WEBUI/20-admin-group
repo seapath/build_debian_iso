@@ -1,0 +1,37 @@
+#!/bin/bash
+
+error=0; trap 'error=$(($?>$error?$?:$error))' ERR # save maximum error code
+
+# The web UI authenticates against the local accounts through PAM and reads the
+# Unix groups to decide what an operator may do. seapath-admin is the group that
+# grants the administrator role, so the account the installation creates has to
+# be a member: without it the first login reaches a machine that nobody can
+# administer, and the group cannot be created from the UI either.
+#
+# The group is created even when there is no account to put in it, because it is
+# what the service checks against, and a site that manages its operators through
+# Ansible or an LDAP mapping adds them to a group that already exists.
+#
+# Fixed GID, next to the 1005 of the ansible account, so every node of a cluster
+# names the same number. groupadd -f leaves an existing group alone, and falls
+# back to a free GID if 1006 is taken rather than failing the installation: the
+# web UI and Ansible both resolve the group by name, so a node that had to pick
+# another number still works. The check below says so out loud instead of
+# letting the difference pass unnoticed.
+seapath_admin_gid=1006
+$ROOTCMD groupadd -f -g $seapath_admin_gid seapath-admin
+
+gid=$($ROOTCMD getent group seapath-admin | cut -d: -f3)
+if [ "$gid" != "$seapath_admin_gid" ]; then
+    echo "WARNING. seapath-admin has GID $gid, expected $seapath_admin_gid"
+fi
+
+# $username is set in class/SEAPATH_COMMON.var and created by
+# SEAPATH_COMMON/10-rootpw, which runs before this script.
+if [ -n "$username" ] && $ROOTCMD getent passwd "$username" > /dev/null; then
+    $ROOTCMD usermod -aG seapath-admin "$username"
+else
+    echo "WARNING. No user account to add to the seapath-admin group"
+fi
+
+exit $error

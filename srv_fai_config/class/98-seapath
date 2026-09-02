@@ -14,6 +14,7 @@ echo DEBIAN FAIBASE TRIXIE64 SEAPATH_COMMON SEAPATH_HOST
 [ "$flag_dbg" ] && echo "SEAPATH_DBG"
 [ "$flag_kerberos" ] && echo "SEAPATH_KERBEROS"
 [ "$flag_cockpit" ] && echo "SEAPATH_COCKPIT"
+[ "$flag_webui" ] && echo "SEAPATH_WEBUI"
 
 arch=$(uname -m)
 

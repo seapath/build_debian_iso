@@ -25,7 +25,7 @@ find "$wd"/build_tmp/ ! -name .gitkeep -type f -exec rm -f {} +
 cp -r "$wd/srv_fai_config/"* "$wd/build_tmp"
 cp -r "$wd/usercustomization/"* "$wd/build_tmp"
 
-finalClasses="SEAPATH_CLUSTER,SEAPATH_DBG,SEAPATH_KERBEROS,SEAPATH_COCKPIT,"
+finalClasses="SEAPATH_CLUSTER,SEAPATH_DBG,SEAPATH_KERBEROS,SEAPATH_COCKPIT,SEAPATH_WEBUI,"
 
 # Parse command line arguments
 CUSTOM_MODE=false
@@ -96,7 +96,7 @@ if [ "$CUSTOM_MODE" == true ]; then
   else
     # Use TUI for classes selection
 
-  listClasses=("SEAPATH_CLUSTER" "ON" "SEAPATH_DBG" "ON" "SEAPATH_COCKPIT" "ON" "SEAPATH_KERBEROS" "ON")
+  listClasses=("SEAPATH_CLUSTER" "ON" "SEAPATH_DBG" "ON" "SEAPATH_COCKPIT" "ON" "SEAPATH_KERBEROS" "ON" "SEAPATH_WEBUI" "ON")
   arrVar=()
   addIndexToArray2 listClasses
 
@@ -145,7 +145,7 @@ if [ "$CUSTOM_MODE" == true ]; then
   else
     # Use TUI for menu selection
     addFlagCombination() {
-      listFlags=("french" "FRENCH keyboard rather than english" "OFF" "german" "GERMAN keyboard rather than english" "OFF" "dbg" "DEBUG packages" "OFF" "raid" "lvm RAID" "OFF" "cockpit" "COCKPIT packages" "OFF" "kerberos" "KERBEROS packages" "OFF" "cluster" "CLUSTER rather than standalone" "ON")
+      listFlags=("french" "FRENCH keyboard rather than english" "OFF" "german" "GERMAN keyboard rather than english" "OFF" "dbg" "DEBUG packages" "OFF" "raid" "lvm RAID" "OFF" "cockpit" "COCKPIT packages" "OFF" "kerberos" "KERBEROS packages" "OFF" "webui" "SEAPATH web UI" "OFF" "cluster" "CLUSTER rather than standalone" "ON")
       arrVar=()
       if CHOICES=$(whiptail --separate-output --checklist "Choose flags combination to add to grub" 18 60 7 "${listFlags[@]}" 3>&1 1>&2 2>&3); then
         # code 0
