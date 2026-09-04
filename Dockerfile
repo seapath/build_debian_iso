@@ -6,13 +6,16 @@ RUN echo "deb http://fai-project.org/download trixie koeln" > /etc/apt/sources.l
     apt-get -y install fai-server fai-doc fai-setup-storage && \
     apt-get -y install lftp curl whiptail patch && \
     apt-get -y install qemu-utils && \
-    apt-get -y install reprepro xorriso squashfs-tools vim udev
+    apt-get -y install reprepro xorriso squashfs-tools vim udev xz-utils
 
 # Disable udev synchronization for device-mapper/LVM: in privileged containers
 # sharing the host's /dev, udev may not create /dev/<vgname>/<lvname> symlinks
 # in time for mkfs to find them after lvcreate (race condition). This makes
 # libdevmapper create the device nodes itself instead of waiting for udev.
 ENV DM_DISABLE_UDEV=1
+
+# Mirror sanity check, run by build_iso.sh between fai-mirror and fai-cd
+COPY scripts/check_mirror.sh /usr/local/bin/check_mirror.sh
 
 # Syft is a tool for SBOM generation
 # Pin version to avoid querying GitHub's releases API at build time

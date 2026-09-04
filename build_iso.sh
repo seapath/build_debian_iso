@@ -360,6 +360,12 @@ fi
     cp /etc/fai/apt/keys/* /etc/apt/trusted.gpg.d/ &&\
     fai-mirror -v -c $CLASSES /ext/mirror"
 
+# Checking that the mirror can install the system. fai-mirror reports a broken
+# mirror on stdout and returns 0, so without this the ISO builds and the
+# installation is the one that fails, on a machine, at the very end.
+"${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" run --rm fai-setup \
+    /usr/local/bin/check_mirror.sh /ext/mirror "$CLASSES"
+
 # Creating the ISO
 "${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" run --rm fai-cd /usr/sbin/fai-cd -f -m /ext/mirror /ext/seapath.iso
 
