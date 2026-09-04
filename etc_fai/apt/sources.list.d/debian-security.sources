@@ -1,0 +1,5 @@
+# Security updates. See apt/sources.list for why this is not listed there.
+Types: deb
+URIs: http://ftp.fr.debian.org/debian-security
+Suites: trixie-security
+Components: main contrib non-free non-free-firmware

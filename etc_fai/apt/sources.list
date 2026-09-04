@@ -1,7 +1,15 @@
-# These lines should work for many sites
+# Apt sources used to build the nfsroot and the mirror embedded in the ISO.
+# The apt sources of an installed system come from elsewhere: fai-cd writes the
+# mirror location of the CD, and images built with fai-diskimage take
+# files/etc/apt/sources.list/SEAPATH_RAW from the config space.
+#
+# This file holds the debootstrap suite alone. Every other repository belongs in
+# sources.list.d: while fai-mirror downloads the packages of base-pkgs.lis, it
+# replaces this file with a "deb <mirror> <suite> main" line rebuilt from
+# FAI_DEBOOTSTRAP and leaves sources.list.d untouched. A repository listed here
+# is therefore invisible for the base packages, which are exactly the ones no
+# other package depends on (they are Essential), so they would be fetched from
+# the plain suite while their tightly versioned dependencies come from the
+# security suite. Such a mirror is not installable.
 
 deb http://ftp.fr.debian.org/debian trixie main contrib non-free non-free-firmware
-deb http://ftp.fr.debian.org/debian-security trixie-security main contrib non-free non-free-firmware
-
-# repository that may contain newer fai packages for bookworm
-deb http://fai-project.org/download trixie koeln

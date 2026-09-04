@@ -1,0 +1,5 @@
+# Repository that may contain newer fai packages for trixie.
+Types: deb
+URIs: http://fai-project.org/download
+Suites: trixie
+Components: koeln

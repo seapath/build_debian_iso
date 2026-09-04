@@ -1,0 +1,11 @@
+# Apt sources of the images built with fai-diskimage (build_qcow2.sh,
+# generate_seapath_image.sh).
+#
+# task_repository copies this file into the target because SEAPATH_RAW applies,
+# which takes precedence over its fallback on the sources.list of FAI_ETC_DIR.
+# An ISO installation does not define SEAPATH_RAW, so it keeps the mirror
+# location that fai-cd wrote in the nfsroot and stays installable offline.
+
+deb http://ftp.fr.debian.org/debian trixie main contrib non-free non-free-firmware
+deb http://ftp.fr.debian.org/debian-security trixie-security main contrib non-free non-free-firmware
+deb http://fai-project.org/download trixie koeln
