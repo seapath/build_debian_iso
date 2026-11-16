@@ -1,0 +1,7 @@
+# Backports, for the kernel of the cluster nodes (see package_config/SEAPATH_CLUSTER).
+# fai-mirror finds this suite here and files the ~bpo packages under it, so the
+# installation can ask for them with release=trixie-backports.
+Types: deb
+URIs: http://ftp.fr.debian.org/debian
+Suites: trixie-backports
+Components: main contrib non-free non-free-firmware

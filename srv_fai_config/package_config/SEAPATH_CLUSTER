@@ -9,3 +9,13 @@ libvirt-daemon-driver-storage-rbd
 pacemaker
 python3-ceph-argparse
 python3-cephfs
+
+# The Ceph clients come from download.ceph.com (see scripts/lib/ceph_version.sh)
+# and use aes256k keys, which the kernel RBD client only reads from Linux 7.0
+# on: the cluster nodes get the backports kernel. The Debian 13 kernel, from
+# the architecture class, stays installed as a fallback.
+PACKAGES install-norec release=trixie-backports SEAPATH_AMD64
+linux-image-rt-amd64
+
+PACKAGES install-norec release=trixie-backports SEAPATH_ARM64
+linux-image-rt-arm64

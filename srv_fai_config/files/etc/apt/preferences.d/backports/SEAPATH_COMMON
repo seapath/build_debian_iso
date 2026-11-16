@@ -1,0 +1,8 @@
+# The Debian archive marks trixie-backports NotAutomatic, so that nothing comes
+# from it unless asked for. The mirror fai-cd puts on the ISO does not, and
+# every package there would follow its backports version. Restore the archive
+# behaviour: only the packages listed with release=trixie-backports (the kernel
+# of the cluster nodes) come from backports, and they keep following it.
+Package: *
+Pin: release n=trixie-backports
+Pin-Priority: 100

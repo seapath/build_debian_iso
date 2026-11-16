@@ -21,3 +21,6 @@ user_classes.conf
 .vscode/
 __pycache__/
 release-files/
+
+# Generated at build time by scripts/lib/ceph_version.sh
+etc_fai/apt/sources.list.d/ceph.sources

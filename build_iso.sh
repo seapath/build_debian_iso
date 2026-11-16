@@ -9,6 +9,8 @@ COMPOSE_FILE="$(realpath "$wd"/podman-compose.yml)"
 echo "We are going to use" "${CONTAINER_ENGINE[*]}" and "${COMPOSECMD[*]}"
 
 rm -f $output_dir/seapath.iso
+# Generated below for SEAPATH_CLUSTER builds only, never left from a previous one
+rm -f "$wd"/etc_fai/apt/sources.list.d/ceph.sources
 # removing the volume in case it exists from a precedent build operation
 "${CONTAINER_ENGINE[@]}" rm -f fai-setup 2>/dev/null
 "${CONTAINER_ENGINE[@]}" volume rm seapath-debian-ext 2>/dev/null
@@ -283,6 +285,11 @@ if has_class SEAPATH_CLUSTER; then
   download_cephadm /tmp/cephadm/usr/local/bin/cephadm/SEAPATH_CLUSTER
   echo "${CONTAINER_ENGINE[@]}" cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
   "${CONTAINER_ENGINE[@]}" cp /tmp/cephadm/. fai-setup:/ext/srv/fai/config/files/
+
+  # The Ceph clients of the host come from download.ceph.com, at the version of
+  # the cephadm binary and the container image. etc_fai is mounted in the fai
+  # containers, so fai-mirror adds them to the mirror of the ISO.
+  ceph_apt_source "$wd"/etc_fai/apt/sources.list.d/ceph.sources
 else
   echo "SEAPATH_CLUSTER is not selected: skipping cephadm and Ceph image setup"
 fi

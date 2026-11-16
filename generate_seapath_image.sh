@@ -244,6 +244,11 @@ if has_class SEAPATH_CLUSTER; then
     sudo mkdir -p "$fai_config_dir/files/usr/local/bin/cephadm"
     sudo install -m 0755 "$cephadm_tmp" "$fai_config_dir/files/usr/local/bin/cephadm/SEAPATH_CLUSTER"
     rm -f "$cephadm_tmp"
+
+    # The Ceph clients of the host come from download.ceph.com, at the version
+    # of the cephadm binary and the container image.
+    ceph_line=$(ceph_apt_line)
+    echo "$ceph_line" | sudo tee -a "$fai_config_dir/files/etc/apt/sources.list/SEAPATH_RAW" >/dev/null
 else
     echo "SEAPATH_CLUSTER is not selected: skipping cephadm and Ceph image setup"
 fi
