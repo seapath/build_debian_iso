@@ -95,7 +95,7 @@ When building with the `SEAPATH_CLUSTER` class (`build_iso.sh` or `generate_seap
 * download the matching `cephadm` binary from `download.ceph.com`
 * pull the corresponding `quay.io/ceph/ceph` container image
 
-By default, the latest stable release of the Ceph 20 (tentacle) series available on `download.ceph.com` is used, so that point releases are picked up without manual updates. Debian 13 stays on Ceph 20: Ceph 21 (umbrella) rotates the daemon keys to the `aes256k` type and keeps warning until the client keys follow, but the kernel RBD and CephFS clients only understand `aes256k` from Linux 7.0 on, and Debian 13 ships 6.12. Set `CEPH_MAJOR` to follow another series (e.g. `CEPH_MAJOR=21 ./build_iso.sh`). Development (`x.0.z`) and release candidate (`x.1.z`) builds are ignored; use one of the overrides below to build against a pre-release.
+By default, the latest stable release of the Ceph 20 (tentacle) series available on `download.ceph.com`, up to 20.2.3, is used. Since 20.2.4 (and 19.2.6), which fix CVE-2025-30156, a newly bootstrapped cluster creates `aes256k` keys, `client.admin` included, and Debian 13 cannot read them: `ceph-common` and `librbd` 18.2.7 fail with `Malformed input`, and the kernel RBD and CephFS clients only understand `aes256k` from Linux 7.0 on, while Debian 13 ships 6.12. Ceph 21 (umbrella) behaves the same way. `CEPH_MAX_VERSION` moves the cap (an empty value removes it), and `CEPH_MAJOR` follows another series (e.g. `CEPH_MAJOR=21 ./build_iso.sh`), in which case no cap applies unless `CEPH_MAX_VERSION` is set. Development (`x.0.z`) and release candidate (`x.1.z`) builds are ignored; use one of the overrides below to build against a pre-release.
 
 To pin a specific Ceph version instead, create `usercustomization/class/ceph.version` with a single line such as `20.2.0`. This file is not tracked by git (see `.gitignore`). See `ceph.version.example` at the repository root for the expected format.
 
@@ -103,7 +103,7 @@ Resolution order:
 
 1. `CEPH_VERSION` environment variable (one-off override, e.g. `CEPH_VERSION=20.2.0 ./build_iso.sh`)
 2. `usercustomization/class/ceph.version` (persistent local override)
-3. latest stable release (`x.2.z`) of the `CEPH_MAJOR` series (default `20`) from `download.ceph.com`
+3. latest stable release (`x.2.z`) of the `CEPH_MAJOR` series (default `20`) from `download.ceph.com`, capped at `CEPH_MAX_VERSION` (default `20.2.3` for the 20 series)
 
 The Ceph container image line in `SEAPATH_CLUSTER` is injected at build time; you do not need to maintain it manually in `container_images.conf`.
 
