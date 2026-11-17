@@ -5,17 +5,24 @@
 # Version resolution order:
 #   1. CEPH_VERSION environment variable
 #   2. usercustomization/class/ceph.version (not tracked by git)
-#   3. latest stable release of the CEPH_MAJOR series from download.ceph.com
+#   3. latest stable release of the CEPH_MAJOR series from download.ceph.com,
+#      capped at CEPH_MAX_VERSION
 
 _ceph_lib_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT="${REPO_ROOT:-$(cd "$_ceph_lib_dir/../.." && pwd)}"
 CEPH_VERSION_OVERRIDE_FILE="${REPO_ROOT}/usercustomization/class/ceph.version"
 
-# Debian 13 stays on Ceph 20 (tentacle). Ceph 21 (umbrella) rotates the
-# daemon keys to the aes256k type and keeps warning until the client keys
-# follow, but the kernel RBD and CephFS clients only understand aes256k from
-# Linux 7.0 on, and Debian 13 ships 6.12. Move to 21 with Debian 14.
+# Since 20.2.4 (and 19.2.6), which fix CVE-2025-30156, a newly bootstrapped
+# cluster creates aes256k keys, client.admin included. Debian 13 cannot read
+# them: ceph-common and librbd 18.2.7 fail with "Malformed input", and the
+# kernel RBD and CephFS clients only understand aes256k from Linux 7.0 on,
+# while Debian 13 ships 6.12. Ceph 21 (umbrella) has the same behaviour.
+# Stay on Ceph 20 and cap it at 20.2.3, the last release that still creates
+# aes keys. CEPH_MAX_VERSION overrides the cap, an empty value removes it.
 CEPH_MAJOR="${CEPH_MAJOR:-20}"
+if [ "$CEPH_MAJOR" = 20 ]; then
+    CEPH_MAX_VERSION="${CEPH_MAX_VERSION-20.2.3}"
+fi
 
 _load_ceph_version_from_file() {
     local file="$1"
@@ -57,20 +64,34 @@ resolve_ceph_version() {
         echo "Error: invalid CEPH_MAJOR '$CEPH_MAJOR'" >&2
         return 1
     fi
-    CEPH_VERSION=$(
-        curl -sf https://download.ceph.com/ \
-            | grep -oE "rpm-${CEPH_MAJOR}\\.2\\.[0-9]+" \
-            | sed 's/rpm-//' \
-            | sort -Vu \
-            | tail -1
-    )
-
-    if [ -z "$CEPH_VERSION" ]; then
-        echo "Error: could not determine the latest stable Ceph ${CEPH_MAJOR} version" >&2
+    if [ -n "${CEPH_MAX_VERSION:-}" ] \
+        && ! [[ "$CEPH_MAX_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        echo "Error: invalid CEPH_MAX_VERSION '$CEPH_MAX_VERSION'" >&2
         return 1
     fi
 
-    echo "Using latest stable Ceph version: ${CEPH_VERSION}" >&2
+    local versions version
+    versions=$(
+        curl -sf https://download.ceph.com/ \
+            | grep -oE "rpm-${CEPH_MAJOR}\\.2\\.[0-9]+" \
+            | sed 's/rpm-//' \
+            | sort -Vu
+    )
+    CEPH_VERSION=
+    for version in $versions; do
+        if [ -n "${CEPH_MAX_VERSION:-}" ] \
+            && [ "$(printf '%s\n%s\n' "$version" "$CEPH_MAX_VERSION" | sort -V | tail -1)" != "$CEPH_MAX_VERSION" ]; then
+            continue
+        fi
+        CEPH_VERSION="$version"
+    done
+
+    if [ -z "$CEPH_VERSION" ]; then
+        echo "Error: could not determine the latest stable Ceph ${CEPH_MAJOR} version${CEPH_MAX_VERSION:+ up to ${CEPH_MAX_VERSION}}" >&2
+        return 1
+    fi
+
+    echo "Using latest stable Ceph version${CEPH_MAX_VERSION:+ up to ${CEPH_MAX_VERSION}}: ${CEPH_VERSION}" >&2
 }
 
 cephadm_download_url() {
