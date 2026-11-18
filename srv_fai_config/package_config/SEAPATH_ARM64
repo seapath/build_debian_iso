@@ -4,5 +4,9 @@ grub-efi-arm64-signed
 # The kernel comes from trixie-backports: the kernel RBD client only reads the
 # aes256k keys of Ceph 21 from Linux 7.0 on, and a single kernel for every
 # image keeps the cukinia package list and the RT tuning in one place.
+# The backports kernel depends on "dracut | initramfs-tools": name
+# initramfs-tools, which configure_physical_machine configures, or apt takes
+# dracut, the first alternative.
 PACKAGES install-norec release=trixie-backports
+initramfs-tools
 linux-image-rt-arm64
