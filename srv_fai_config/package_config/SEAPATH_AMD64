@@ -4,8 +4,13 @@ intel-cmt-cat
 firmware-intel-misc
 
 PACKAGES install-norec
-linux-image-rt-amd64
 intel-microcode
 grub-efi-amd64-signed
 amd64-microcode
 linux-image-amd64-
+
+# The kernel comes from trixie-backports: the kernel RBD client only reads the
+# aes256k keys of Ceph 21 from Linux 7.0 on, and a single kernel for every
+# image keeps the cukinia package list and the RT tuning in one place.
+PACKAGES install-norec release=trixie-backports
+linux-image-rt-amd64

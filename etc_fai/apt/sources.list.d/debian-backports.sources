@@ -1,4 +1,4 @@
-# Backports, for the kernel of the cluster nodes (see package_config/SEAPATH_CLUSTER).
+# Backports, for the kernel (see package_config/SEAPATH_AMD64 and SEAPATH_ARM64).
 # fai-mirror finds this suite here and files the ~bpo packages under it, so the
 # installation can ask for them with release=trixie-backports.
 Types: deb
