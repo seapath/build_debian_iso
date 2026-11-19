@@ -26,6 +26,15 @@ if [ "$gid" != "$seapath_admin_gid" ]; then
     echo "WARNING. seapath-admin has GID $gid, expected $seapath_admin_gid"
 fi
 
+# The SEAPATH Cukinia tests compare /etc/group and /etc/gshadow with a fixed
+# list (SEAPATH-00033). A group the installer adds is declared in a drop-in
+# file, one group per line, which the deploy_cukinia_tests role reads at test
+# time and leaves in place.
+mkdir -p $target/etc/cukinia/extra-expected-groups.d
+cat <<EOF > $target/etc/cukinia/extra-expected-groups.d/seapath-webui
+seapath-admin
+EOF
+
 # $username is set in class/SEAPATH_COMMON.var and created by
 # SEAPATH_COMMON/10-rootpw, which runs before this script.
 if [ -n "$username" ] && $ROOTCMD getent passwd "$username" > /dev/null; then
