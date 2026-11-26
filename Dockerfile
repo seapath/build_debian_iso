@@ -17,6 +17,11 @@ ENV DM_DISABLE_UDEV=1
 # Mirror sanity check, run by build_iso.sh between fai-mirror and fai-cd
 COPY scripts/check_mirror.sh /usr/local/bin/check_mirror.sh
 
+# Reproducible raw images, run by generate_seapath_image.sh after fai-diskimage
+RUN apt-get update && \
+    apt-get -y install python3 fdisk dosfstools mtools attr
+COPY scripts/reproducible-image.sh scripts/lvm-normalize-metadata.py /usr/local/bin/
+
 # Syft is a tool for SBOM generation
 # Pin version to avoid querying GitHub's releases API at build time
 ARG SYFT_VERSION=v1.18.1
