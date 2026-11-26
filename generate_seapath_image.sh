@@ -327,9 +327,9 @@ if command -v bmaptool >/dev/null ; then
     bmaptool create -o "$output_dir/${OUTPUT}.bmap" "$output_dir/${OUTPUT}"
 
     if command -v pigz >/dev/null ; then
-        pigz "$output_dir/${OUTPUT}"
+        pigz -n "$output_dir/${OUTPUT}"
     else
-        gzip "$output_dir/${OUTPUT}"
+        gzip -n "$output_dir/${OUTPUT}"
     fi
     generate_seapath_metadata
 fi
