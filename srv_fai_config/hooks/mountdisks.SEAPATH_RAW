@@ -1,0 +1,100 @@
+#!/bin/bash
+# Reproducible builds: give the storage that setup-storage has just created
+# identifiers that depend only on SOURCE_DATE_EPOCH and on the FAI classes,
+# not on random numbers. Two images of the same commit and of the same role
+# get the same identifiers, images of different commits or roles do not.
+#
+# This runs before the file systems are mounted, so that everything the
+# installation generates (fstab, grub.cfg, GRUB core image, initrd) refers to
+# the final identifiers.
+#
+# Changed: UUID of ext2/3/4, volume ID of FAT, UUID of swap, and the UUIDs of
+# LVM physical volumes, volume groups and logical volumes.
+
+[ -n "$SOURCE_DATE_EPOCH" ] || exit 0
+set -e
+set -o pipefail
+
+fstab=$LOGDIR/fstab
+seed="seapath:$SOURCE_DATE_EPOCH:$classes"
+
+hex() {   # hex NAME: 32 hex digits derived from the seed and NAME
+    printf '%s:%s' "$seed" "$1" | sha256sum | cut -c1-32
+}
+uuid() {  # uuid NAME: the same, formatted as a UUID
+    hex "$1" | sed -E 's/(.{8})(.{4})(.{4})(.{4})(.{12})/\1-\2-\3-\4-\5/'
+}
+lvmid() { # lvmid NAME: the same, formatted as an LVM identifier
+    hex "$1" | sed -E 's/(.{6})(.{4})(.{4})(.{4})(.{4})(.{4})(.{6})/\1-\2-\3-\4-\5-\6-\7/'
+}
+new_fstab_key() {  # new_fstab_key OLD NEW
+    [ -f "$fstab" ] && sed -i "s/UUID=$1\([[:space:]]\)/UUID=$2\1/" "$fstab"
+    return 0
+}
+
+devices=""
+for disk in $disklist; do
+    devices+=" $(lsblk -lnpo NAME /dev/$disk | tail -n +2)"
+done
+
+# 1. LVM: new UUIDs through a metadata backup, as in a metadata recovery
+pvs=""
+for dev in $devices; do
+    [ "$(blkid -c /dev/null -o value -s TYPE $dev)" = LVM2_member ] && pvs+=" $dev"
+done
+for vg in $(for pv in $pvs; do pvs --noheadings -o vg_name $pv; done | sort -u); do
+    conf=$(mktemp)
+    vgcfgbackup -f $conf $vg > /dev/null
+    old=$(vgs --noheadings -o vg_uuid $vg | tr -d ' ')
+    sed -i "s/id = \"$old\"/id = \"$(lvmid vg:$vg)\"/" $conf
+    while read -r lv old; do
+        sed -i "s/id = \"$old\"/id = \"$(lvmid lv:$vg:$lv)\"/" $conf
+    done < <(lvs --noheadings -o lv_name,lv_uuid $vg)
+    n=0
+    vgpvs=""
+    while read -r pv old; do
+        n=$((n + 1))
+        sed -i "s/id = \"$old\"/id = \"$(lvmid pv:$vg:$n)\"/" $conf
+        vgpvs+=" $pv:$(lvmid pv:$vg:$n)"
+    done < <(pvs --noheadings -o pv_name,pv_uuid -S vg_name=$vg | sort)
+    vgchange -an $vg > /dev/null
+    for p in $vgpvs; do
+        # pvcreate warns that it cannot find a device with the new UUID
+        pvcreate -ff -y --uuid ${p#*:} --restorefile $conf ${p%%:*} 2>&1 > /dev/null |
+            { grep -v "Couldn't find device with uuid" >&2 || true; }
+    done
+    vgcfgrestore -f $conf $vg > /dev/null
+    vgchange -ay $vg > /dev/null
+    rm -f $conf
+    echo "LVM volume group $vg: identifiers derived from SOURCE_DATE_EPOCH"
+done
+
+# 2. file systems and swap, on partitions and on logical volumes
+for disk in $disklist; do
+    for dev in $(lsblk -lnpo NAME /dev/$disk | tail -n +2); do
+        type=$(blkid -c /dev/null -o value -s TYPE $dev || true)
+        old=$(blkid -c /dev/null -o value -s UUID $dev || true)
+        name=${dev#/dev/}
+        name=${name#"$disk"}   # p1, p2: not the number of the loop device
+        case $type in
+            ext2|ext3|ext4)
+                new=$(uuid fs:$name)
+                tune2fs -U $new $dev > /dev/null
+                ;;
+            vfat)
+                id=$(hex fs:$name | cut -c1-8 | tr a-f A-F)
+                fatlabel -i $dev $id > /dev/null
+                new=${id:0:4}-${id:4:4}
+                ;;
+            swap)
+                new=$(uuid fs:$name)
+                swaplabel -U $new $dev
+                ;;
+            *)
+                continue
+                ;;
+        esac
+        new_fstab_key "$old" "$new"
+        echo "$dev ($type): UUID $new"
+    done
+done
