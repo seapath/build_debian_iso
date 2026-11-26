@@ -47,6 +47,16 @@ fi
 
 wd=$(dirname "$0")
 
+# Reproducible builds: the date of the last commit is the build date, unless
+# the caller sets SOURCE_DATE_EPOCH. sudo does not keep the environment, so
+# the value is given to the container.
+# https://reproducible-builds.org/specs/source-date-epoch/
+: "${SOURCE_DATE_EPOCH:=$(git -C "$wd" log -1 --format=%ct 2>/dev/null || true)}"
+RUN_ENV=()
+if [ -n "$SOURCE_DATE_EPOCH" ]; then
+    RUN_ENV=(-e "SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH")
+fi
+
 if [ -z "$VERSION" ]; then
     SEAPATH_VERSION=$(git -C "$wd" describe --tags --dirty 2>/dev/null || echo "unknown")
 else
@@ -201,6 +211,7 @@ function docker_run {
     "${CONTAINER_ENGINE[@]}" run \
         --rm \
         --privileged \
+        "${RUN_ENV[@]}" \
         -v ./ext:/ext:Z \
         -v ./etc_fai:/etc/fai:ro,Z \
         -v /dev:/dev \
