@@ -34,4 +34,10 @@ rm -f $target/etc/lvm/backup/* $target/etc/lvm/archive/*
 # /run is a tmpfs on the installed system
 find $target/run -mindepth 1 -delete
 
+# Pacemaker: the package generates a random key for Pacemaker Remote when it
+# is installed. All the machines installed from this image would share it,
+# and it would be public. Nodes that use Pacemaker Remote need a common key
+# anyway, which has to be deployed on them.
+rm -f $target/etc/pacemaker/authkey
+
 skiptask savelog
