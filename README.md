@@ -39,6 +39,26 @@ The script can generate images for one of this three roles:
 
 The script also support optionals parameters described in the usage message.
 
+### Reproducible images
+
+`generate_seapath_image.sh` builds the same `.raw.gz` and `.raw.bmap` files, byte for byte, when it runs again with the same inputs:
+
+- the same commit of this repository, the same role and options, and the same user customization
+- the same versions of what the build downloads: the container of the build, the Debian packages, the basefile, cephadm and the container images
+
+The downloads are not pinned to a version: two builds of the same commit differ if Debian publishes an update in between.
+
+How it works:
+
+- `SOURCE_DATE_EPOCH` is the build date. It is the date of the last commit, unless you set it.
+- The UUIDs of the file systems, of the swap space and of the LVM volumes are derived from `SOURCE_DATE_EPOCH` and from the FAI classes (`hooks/mountdisks.SEAPATH_RAW`). Two images of the same commit and role have the same identifiers.
+- What records the build is removed from the image (`hooks/savelog.SEAPATH_RAW`, `scripts/SEAPATH_RAW/80-lvm-backup`): the FAI logs in `/var/log/fai`, the logs of the package installation, the LVM backup in `/etc/lvm/backup` and the Pacemaker key `/etc/pacemaker/authkey`. The FAI logs of the build stay in `/tmp/fai` on the build host.
+- `scripts/reproducible-image.sh` then builds the disk image again from its files, and checks that the new image contains the same files as the image made by FAI.
+
+This needs the default disk layout: a GPT disk with an EFI partition and LVM volumes with ext4 and swap. With another layout, the build prints a warning and keeps the image made by FAI, which is not reproducible.
+
+To check, build twice and compare the checksums of the files, or their content with [diffoscope](https://diffoscope.org/).
+
 ## Customization
 Some customization you will want to make before building.
 For that you can add all the files you need in the build_debian_iso/usercustomization hierarchy, using the USERCUSTOMIZATION class name:
