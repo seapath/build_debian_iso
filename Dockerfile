@@ -21,3 +21,13 @@ COPY scripts/check_mirror.sh /usr/local/bin/check_mirror.sh
 # Pin version to avoid querying GitHub's releases API at build time
 ARG SYFT_VERSION=v1.18.1
 RUN curl -sSfL https://get.anchore.io/syft | sh -s -- -b /usr/local/bin ${SYFT_VERSION}
+
+# Reproducible builds: changes to fai-cd, fai-make-nfsroot and fai-mirror that
+# are proposed to FAI. To be removed when the FAI packages include them.
+COPY patches/fai-reproducible-builds.patch /tmp/
+RUN mkdir -p /tmp/fai/bin && \
+    cp /usr/sbin/fai-cd /usr/sbin/fai-make-nfsroot /usr/bin/fai-mirror /tmp/fai/bin/ && \
+    patch -d /tmp/fai -p1 < /tmp/fai-reproducible-builds.patch && \
+    cp /tmp/fai/bin/fai-cd /tmp/fai/bin/fai-make-nfsroot /usr/sbin/ && \
+    cp /tmp/fai/bin/fai-mirror /usr/bin/ && \
+    rm -rf /tmp/fai /tmp/fai-reproducible-builds.patch
