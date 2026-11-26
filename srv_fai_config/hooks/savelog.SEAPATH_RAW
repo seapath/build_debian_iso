@@ -1,0 +1,37 @@
+#!/bin/bash
+# Reproducible builds: at the end of the installation of a raw image, remove
+# what records the build (time, host, kernel, loop device) and what the
+# installed system creates again by itself.
+#
+# This hook replaces task savelog. The logs of the build stay on the build
+# host (in /tmp/fai); they are not copied into the image, where they would be
+# the logs of another machine.
+
+[ -n "$SOURCE_DATE_EPOCH" ] || exit 0
+
+# what task savelog copies for a later "fai softupdate". setup-storage writes
+# the lines of disk_var.sh in a random order, and the number of the loop
+# device depends on the build host.
+mkdir -p $target/var/lib/fai
+[ -f $LOGDIR/FAI_CLASSES ] && cp $LOGDIR/FAI_CLASSES $target/var/lib/fai/
+if [ -f $LOGDIR/disk_var.sh ]; then
+    sed -E 's|/dev/loop[0-9]+|/dev/loop0|g' $LOGDIR/disk_var.sh | LC_ALL=C sort > $target/var/lib/fai/disk_var.sh
+fi
+
+# logs of the package installation
+rm -f $target/var/log/dpkg.log $target/var/log/alternatives.log \
+      $target/var/log/bootstrap.log $target/var/log/apt/history.log \
+      $target/var/log/apt/term.log $target/var/log/apt/eipp.log.xz
+
+# caches, created again when needed
+rm -f $target/var/cache/apt/pkgcache.bin $target/var/cache/apt/srcpkgcache.bin \
+      $target/var/cache/ldconfig/aux-cache
+
+# LVM backup of the build host: scripts/SEAPATH_RAW/80-lvm-backup removes it,
+# this is for a backup written by a later script
+rm -f $target/etc/lvm/backup/* $target/etc/lvm/archive/*
+
+# /run is a tmpfs on the installed system
+find $target/run -mindepth 1 -delete
+
+skiptask savelog
