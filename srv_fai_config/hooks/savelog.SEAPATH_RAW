@@ -40,4 +40,29 @@ find $target/run -mindepth 1 -delete
 # anyway, which has to be deployed on them.
 rm -f $target/etc/pacemaker/authkey
 
+# podman: the images loaded during the build
+store=$target/var/lib/containers/storage
+if [ -d $store/overlay/l ]; then
+    # each layer has a short random name, used to mount it: derive it from
+    # the identifier of the layer
+    for link in "$store"/overlay/*/link; do
+        layer=${link%/link}
+        old=$(cat $link)
+        new=$(printf '%s' "${layer##*/}" | sha256sum | base32 -w0 | cut -c1-26)
+        [ "$old" = "$new" ] && continue
+        mv $store/overlay/l/$old $store/overlay/l/$new
+        printf '%s' "$new" > $link
+        sed -i "s|l/$old|l/$new|g" $store/overlay/*/lower
+    done
+    # time when each layer was loaded
+    created=$(date -u -d "@$SOURCE_DATE_EPOCH" +%Y-%m-%dT%H:%M:%SZ)
+    sed -i -E "s/\"created\":\"[^\"]*\"/\"created\":\"$created\"/g" $store/overlay-layers/layers.json
+    # random marker of the last process that wrote to the store, in the lock
+    # files of the store. Not the files of the images in overlay/.
+    find $store -maxdepth 2 -type f -name '*.lock' ! -path "$store/overlay/*" \
+        -exec truncate -s 0 {} +
+    # state of podman (no container yet): podman creates it again
+    rm -f $store/db.sql
+fi
+
 skiptask savelog
