@@ -15,6 +15,16 @@ rm -f $output_dir/seapath.iso
 
 set -e
 
+# Reproducible builds: FAI uses SOURCE_DATE_EPOCH as the build date. It is the
+# date of the last commit, unless the caller sets it. sudo does not keep the
+# environment, so the value is given to each container.
+# https://reproducible-builds.org/specs/source-date-epoch/
+: "${SOURCE_DATE_EPOCH:=$(git -C "$wd" log -1 --format=%ct 2>/dev/null || true)}"
+RUN_ENV=()
+if [ -n "$SOURCE_DATE_EPOCH" ]; then
+  RUN_ENV=(-e "SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH")
+fi
+
 "${CONTAINER_ENGINE[@]}" build "$wd" --tag fai
 
 if [ ! -f "$wd"/etc_fai/grub.cfg ]; then
@@ -229,7 +239,7 @@ fi
 # Removing 50-host-classes to prevent DEMO and FAIBASE to be added to the list of classes
 # Adding the Bookworm basefiles to that we deploy a Debian v12 distro
 # Patches /sbin/install_packages (bug in the process of being corrected upstream)
-"${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" run --rm fai-setup bash -c "\
+"${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" run --rm "${RUN_ENV[@]}" fai-setup bash -c "\
     echo \"fai-setup -v -e -f \" && \
     fai-setup -v -e -f && \
     echo \"rm -f /ext/srv/fai/config/class/50-host-classes\" && \
@@ -356,7 +366,7 @@ fi
 "${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" down fai-setup
 
 # Creating the mirror
-"${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" run --rm fai-setup bash -c "\
+"${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" run --rm "${RUN_ENV[@]}" fai-setup bash -c "\
     cp /etc/fai/apt/keys/* /etc/apt/trusted.gpg.d/ &&\
     fai-mirror -v -c $CLASSES /ext/mirror"
 
@@ -367,7 +377,7 @@ fi
     /usr/local/bin/check_mirror.sh /ext/mirror "$CLASSES"
 
 # Creating the ISO
-"${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" run --rm fai-cd /usr/sbin/fai-cd -f -m /ext/mirror /ext/seapath.iso
+"${COMPOSECMD[@]}" -f "${COMPOSE_FILE}" run --rm "${RUN_ENV[@]}" fai-cd /usr/sbin/fai-cd -f -m /ext/mirror /ext/seapath.iso
 
 # Retrieving the ISO from the volume. fai-cd is also created (it only ever ran
 # with --rm) so the final down finds every container and stays silent.

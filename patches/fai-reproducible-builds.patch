@@ -1,0 +1,323 @@
+From 05bac9c0291393ca9ae4241b40017591ebd8b754 Mon Sep 17 00:00:00 2001
+From: Eloi Bail <eloi.bail@savoirfairelinux.com>
+Date: Mon, 23 Nov 2026 16:28:28 +0100
+Subject: [PATCH] Support reproducible builds with SOURCE_DATE_EPOCH
+
+Two runs of fai-make-nfsroot, fai-mirror and fai-cd with the same
+configuration and packages give different ISO images. With this patch
+and the same SOURCE_DATE_EPOCH, they give identical ones, also with
+another umask, time zone, host name or number of CPUs on the build
+host, and with a configuration created by another user or at another
+time. See https://reproducible-builds.org/specs/source-date-epoch/
+
+fai-cd:
+- use SOURCE_DATE_EPOCH instead of the local time for the build date in
+  the GRUB menu, /FAI-CD and the application ID of the ISO
+- use UTC for the time stamps that mtools writes into the EFI image
+- set the time stamps newer than SOURCE_DATE_EPOCH of the files created
+  for the ISO to SOURCE_DATE_EPOCH, xorriso keeps them otherwise
+- with SOURCE_DATE_EPOCH, copy only the content of the config space,
+  not the owner, the write permission for group and others and the
+  time stamps of its files. A version control system does not store
+  them, so they depend on who created the config space, and when.
+  fcopy installs files with these permissions.
+
+fai-make-nfsroot:
+- create base.tar with sorted names, numeric owners, no atime and
+  ctime, and time stamps clamped to SOURCE_DATE_EPOCH
+- build the initrd in dracut's reproducible mode
+- remove the files that mmdebstrap removes for reproducible chroots,
+  and the log of debootstrap: after debootstrap, after installing the
+  packages (before the initrd is created) and at the end
+- do not copy the log file into the nfsroot if SOURCE_DATE_EPOCH is set
+- with SOURCE_DATE_EPOCH, take nothing from the build host: no host
+  entries for its network interfaces, no copy of its resolv.conf as
+  resolv.conf-installserver, no keys of the log user and not its time
+  zone. Copy only the content of /etc/fai/apt, as for the config
+  space in fai-cd.
+- with SOURCE_DATE_EPOCH, remove the identities that all the clients
+  would share: the NVMe host IDs, and the SSH host keys unless -P is
+  given. A drop-in for fai.service creates the SSH host keys at boot.
+
+fai-mirror:
+- use SOURCE_DATE_EPOCH for the Date: field that reprepro writes
+
+All three use umask 022. fai-cd and fai-make-nfsroot no longer store
+the SELinux labels of the build host in the squashfs image and in
+base.tar.
+---
+ bin/fai-cd           | 32 +++++++++++++++++++--
+ bin/fai-make-nfsroot | 68 +++++++++++++++++++++++++++++++++++++++-----
+ bin/fai-mirror       |  7 +++++
+ 3 files changed, 97 insertions(+), 10 deletions(-)
+
+diff --git a/bin/fai-cd b/bin/fai-cd
+index 999266b..c2a4c69 100755
+--- a/bin/fai-cd
++++ b/bin/fai-cd
+@@ -31,6 +31,7 @@
+ #*********************************************************************
+ 
+ set -e
++umask 022 # permissions in the image must not depend on the caller
+ 
+ # last die exit code 22
+ 
+@@ -138,7 +139,7 @@ create_squashfs_image() {
+     fi
+ 
+     echo "Make squashfs file system"
+-    mksquashfs $NEW $output_path $sqopt -xattrs-exclude '^system.posix_acl_access|system.posix_acl_default'
++    mksquashfs $NEW $output_path $sqopt -xattrs-exclude '^system.posix_acl_access|system.posix_acl_default|^security.selinux'
+ }
+ # - - - - - - - - - - - - - - - - - - - - - - - - - -
+ prepare_grub_cfg() {
+@@ -280,9 +281,17 @@ cleanup_liveos_mounts() {
+     rm -rf $tmp $scratch
+ }
+ # - - - - - - - - - - - - - - - - - - - - - - - - - -
++clamp_mtimes() {
++
++    # no time stamp newer than SOURCE_DATE_EPOCH (reproducible builds)
++    [ -n "$SOURCE_DATE_EPOCH" ] || return 0
++    find "$@" -newermt "@$SOURCE_DATE_EPOCH" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
++}
++# - - - - - - - - - - - - - - - - - - - - - - - - - -
+ mkiso_x86() {
+ 
+     echo "Writing FAI CD-ROM image to $isoname. This may need some time."
++    clamp_mtimes $tmp $scratch
+     xorriso -report_about HINT -as mkisofs -iso-level 3 \
+         -full-iso9660-filenames \
+ 	-volid "$vname" -appid "$aname" \
+@@ -310,6 +319,7 @@ mkiso_arm64() {
+ 
+     echo "Writing FAI CD-ROM image to $isoname. This may need some time."
+     cp $scratch/efiboot.img $tmp/boot/grub/efi.img
++    clamp_mtimes $tmp $scratch
+     xorriso -as mkisofs -r \
+         -volid "$vname" -appid "$aname" \
+         -J -joliet-long \
+@@ -354,7 +364,15 @@ add_config_space() {
+     # copy config space into nfsroot-copy unless -d is given
+     if [ $configset -eq 0 ]; then
+         echo "Copying the config space to CD image"
+-        cp -Ppr $FAI_CONFIGDIR/. $NEW/var/lib/fai/config/ || die $? "Not enough space left on image for the config directory"
++        if [ -n "$SOURCE_DATE_EPOCH" ]; then
++            # copy the content only. The owner, the write permission for
++            # group and others and the time stamps depend on who created
++            # the config space, and when: a version control system does
++            # not store them.
++            cp -PR $FAI_CONFIGDIR/. $NEW/var/lib/fai/config/ || die $? "Not enough space left on image for the config directory"
++        else
++            cp -Ppr $FAI_CONFIGDIR/. $NEW/var/lib/fai/config/ || die $? "Not enough space left on image for the config directory"
++        fi
+     fi
+ }
+ # - - - - - - - - - - - - - - - - - - - - - - - - - -
+@@ -443,6 +461,14 @@ fi
+ 
+ check_programs
+ 
++if [ -n "$SOURCE_DATE_EPOCH" ]; then
++    # https://reproducible-builds.org/specs/source-date-epoch/
++    builddate=$(LC_ALL=C date -u -d "@$SOURCE_DATE_EPOCH" '+%Y %b %d - %R')
++    export TZ=UTC # mtools converts SOURCE_DATE_EPOCH to local time
++else
++    builddate=$(date '+%Y %b %d - %R')
++fi
++
+ # use FAI_ETC_DIR from environment variable
+ if [ -n "$FAI_ETC_DIR" -a -z "$cdir" ]; then
+     echo "Using environment variable \$FAI_ETC_DIR."
+@@ -507,7 +533,7 @@ fi
+ 
+ kernelversion=$(ls -tr $NEW/boot/vmlinu?-* | tail -1 | sed -e 's#.*/vmlinuz-##')
+ faiversion=$(dpkg --root=$NEW -l fai-client 2>/dev/null |awk '/fai-client/ {print $3}')
+-isoversion=$(printf "FAI %-6s build $(date '+%Y %b %d - %R')" "$faiversion")
++isoversion=$(printf "FAI %-6s build %s" "$faiversion" "$builddate")
+ aname="Fully Automatic Installation by Thomas Lange, $isoversion"
+ 
+ case $(uname -m) in
+diff --git a/bin/fai-make-nfsroot b/bin/fai-make-nfsroot
+index 0411368..c2ec329 100755
+--- a/bin/fai-make-nfsroot
++++ b/bin/fai-make-nfsroot
+@@ -86,6 +86,7 @@ check_nfsroot() {
+ # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ 
+ PATH=/usr/local/bin:/usr/local/sbin:/bin:/sbin:/usr/bin:/usr/sbin
++umask 022 # permissions in the nfsroot must not depend on the caller
+ 
+ merror="properly"
+ exitcode=0
+@@ -231,7 +232,8 @@ setup_ssh() {
+     fi
+ 
+     mkdir -p -m 700 $NFSROOT/root/.ssh
+-    if [ -n "$LOGUSER" ] ; then
++    # with SOURCE_DATE_EPOCH, the keys of the build host are not copied
++    if [ -n "$LOGUSER" ] && [ -z "$SOURCE_DATE_EPOCH" ]; then
+         loguserhome=$(eval "cd ~$LOGUSER 2>/dev/null && pwd;true")
+         [ -f $loguserhome/.ssh/known_hosts ] && cp $loguserhome/.ssh/known_hosts $NFSROOT/root/.ssh/known_hosts
+         [ -d $loguserhome/.ssh ] && {
+@@ -305,6 +307,15 @@ add_etc_hosts_entries() {
+     ainsl     $NFSROOT/etc/hosts "# Following entries are specific to your environment"
+     ainsl $v  $NFSROOT/etc/hosts "$NFSROOT_ETC_HOSTS"
+ 
++    if [ -n "$SOURCE_DATE_EPOCH" ]; then
++        # nothing from the build host, except its name resolution during the build
++        # (fai-cd leaves it out of the image)
++        if [ -f /etc/resolv.conf ]; then
++            cp -Lp $v /etc/resolv.conf $NFSROOT/etc/resolv.conf
++        fi
++        return 0
++    fi
++
+     # add entries for all network devices
+     local ips=$(ip -br ad show up| awk '/UP / {if ($3) print $3}' |sed -e 's#\/[0-9]\+##g')
+ 
+@@ -331,12 +342,17 @@ create_base() {
+     $ROOTCMD apt-get clean
+     rm -f $NFSROOT/etc/resolv.conf $NFSROOT/etc/hostname $NFSROOT/etc/udev/rules.d/70-persistent-net.rules $NFSROOT/var/lib/dbus/machine-id
+     > $NFSROOT/etc/machine-id
++    remove_unreproducible_files
+     if [ $usexz -eq 0 ]; then
+         echo "Creating base.tar.zst"
+     else
+         echo "Creating base.tar.xz"
+     fi
+-    tar --xattrs --acls --one-file-system -C $NFSROOT -cf $NFSROOT/var/tmp/base.tar --exclude var/tmp/base.tar --exclude 'var/lib/apt/lists/*_*' .
++    tar --xattrs --acls --one-file-system --sort=name --numeric-owner \
++        --xattrs-exclude=security.selinux \
++        --pax-option=exthdr.name=%d/PaxHeaders/%f,delete=atime,delete=ctime \
++        ${SOURCE_DATE_EPOCH:+--mtime=@$SOURCE_DATE_EPOCH --clamp-mtime} \
++        -C $NFSROOT -cf $NFSROOT/var/tmp/base.tar --exclude var/tmp/base.tar --exclude 'var/lib/apt/lists/*_*' .
+     if [ $usexz -eq 1 ]; then
+         nice xz -q $NFSROOT/var/tmp/base.tar &
+     else
+@@ -413,6 +429,7 @@ EOF
+     echo 'add_dracutmodules+=" systemd-hostnamed systemd-networkd  "' >  $NFSROOT/etc/dracut.conf.d/11-network.conf
+     echo 'hostonly="no"' > $NFSROOT/etc/dracut.conf.d/20-generic-image.conf
+     echo 'compress="zstd"' > $NFSROOT/etc/dracut.conf.d/20-zstd-compress.conf
++    echo 'reproducible="yes"' > $NFSROOT/etc/dracut.conf.d/20-reproducible.conf
+     # we do not need all those filesystems inside the initrd
+     cat <<EOF > $NFSROOT/etc/dracut.conf.d/22-fai.conf
+ omit_dracutmodules+=" btrfs crypt lvm resume usrmount modsign mdraid shutdown virtfs "
+@@ -425,7 +442,13 @@ EOF
+         fcopy -s $cfdir/apt -t $NFSROOT/etc/apt sources.list
+     else
+         # this copies sources.list and sources.list.d into the nfsroot
+-        cp -aL $cfdir/apt $NFSROOT/etc
++        if [ -n "$SOURCE_DATE_EPOCH" ]; then
++            # the content only: not the owner, the write permission for
++            # group and others and the time stamps of the files in $cfdir
++            cp -RL $cfdir/apt $NFSROOT/etc
++        else
++            cp -aL $cfdir/apt $NFSROOT/etc
++        fi
+     fi
+ 
+     add_etc_hosts_entries
+@@ -446,9 +469,12 @@ EOF
+ 
+     set_root_pw
+ 
+-    # set timezone in nfsroot
+-    [ -f /etc/timezone ] && cp -fH /etc/timezone  etc/timezone
+-    cp -a /etc/localtime etc/localtime
++    # set timezone in nfsroot, but not the one of the build host with
++    # SOURCE_DATE_EPOCH
++    if [ -z "$SOURCE_DATE_EPOCH" ]; then
++        [ -f /etc/timezone ] && cp -fH /etc/timezone  etc/timezone
++        cp -a /etc/localtime etc/localtime
++    fi
+     ln -sf ../proc/self/mounts etc/mtab
+ 
+     echo "AUTO -all" > etc/mdadm/mdadm.conf # do not activate RAID arrays
+@@ -522,6 +548,8 @@ add_packages_nfsroot() {
+ 	die 12 "install_packages had exit code: $err"
+     fi
+     set -e
++    # before the initrd is created: dracut copies files like /etc/machine-id
++    remove_unreproducible_files
+ }
+ # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ umount_dirs() {
+@@ -573,6 +601,31 @@ fdivert() {
+         LC_ALL=C $ROOTCMD dpkg-divert --quiet --add --rename $item
+     done
+ }
++# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
++remove_unreproducible_files() {
++
++    # the same files as the cleanup/reproducible step of mmdebstrap,
++    # and the log of debootstrap
++    rm -f $NFSROOT/var/log/dpkg.log $NFSROOT/var/log/apt/history.log \
++        $NFSROOT/var/log/apt/term.log $NFSROOT/var/log/alternatives.log \
++        $NFSROOT/var/cache/ldconfig/aux-cache $NFSROOT/var/log/apt/eipp.log.xz \
++        $NFSROOT/var/lib/dbus/machine-id $NFSROOT/var/log/bootstrap.log
++    if [ -f $NFSROOT/etc/machine-id ]; then
++        > $NFSROOT/etc/machine-id
++    fi
++    if [ -z "$SOURCE_DATE_EPOCH" ]; then
++        return 0
++    fi
++    # with SOURCE_DATE_EPOCH, no identity shared by all the clients: the NVMe
++    # host IDs are optional, and the SSH host keys are created at boot
++    rm -f $NFSROOT/etc/nvme/hostid $NFSROOT/etc/nvme/hostnqn
++    if [ $sshpreserve -lt 2 ] && [ -x $NFSROOT/usr/bin/ssh-keygen ]; then
++        rm -f $NFSROOT/etc/ssh/ssh_host_*
++        mkdir -p $NFSROOT/etc/systemd/system/fai.service.d
++        printf '[Service]\nExecStartPre=-/usr/bin/ssh-keygen -A\n' \
++            > $NFSROOT/etc/systemd/system/fai.service.d/ssh-host-keys.conf
++    fi
++}
+ # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ run_hooks() {
+ 
+@@ -678,6 +731,7 @@ create_nfsroot
+ setup_tftp
+ call_verbose setup_ssh
+ run_hooks
++remove_unreproducible_files
+ check_nfsroot
+ write_variables
+ 
+@@ -705,7 +759,7 @@ exit $exitcode
+ RC=${PIPESTATUS[0]}
+ umount_dirs
+ trap "true" EXIT
+-if [ $generic = 0 ]; then
++if [ $generic = 0 ] && [ -z "$SOURCE_DATE_EPOCH" ]; then
+     cp -p /var/log/fai/fai-make-nfsroot.log $NFSROOT/var/tmp
+     msg="and $NFSROOT/var/tmp"
+ fi
+diff --git a/bin/fai-mirror b/bin/fai-mirror
+index face950..f7a6a2b 100755
+--- a/bin/fai-mirror
++++ b/bin/fai-mirror
+@@ -28,6 +28,7 @@
+ 
+ export FAI_ROOT=/ # do not execute in chroot, needed for install_packages call
+ export PATH=$PATH:/usr/sbin
++umask 022 # permissions in the mirror must not depend on the caller
+ 
+ trap "umount_dirs" EXIT ERR
+ # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+@@ -409,6 +410,12 @@ fi
+ reprepro --ignore=extension -b $mirrordir includedeb cskoeln $archivedir/[0-9a-zA-Z]*[_-]*
+ rm -r $archivedir/[0-9a-zA-Z]*[_-]*
+ 
++# reprepro writes the current time into the Release files
++if [ -n "$SOURCE_DATE_EPOCH" ]; then
++    releasedate=$(LC_ALL=C date -u -d "@$SOURCE_DATE_EPOCH" '+%a, %d %b %Y %H:%M:%S UTC')
++    sed -i -e "s/^Date: .*/Date: $releasedate/" $mirrordir/dists/*/Release
++fi
++
+ echo "$0 finished."
+ echo -n "Number of packages in the mirror: "
+ find $mirrordir -name \*.deb | wc -l
+-- 
+2.56.1
+

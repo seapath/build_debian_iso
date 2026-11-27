@@ -28,6 +28,19 @@ Note that this iso is only to be used on UEFI systems. Legacy BIOS is not suppor
 
 However please checkout the Customization section first. There are some things that must be done before building.
 
+### Reproducible ISO
+
+`build_iso.sh` builds the same `seapath.iso`, byte for byte, when it runs again with the same inputs:
+
+- the same commit of this repository, the same classes and menu, and the same user customization
+- the same versions of what the build downloads: the container of the build, the FAI and Debian packages, the basefile, cephadm and the container images
+
+The downloads are not pinned to a version: two builds of the same commit differ if Debian publishes an update in between.
+
+The build date written in the ISO is `SOURCE_DATE_EPOCH`. It is the date of the last commit, unless you set it. FAI is patched in the container of the build to use it (`patches/fai-reproducible-builds.patch`).
+
+To check, build twice and compare the checksums of the two files, or their content with [diffoscope](https://diffoscope.org/).
+
 ## Generate SEAPATH Debian image for SEAPATH Installer
 
 The script `generate_seapath_image.sh` will create a raw image that can be used with the SEAPATH Installer.
