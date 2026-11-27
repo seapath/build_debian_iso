@@ -1,0 +1,68 @@
+#!/bin/bash
+# Reproducible builds: at the end of the installation of a raw image, remove
+# what records the build (time, host, kernel, loop device) and what the
+# installed system creates again by itself.
+#
+# This hook replaces task savelog. The logs of the build stay on the build
+# host (in /tmp/fai); they are not copied into the image, where they would be
+# the logs of another machine.
+
+[ -n "$SOURCE_DATE_EPOCH" ] || exit 0
+
+# what task savelog copies for a later "fai softupdate". setup-storage writes
+# the lines of disk_var.sh in a random order, and the number of the loop
+# device depends on the build host.
+mkdir -p $target/var/lib/fai
+[ -f $LOGDIR/FAI_CLASSES ] && cp $LOGDIR/FAI_CLASSES $target/var/lib/fai/
+if [ -f $LOGDIR/disk_var.sh ]; then
+    sed -E 's|/dev/loop[0-9]+|/dev/loop0|g' $LOGDIR/disk_var.sh | LC_ALL=C sort > $target/var/lib/fai/disk_var.sh
+fi
+
+# logs of the package installation
+rm -f $target/var/log/dpkg.log $target/var/log/alternatives.log \
+      $target/var/log/bootstrap.log $target/var/log/apt/history.log \
+      $target/var/log/apt/term.log $target/var/log/apt/eipp.log.xz
+
+# caches, created again when needed
+rm -f $target/var/cache/apt/pkgcache.bin $target/var/cache/apt/srcpkgcache.bin \
+      $target/var/cache/ldconfig/aux-cache
+
+# LVM backup of the build host: scripts/SEAPATH_RAW/80-lvm-backup removes it,
+# this is for a backup written by a later script
+rm -f $target/etc/lvm/backup/* $target/etc/lvm/archive/*
+
+# /run is a tmpfs on the installed system
+find $target/run -mindepth 1 -delete
+
+# Pacemaker: the package generates a random key for Pacemaker Remote when it
+# is installed. All the machines installed from this image would share it,
+# and it would be public. Nodes that use Pacemaker Remote need a common key
+# anyway, which has to be deployed on them.
+rm -f $target/etc/pacemaker/authkey
+
+# podman: the images loaded during the build
+store=$target/var/lib/containers/storage
+if [ -d $store/overlay/l ]; then
+    # each layer has a short random name, used to mount it: derive it from
+    # the identifier of the layer
+    for link in "$store"/overlay/*/link; do
+        layer=${link%/link}
+        old=$(cat $link)
+        new=$(printf '%s' "${layer##*/}" | sha256sum | base32 -w0 | cut -c1-26)
+        [ "$old" = "$new" ] && continue
+        mv $store/overlay/l/$old $store/overlay/l/$new
+        printf '%s' "$new" > $link
+        sed -i "s|l/$old|l/$new|g" $store/overlay/*/lower
+    done
+    # time when each layer was loaded
+    created=$(date -u -d "@$SOURCE_DATE_EPOCH" +%Y-%m-%dT%H:%M:%SZ)
+    sed -i -E "s/\"created\":\"[^\"]*\"/\"created\":\"$created\"/g" $store/overlay-layers/layers.json
+    # random marker of the last process that wrote to the store, in the lock
+    # files of the store. Not the files of the images in overlay/.
+    find $store -maxdepth 2 -type f -name '*.lock' ! -path "$store/overlay/*" \
+        -exec truncate -s 0 {} +
+    # state of podman (no container yet): podman creates it again
+    rm -f $store/db.sql
+fi
+
+skiptask savelog

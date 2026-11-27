@@ -1,0 +1,17 @@
+#!/bin/bash
+# Reproducible builds: the lvm2 package runs vgcfgbackup when it is installed.
+# The backup describes the build host (its name, its kernel, the loop device
+# and the time), and initramfs-tools copies it into the initrd.
+# Remove it and build the initrd again. LVM writes a new backup on the
+# installed system.
+
+error=0; trap 'error=$(($?>$error?$?:$error))' ERR # save maximum error code
+
+[ -n "$SOURCE_DATE_EPOCH" ] || exit 0
+
+if [ -d $target/etc/lvm/backup ]; then
+    rm -f $target/etc/lvm/backup/* $target/etc/lvm/archive/*
+    $ROOTCMD update-initramfs -u -k all
+fi
+
+exit $error

@@ -47,6 +47,16 @@ fi
 
 wd=$(dirname "$0")
 
+# Reproducible builds: the date of the last commit is the build date, unless
+# the caller sets SOURCE_DATE_EPOCH. sudo does not keep the environment, so
+# the value is given to the container.
+# https://reproducible-builds.org/specs/source-date-epoch/
+: "${SOURCE_DATE_EPOCH:=$(git -C "$wd" log -1 --format=%ct 2>/dev/null || true)}"
+RUN_ENV=()
+if [ -n "$SOURCE_DATE_EPOCH" ]; then
+    RUN_ENV=(-e "SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH")
+fi
+
 if [ -z "$VERSION" ]; then
     SEAPATH_VERSION=$(git -C "$wd" describe --tags --dirty 2>/dev/null || echo "unknown")
 else
@@ -201,6 +211,7 @@ function docker_run {
     "${CONTAINER_ENGINE[@]}" run \
         --rm \
         --privileged \
+        "${RUN_ENV[@]}" \
         -v ./ext:/ext:Z \
         -v ./etc_fai:/etc/fai:ro,Z \
         -v /dev:/dev \
@@ -281,6 +292,13 @@ else
     echo "Warning: container_images.conf directory not found, skipping image import" >&2
 fi
 
+# Reproducible builds: fai-diskimage installs into mounted file systems, which
+# never gives the same image twice. Rebuild the image from its files.
+REPRODUCIBLE_IMAGE=true
+if [ -n "$SOURCE_DATE_EPOCH" ]; then
+    REPRODUCIBLE_IMAGE="reproducible-image.sh /ext/output/${OUTPUT}"
+fi
+
 # Creating the disk
 # patches /sbin/install_packages (bug in the process of being corrected upstream)
 # patches GRUB_EFI/10-setup:
@@ -302,7 +320,8 @@ docker_run bash -c "\
   sed -i -e \"s/-c -o compression_type=zstd qcow2/qcow2/\" /usr/sbin/fai-diskimage && \
   sed -i -e \"s/efibootmgr -v/efibootmgr -v || true/\" /ext/srv/fai/config/scripts/GRUB_EFI/10-setup && \
   sed -i -e \"s/grub-install \\\$opts \\\"\\\$GROOT\\\"/grub-install \\\$opts --force-extra-removable --no-nvram \\\"\\\$GROOT\\\"/\" /ext/srv/fai/config/scripts/GRUB_EFI/10-setup && \
-  fai-diskimage -vu ${HOSTNAME} -S${DISKSIZE} -c${CLASSES[*]} -s /ext/srv/fai/config /ext/output/${OUTPUT}"
+  fai-diskimage -vu ${HOSTNAME} -S${DISKSIZE} -c${CLASSES[*]} -s /ext/srv/fai/config /ext/output/${OUTPUT} && \
+  ${REPRODUCIBLE_IMAGE}"
 
 # Retrieving the output files from the volume (image and SBOM)
 sudo mv "$ext_dir/output/"* "$output_dir/"
@@ -316,9 +335,9 @@ if command -v bmaptool >/dev/null ; then
     bmaptool create -o "$output_dir/${OUTPUT}.bmap" "$output_dir/${OUTPUT}"
 
     if command -v pigz >/dev/null ; then
-        pigz "$output_dir/${OUTPUT}"
+        pigz -n "$output_dir/${OUTPUT}"
     else
-        gzip "$output_dir/${OUTPUT}"
+        gzip -n "$output_dir/${OUTPUT}"
     fi
     generate_seapath_metadata
 fi
